@@ -1,7 +1,6 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { UserService } from '@/lib/services/userService';
-import bcrypt from 'bcryptjs';
 
 const handler = NextAuth({
   providers: [
@@ -44,6 +43,7 @@ const handler = NextAuth({
   },
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -55,8 +55,8 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id;
+      if (session.user) {
+        session.user.id = token.id as string;
         session.user.email = token.email;
         session.user.name = token.name;
       }

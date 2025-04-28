@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from './LoginForm.module.css';
 
@@ -13,6 +13,8 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/projects';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,12 +26,13 @@ export default function LoginForm() {
         email,
         password,
         redirect: false,
+        callbackUrl,
       });
 
       if (result?.error) {
         setError(result.error);
-      } else {
-        router.push('/dashboard');
+      } else if (result?.ok) {
+        router.push(callbackUrl);
         router.refresh();
       }
     } catch (error) {
