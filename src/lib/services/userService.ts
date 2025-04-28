@@ -44,7 +44,7 @@ export class UserService {
 
   static async findUserByEmail(email: string): Promise<User | null> {
     const result = await pool.query(
-      'SELECT id, first_name, last_name, email, created_at, updated_at FROM users WHERE email = $1',
+      'SELECT id, first_name, last_name, email, hashed_password, created_at, updated_at FROM users WHERE email = $1',
       [email]
     );
     
@@ -58,8 +58,16 @@ export class UserService {
       firstName: user.first_name,
       lastName: user.last_name,
       email: user.email,
+      hashedPassword: user.hashed_password,
       createdAt: user.created_at,
       updatedAt: user.updated_at
     };
+  }
+
+  static async verifyPassword(email: string, password: string): Promise<boolean> {
+    const user = await this.findUserByEmail(email);
+    if (!user?.hashedPassword) return false;
+    
+    return bcrypt.compare(password, user.hashedPassword);
   }
 } 

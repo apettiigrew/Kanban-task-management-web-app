@@ -6,10 +6,11 @@ export interface CreateUserDto {
 }
 
 export interface User {
-    id: number;
+    id: string;
     firstName: string;
     lastName: string;
     email: string;
+    hashedPassword?: string;
     createdAt: Date;
     updatedAt: Date;
 }
