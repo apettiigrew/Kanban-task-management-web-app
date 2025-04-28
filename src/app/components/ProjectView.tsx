@@ -1,15 +1,49 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { getProjects } from '../actions/project';
 import styles from './ProjectView.module.css';
 
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  createdAt: Date;
+}
+
 export default function ProjectView() {
-  const projects = []; // This will later be replaced with actual project data
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const { projects: fetchedProjects = [] } = await getProjects();
+        setProjects(fetchedProjects);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className={styles.projectView}>
+        <div className={styles.loading}>Loading projects...</div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.projectView}>
       <header className={styles.header}>
         <h1 className={styles.title}>My Projects</h1>
-        <button className={styles.createButton}>
+        <Link href="/projects/new" className={styles.createButton}>
           <svg 
             width="12" 
             height="12" 
@@ -24,7 +58,7 @@ export default function ProjectView() {
             />
           </svg>
           Create Project
-        </button>
+        </Link>
       </header>
 
       <main className={styles.content}>
@@ -32,7 +66,7 @@ export default function ProjectView() {
           <div className={styles.emptyState}>
             <h2 className={styles.emptyTitle}>No projects yet</h2>
             <p className={styles.emptyText}>Create your first project to get started</p>
-            <button className={styles.createButton}>
+            <Link href="/projects/new" className={styles.createButton}>
               <svg 
                 width="12" 
                 height="12" 
@@ -47,11 +81,28 @@ export default function ProjectView() {
                 />
               </svg>
               Create Project
-            </button>
+            </Link>
           </div>
         ) : (
-          // Project list will be implemented here later
-          null
+          <div className={styles.projectGrid}>
+            {projects.map((project) => (
+              <Link 
+                key={project.id} 
+                href={`/projects/${project.id}`}
+                className={styles.projectCard}
+              >
+                <h3 className={styles.projectTitle}>{project.title}</h3>
+                <p className={styles.projectDescription}>
+                  {project.description || 'No description provided'}
+                </p>
+                <div className={styles.projectMeta}>
+                  <span className={styles.projectDate}>
+                    Created {new Date(project.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
         )}
       </main>
     </div>
