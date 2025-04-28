@@ -79,6 +79,11 @@
   height: 1rem;
 }
 
+.createProjectContainer {
+  margin-top: 1rem;
+  padding: 0 1rem;
+}
+
 .createBoardButton {
   display: flex;
   align-items: center;
