@@ -6,8 +6,8 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 1000;
 }
 
@@ -20,10 +20,19 @@
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
+.deleteModal {
+  background: white;
+  border-radius: 6px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
 .modalTitle {
-  font-size: 1.25rem;
-  font-weight: bold;
   color: #000112;
+  font-size: 1.5rem;
+  font-weight: bold;
   margin-bottom: 1.5rem;
 }
 
@@ -40,28 +49,25 @@
 }
 
 .label {
+  color: #828FA3;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #828FA3;
 }
 
-.input,
-.textarea {
-  padding: 0.75rem;
+.input {
+  padding: 0.5rem 1rem;
   border: 1px solid #E4EBFA;
   border-radius: 4px;
   font-size: 0.875rem;
   color: #000112;
-  transition: border-color 0.2s;
-}
-
-.input:focus,
-.textarea:focus {
-  outline: none;
-  border-color: #635FC7;
 }
 
 .textarea {
+  padding: 0.5rem 1rem;
+  border: 1px solid #E4EBFA;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: #000112;
   min-height: 100px;
   resize: vertical;
 }
@@ -72,47 +78,52 @@
   margin-top: 1rem;
 }
 
-.submitButton,
 .cancelButton {
-  flex: 1;
-  padding: 0.75rem;
+  background: rgba(99, 95, 199, 0.1);
+  color: #635FC7;
   border: none;
+  padding: 0.75rem 1.5rem;
   border-radius: 24px;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
-}
-
-.submitButton {
-  background-color: #635FC7;
-  color: white;
-}
-
-.submitButton:hover {
-  background-color: #A8A4FF;
-}
-
-.submitButton:disabled {
-  background-color: #A8A4FF;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.cancelButton {
-  background-color: rgba(99, 95, 199, 0.1);
-  color: #635FC7;
+  flex: 1;
 }
 
 .cancelButton:hover {
-  background-color: rgba(99, 95, 199, 0.25);
+  background: rgba(99, 95, 199, 0.25);
+}
+
+.deleteConfirmButton {
+  background-color: #EA5555;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  flex: 1;
+}
+
+.deleteConfirmButton:hover {
+  background-color: #FF9898;
+}
+
+.deleteConfirmButton:disabled {
+  background-color: #FF9898;
+  cursor: not-allowed;
 }
 
 .error {
-  background-color: #ffebee;
-  color: #d32f2f;
-  padding: 0.75rem;
-  border-radius: 4px;
+  color: #EA5555;
   font-size: 0.875rem;
   margin-bottom: 1rem;
-  border: 1px solid #ffcdd2;
+}
+
+.deleteMessage {
+  color: #828FA3;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
 } 

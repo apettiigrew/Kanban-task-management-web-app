@@ -103,6 +103,7 @@ export async function updateProject(prevState: any, formData: FormData) {
 export async function deleteProject(prevState: any, formData: FormData) {
   try {
     const id = formData.get('id') as string;
+    console.log("Deleted project:", id);
     await dbDeleteProject(id);
     
     revalidatePath('/')
