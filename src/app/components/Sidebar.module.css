@@ -179,4 +179,33 @@ input:checked + .slider:before {
 .hideSidebarButton:hover {
   background-color: rgba(99, 95, 199, 0.1);
   color: #635FC7;
+}
+
+.projectItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.editButton {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #828FA3;
+  border-radius: 0.25rem;
+  transition: all 0.2s;
+}
+
+.editButton:hover {
+  color: #635FC7;
+  background-color: rgba(99, 95, 199, 0.1);
+}
+
+.projectItem:hover .editButton {
+  display: flex;
 } 

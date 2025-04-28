@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { createProject as dbCreateProject, getProjects as dbGetProjects, getProject as dbGetProject } from '../lib/db'
+import { createProject as dbCreateProject, getProjects as dbGetProjects, getProject as dbGetProject, updateProject as dbUpdateProject, deleteProject as dbDeleteProject } from '../lib/db'
 
 interface Project {
   id: string
@@ -67,6 +67,51 @@ export async function getProject(id: string) {
     return {
       success: false,
       error: 'Failed to fetch project. Please try again.',
+    }
+  }
+}
+
+export async function updateProject(prevState: any, formData: FormData) {
+  try {
+    const validatedFields = ProjectSchema.safeParse({
+      title: formData.get('title'),
+      description: formData.get('description'),
+    })
+
+    if (!validatedFields.success) {
+      return {
+        error: validatedFields.error.issues[0].message,
+        success: false
+      }
+    }
+
+    const id = formData.get('id') as string;
+    const { title, description } = validatedFields.data;
+    await dbUpdateProject(id, { title, description: description || '' })
+    
+    revalidatePath('/')
+    revalidatePath('/projects')
+    return { success: true }
+  } catch (error) {
+    return {
+      error: 'Failed to update project. Please try again.',
+      success: false
+    }
+  }
+}
+
+export async function deleteProject(prevState: any, formData: FormData) {
+  try {
+    const id = formData.get('id') as string;
+    await dbDeleteProject(id);
+    
+    revalidatePath('/')
+    revalidatePath('/projects')
+    return { success: true }
+  } catch (error) {
+    return {
+      error: 'Failed to delete project. Please try again.',
+      success: false
     }
   }
 } 
