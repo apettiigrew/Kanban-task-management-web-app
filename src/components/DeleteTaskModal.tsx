@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { deleteTask } from '../actions/task';
+import { deleteTask } from '@/features/project/actions/task';
 import styles from './ProjectModal.module.css';
 
 interface DeleteTaskModalProps {

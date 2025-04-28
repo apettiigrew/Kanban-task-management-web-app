@@ -2,12 +2,7 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import {
-  createTask as dbCreateTask,
-  updateTask as dbUpdateTask,
-  deleteTask as dbDeleteTask,
-  getTasksByProject as dbGetTasksByProject,
-} from '../lib/db';
+import { createTask as dbCreateTask, updateTask as dbUpdateTask, deleteTask as dbDeleteTask, getTasksByProject as dbGetTasksByProject } from '@/lib/db';
 
 const TaskSchema = z.object({
   projectId: z.string().min(1, 'Project ID is required'),

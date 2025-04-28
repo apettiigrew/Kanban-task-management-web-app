@@ -6,7 +6,7 @@ import styles from './Sidebar.module.css';
 import ProjectModal from './ProjectModal';
 import UpdateProjectModal from './UpdateProjectModal';
 import DeleteProjectModal from './DeleteProjectModal';
-import { getProjects } from '../actions/project';
+import { getProjects } from '@/features/project/actions/project';
 
 interface Project {
   id: string;

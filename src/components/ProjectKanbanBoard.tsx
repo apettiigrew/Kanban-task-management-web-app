@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { getTasksByProject, updateTask } from '../actions/task';
+import { getTasksByProject, updateTask } from '@/features/project/actions/task';
 import TaskModal from './TaskModal';
 import DeleteTaskModal from './DeleteTaskModal';
 import styles from './ProjectKanbanBoard.module.css';

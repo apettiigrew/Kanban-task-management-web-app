@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getProjects } from '../actions/project';
+import { getProjects } from '@/features/project/actions/project';
 import styles from './ProjectView.module.css';
 
 interface Project {

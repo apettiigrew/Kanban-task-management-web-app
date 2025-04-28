@@ -1,6 +1,6 @@
-import ProjectKanbanBoard from '../../components/ProjectKanbanBoard';
-import { getProject } from '../../actions/project';
-import styles from './ProjectPage.module.css';
+import ProjectKanbanBoard from '../../../components/ProjectKanbanBoard';
+import { getProject } from '@/features/project/actions/project';
+import styles from './page.module.css';
 
 interface Project {
   id: string;

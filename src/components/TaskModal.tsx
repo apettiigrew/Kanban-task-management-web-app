@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { createTask, updateTask } from '../actions/task';
+import { createTask, updateTask } from '@/features/project/actions/task';
 import styles from './ProjectModal.module.css';
 
 interface TaskModalProps {

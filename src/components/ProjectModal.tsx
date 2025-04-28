@@ -1,21 +1,16 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { updateProject } from '../actions/project';
+import { createProject } from '@/features/project/actions/project';
 import styles from './ProjectModal.module.css';
+import { useEffect } from 'react';
 
-interface UpdateProjectModalProps {
+interface ProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onProjectUpdated: () => void;
-  project: {
-    id: string;
-    title: string;
-    description: string;
-  };
-}
+  onProjectCreated: () => void;
+} 
 
 const initialState = {
   message: null,
@@ -31,28 +26,27 @@ function SubmitButton() {
       className={styles.submitButton}
       disabled={pending}
     >
-      {pending ? 'Updating...' : 'Update Project'}
+      {pending ? 'Creating...' : 'Create Project'}
     </button>
   );
 }
 
-export default function UpdateProjectModal({ isOpen, onClose, onProjectUpdated, project }: UpdateProjectModalProps) {
-  const [state, formAction] = useActionState(updateProject, initialState);
+export default function ProjectModal({ isOpen, onClose, onProjectCreated }: ProjectModalProps) {
+  const [state, formAction] = useActionState(createProject, initialState);
 
   useEffect(() => {
     if (state.success) {
-      onProjectUpdated();
+      onProjectCreated();
     }
-  }, [state.success, onProjectUpdated]);
+  }, [state.success, onProjectCreated]);
 
   if (!isOpen) return null;
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
-        <h2 className={styles.modalTitle}>Update Project</h2>
+        <h2 className={styles.modalTitle}>Create New Project</h2>
         <form action={formAction} className={styles.form}>
-          <input type="hidden" name="id" value={project.id} />
           {state.error && !state.success && (
             <div className={styles.error}>{state.error}</div>
           )}
@@ -66,7 +60,6 @@ export default function UpdateProjectModal({ isOpen, onClose, onProjectUpdated, 
               name="title"
               className={styles.input}
               placeholder="e.g. Marketing Campaign"
-              defaultValue={project.title}
               required
             />
           </div>
@@ -79,7 +72,6 @@ export default function UpdateProjectModal({ isOpen, onClose, onProjectUpdated, 
               name="description"
               className={styles.textarea}
               placeholder="e.g. This project will handle our Q4 marketing initiatives"
-              defaultValue={project.description}
               required
             />
           </div>

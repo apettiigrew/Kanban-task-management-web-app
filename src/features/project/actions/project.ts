@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { createProject as dbCreateProject, getProjects as dbGetProjects, getProject as dbGetProject, updateProject as dbUpdateProject, deleteProject as dbDeleteProject } from '../lib/db'
+import { createProject as dbCreateProject, getProjects as dbGetProjects, getProject as dbGetProject, updateProject as dbUpdateProject, deleteProject as dbDeleteProject } from '@/lib/db'
 
 interface Project {
   id: string
