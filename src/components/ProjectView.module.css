@@ -4,6 +4,8 @@
   background-color: #F4F7FD;
   display: flex;
   flex-direction: column;
+  margin-left: 300px;
+  width: calc(100% - 300px);
 }
 
 .header {

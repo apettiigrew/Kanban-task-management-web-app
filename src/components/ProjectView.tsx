@@ -34,7 +34,7 @@ export default function ProjectView() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen">
+      <div className="min-h-screen">
         <Sidebar />
         <div className={styles.projectView}>
           <div className={styles.loading}>Loading projects...</div>
@@ -44,7 +44,7 @@ export default function ProjectView() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="min-h-screen">
       <Sidebar />
       <div className={styles.projectView}>
         <header className={styles.header}>
