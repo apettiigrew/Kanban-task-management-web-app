@@ -14,7 +14,7 @@ export async function POST(request: Request, response: Response) {
   try {
     const body = await request.json();
     
-    console.log('body on the server', body);
+    
     // Validate input
     const validatedData = registerSchema.parse(body);
     

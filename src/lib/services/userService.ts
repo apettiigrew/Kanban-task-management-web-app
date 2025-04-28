@@ -6,6 +6,12 @@ export class UserService {
   static async createUser(userData: CreateUserDto): Promise<User> {
     const { firstName, lastName, email, password } = userData;
     
+    // First check if user exists
+    const existingUser = await this.findUserByEmail(email);
+    if (existingUser) {
+      throw new Error('Email already exists');
+    }
+    
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
@@ -28,6 +34,7 @@ export class UserService {
         updatedAt: user.updated_at
       };
     } catch (error) {
+      // Keep the existing unique constraint error handling as a fallback
       if (error instanceof Error && 'code' in error && error.code === '23505') { 
         throw new Error('Email already exists');
       }
