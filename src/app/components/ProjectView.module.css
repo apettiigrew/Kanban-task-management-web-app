@@ -1,0 +1,76 @@
+.projectView {
+  flex: 1;
+  margin-left: 300px;
+  min-height: 100vh;
+  background-color: #F4F7FD;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background-color: white;
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #E4EBFA;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #000112;
+}
+
+.createButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #635FC7;
+  color: white;
+  border: none;
+  padding: 0.875rem 1.5rem;
+  border-radius: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.createButton:hover {
+  background-color: #A8A4FF;
+}
+
+.plusIcon {
+  width: 12px;
+  height: 12px;
+}
+
+.content {
+  flex: 1;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 200px);
+}
+
+.emptyState {
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.emptyTitle {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #000112;
+}
+
+.emptyText {
+  color: #828FA3;
+  font-size: 1.125rem;
+} 
