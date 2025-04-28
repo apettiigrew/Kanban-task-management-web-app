@@ -3,6 +3,9 @@
 import Link from 'next/link';
 import styles from './Sidebar.module.css';
 
+// This will later come from a database or API
+const projects: { id: string; name: string }[] = [];
+
 export default function Sidebar() {
   return (
     <aside className={styles.sidebar}>
@@ -12,31 +15,27 @@ export default function Sidebar() {
       </div>
 
       <div className={styles.boardsSection}>
-        <h2 className={styles.sectionTitle}>ALL BOARDS (3)</h2>
+        <h2 className={styles.sectionTitle}>
+          ALL PROJECTS ({projects.length})
+        </h2>
         <nav className={styles.boardsList}>
-          <Link href="/boards/platform-launch" className={`${styles.boardLink} ${styles.active}`}>
-            <svg className={styles.boardIcon} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0 2.889A2.889 2.889 0 0 1 2.889 0H13.11A2.889 2.889 0 0 1 16 2.889V13.11A2.888 2.888 0 0 1 13.111 16H2.89A2.889 2.889 0 0 1 0 13.111V2.89Zm1.333 5.555v4.667c0 .859.697 1.556 1.556 1.556h6.889V8.444H1.333Zm8.445-1.333V1.333h-6.89A1.556 1.556 0 0 0 1.334 2.89V7.11h8.444Zm4.889-1.333H11.11v4.444h3.556V5.778Zm0 5.778H11.11v3.11h2A1.556 1.556 0 0 0 14.666 13.11v-1.555ZM14.666 2.89A1.556 1.556 0 0 0 13.11 1.333h-2v3.111h3.556V2.89Z" fill="currentColor"/>
-            </svg>
-            Platform Launch
-          </Link>
-          <Link href="/boards/marketing-plan" className={styles.boardLink}>
-            <svg className={styles.boardIcon} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0 2.889A2.889 2.889 0 0 1 2.889 0H13.11A2.889 2.889 0 0 1 16 2.889V13.11A2.888 2.888 0 0 1 13.111 16H2.89A2.889 2.889 0 0 1 0 13.111V2.89Zm1.333 5.555v4.667c0 .859.697 1.556 1.556 1.556h6.889V8.444H1.333Zm8.445-1.333V1.333h-6.89A1.556 1.556 0 0 0 1.334 2.89V7.11h8.444Zm4.889-1.333H11.11v4.444h3.556V5.778Zm0 5.778H11.11v3.11h2A1.556 1.556 0 0 0 14.666 13.11v-1.555ZM14.666 2.89A1.556 1.556 0 0 0 13.11 1.333h-2v3.111h3.556V2.89Z" fill="currentColor"/>
-            </svg>
-            Marketing Plan
-          </Link>
-          <Link href="/boards/roadmap" className={styles.boardLink}>
-            <svg className={styles.boardIcon} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0 2.889A2.889 2.889 0 0 1 2.889 0H13.11A2.889 2.889 0 0 1 16 2.889V13.11A2.888 2.888 0 0 1 13.111 16H2.89A2.889 2.889 0 0 1 0 13.111V2.89Zm1.333 5.555v4.667c0 .859.697 1.556 1.556 1.556h6.889V8.444H1.333Zm8.445-1.333V1.333h-6.89A1.556 1.556 0 0 0 1.334 2.89V7.11h8.444Zm4.889-1.333H11.11v4.444h3.556V5.778Zm0 5.778H11.11v3.11h2A1.556 1.556 0 0 0 14.666 13.11v-1.555ZM14.666 2.89A1.556 1.556 0 0 0 13.11 1.333h-2v3.111h3.556V2.89Z" fill="currentColor"/>
-            </svg>
-            Roadmap
-          </Link>
+          {projects.map((project) => (
+            <Link
+              key={project.id}
+              href={`/projects/${project.id}`}
+              className={styles.boardLink}
+            >
+              <svg className={styles.boardIcon} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 2.889A2.889 2.889 0 0 1 2.889 0H13.11A2.889 2.889 0 0 1 16 2.889V13.11A2.888 2.888 0 0 1 13.111 16H2.89A2.889 2.889 0 0 1 0 13.111V2.89Zm1.333 5.555v4.667c0 .859.697 1.556 1.556 1.556h6.889V8.444H1.333Zm8.445-1.333V1.333h-6.89A1.556 1.556 0 0 0 1.334 2.89V7.11h8.444Zm4.889-1.333H11.11v4.444h3.556V5.778Zm0 5.778H11.11v3.11h2A1.556 1.556 0 0 0 14.666 13.11v-1.555ZM14.666 2.89A1.556 1.556 0 0 0 13.11 1.333h-2v3.111h3.556V2.89Z" fill="currentColor"/>
+              </svg>
+              {project.name}
+            </Link>
+          ))}
           <button className={styles.createBoardButton}>
             <svg className={styles.boardIcon} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0 2.889A2.889 2.889 0 0 1 2.889 0H13.11A2.889 2.889 0 0 1 16 2.889V13.11A2.888 2.888 0 0 1 13.111 16H2.89A2.889 2.889 0 0 1 0 13.111V2.89Zm1.333 5.555v4.667c0 .859.697 1.556 1.556 1.556h6.889V8.444H1.333Zm8.445-1.333V1.333h-6.89A1.556 1.556 0 0 0 1.334 2.89V7.11h8.444Zm4.889-1.333H11.11v4.444h3.556V5.778Zm0 5.778H11.11v3.11h2A1.556 1.556 0 0 0 14.666 13.11v-1.555ZM14.666 2.89A1.556 1.556 0 0 0 13.11 1.333h-2v3.111h3.556V2.89Z" fill="currentColor"/>
+              <path d="M7.368 12V7.344H12V4.632H7.368V0H4.656V4.632H0V7.344H4.656V12H7.368Z" fill="currentColor"/>
             </svg>
-            + Create New Board
+            + Create New Project
           </button>
         </nav>
       </div>
