@@ -17,8 +17,8 @@ interface DeleteTaskModalProps {
 }
 
 const initialState = {
-  message: null,
   success: false,
+  task: null
 };
 
 function SubmitButton() {

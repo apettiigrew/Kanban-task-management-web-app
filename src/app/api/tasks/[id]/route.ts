@@ -12,6 +12,13 @@ const updateTaskSchema = z.object({
   projectId: z.string().min(1, 'Project ID is required'),
 });
 
+
+interface RouteParams {
+  params: {
+    id: string;
+  };
+}
+
 export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -50,7 +57,37 @@ export async function PUT(
       return Response.json({ error: 'Task not found' }, { status: 404 });
     }
     
-    console.error('Error updating task:', error);
+   
     return Response.json({ error: 'Failed to update task' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest, { params }: RouteParams) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session?.user?.id) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    
+    const taskId = params.id;
+
+    if (!taskId) {
+      return Response.json({ error: 'Task ID is required' }, { status: 400 });
+    }
+
+
+    
+    await TaskService.deleteTask(params.id);
+    
+    return Response.json({ success: true });
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Task not found') {
+      return Response.json({ error: 'Task not found' }, { status: 404 });
+    }
+    
+    console.error('Error deleting task:', error);
+    return Response.json({ error: 'Failed to delete task' }, { status: 500 });
   }
 } 

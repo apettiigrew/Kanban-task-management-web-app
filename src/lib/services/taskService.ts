@@ -4,10 +4,9 @@ export interface Task {
   id: string;
   projectId: string;
   title: string;
-  description?: string;
+  description: string;
   status: 'todo' | 'doing' | 'done';
   createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface CreateTaskDto {
@@ -83,6 +82,17 @@ export class TaskService {
     } catch (error) {
       console.error('Error updating task:', error);
       throw new Error('Failed to update task');
+    }
+  }
+
+  static async deleteTask(taskId: string): Promise<void> {
+    const result = await pool.query(
+      'DELETE FROM tasks WHERE id = $1 RETURNING id',
+      [taskId]
+    );
+
+    if (result.rows.length === 0) {
+      throw new Error('Task not found');
     }
   }
 } 

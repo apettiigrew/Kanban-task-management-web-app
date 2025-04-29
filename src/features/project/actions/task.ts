@@ -3,6 +3,7 @@
 import { getBaseUrl } from '@/lib/utils';
 import { z } from 'zod';
 import { headers } from 'next/headers';
+import { Task } from '@/lib/services/taskService';
 
 const TaskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100, 'Title must be less than 100 characters'),
@@ -12,16 +13,12 @@ const TaskSchema = z.object({
 });
 
 type ActionState = {
-  success: true;
-  task: any;
-  error?: undefined;
-} | {
-  success: false;
-  error: string;
-  task?: undefined;
-};
+  success: boolean;
+  tasks?:Task[];
+  error?: string;
+}
 
-export async function createTask(prevState: ActionState | null,formData: FormData): Promise<ActionState> {
+export async function createTask(prevState: ActionState | null,formData: FormData) {
   try {
     const validatedFields = TaskSchema.parse({
       title: formData.get('title'),
@@ -56,7 +53,7 @@ export async function createTask(prevState: ActionState | null,formData: FormDat
   }
 }
 
-export async function updateTask(prevState: ActionState | null,formData: FormData): Promise<ActionState> {
+export async function updateTask(prevState: ActionState | null,formData: FormData){
   try {
     
     const taskId = formData.get('id');
@@ -91,10 +88,7 @@ export async function updateTask(prevState: ActionState | null,formData: FormDat
   }
 }
 
-export async function deleteTask(
-  prevState: ActionState | null,
-  formData: FormData
-): Promise<ActionState> {
+export async function deleteTask(prevState: ActionState | null,formData: FormData) {
   try {
     const taskId = formData.get('id');
     const headersList = await headers();
