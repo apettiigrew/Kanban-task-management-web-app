@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useSession, signOut } from 'next-auth/react';
 import styles from './Sidebar.module.css';
 import ProjectModal from './ProjectModal';
 import UpdateProjectModal from './UpdateProjectModal';
@@ -16,6 +17,7 @@ interface Project {
 }
 
 export default function Sidebar() {
+  const { data: session } = useSession();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -57,6 +59,10 @@ export default function Sidebar() {
     setSelectedProject(project);
     setIsDeleteModalOpen(true);
   }, []);
+
+  const handleLogout = async () => {
+    await signOut({ redirect: true, callbackUrl: '/login' });
+  };
 
   return (
     <aside className={styles.sidebar}>
@@ -111,6 +117,25 @@ export default function Sidebar() {
           </div>
         </nav>
       </div>
+
+      {session && (
+        <div className={styles.userSection}>
+          <div className={styles.userInfo}>
+            <span className={styles.userName}>{session.user.name}</span>
+            <span className={styles.userEmail}>{session.user.email}</span>
+          </div>
+          <button
+            onClick={handleLogout}
+            className={styles.logoutButton}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6.667 14.667H2.667A1.333 1.333 0 0 1 1.333 13.333V2.667A1.333 1.333 0 0 1 2.667 1.333h4a.667.667 0 0 0 0-1.333h-4A2.667 2.667 0 0 0 0 2.667v10.666A2.667 2.667 0 0 0 2.667 16h4a.667.667 0 0 0 0-1.333Z" fill="currentColor"/>
+              <path d="M15.447 7.447 12.113 4.113a.667.667 0 1 0-.943.943L13.727 7.6H5.333a.667.667 0 0 0 0 1.333h8.394l-2.557 2.557a.667.667 0 1 0 .943.943l3.334-3.333a.667.667 0 0 0 0-.943Z" fill="currentColor"/>
+            </svg>
+            Logout
+          </button>
+        </div>
+      )}
 
       <ProjectModal
         isOpen={isModalOpen}
