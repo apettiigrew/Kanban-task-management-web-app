@@ -1,114 +1,106 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Project } from '@/types/project';
-import styles from './UpdateProjectModal.module.css';
+import { useFormStatus } from 'react-dom';
+import { updateProject } from '@/features/project/actions/project';
+import { useActionState } from 'react';
+import styles from './ProjectModal.module.css';
+import { createPortal } from 'react-dom';
 
-interface UpdateProjectModalProps {
-  project: Project;
-  isOpen: boolean;
-  onClose: () => void;
+interface Project {
+  id: string;
+  title: string;
+  description?: string;
 }
 
-export default function UpdateProjectModal({ project, isOpen, onClose }: UpdateProjectModalProps) {
-  const router = useRouter();
-  const [title, setTitle] = useState(project.title);
-  const [description, setDescription] = useState(project.description || '');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+interface UpdateProjectModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onProjectUpdated: () => void;
+  project: Project;
+}
+
+type ActionState = {
+  success: boolean;
+  project?: any;
+  error?: string;
+};
+
+const initialState: ActionState = {
+  success: false
+};
+
+const wrappedUpdateProject = async (_prevState: ActionState, formData: FormData) => {
+  const id = formData.get('id') as string;
+  return updateProject(id, Object.fromEntries(formData));
+};
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button type="submit" className={styles.submitButton} disabled={pending}>
+      {pending ? 'Updating...' : 'Update Project'}
+    </button>
+  );
+}
+
+export default function UpdateProjectModal({ 
+  isOpen, 
+  onClose, 
+  onProjectUpdated, 
+  project 
+}: UpdateProjectModalProps) {
+  const [state, formAction] = useActionState(wrappedUpdateProject, initialState);
+
+  // Call onProjectUpdated on success
+  if (state.success && isOpen) {
+    onProjectUpdated();
+  }
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`/api/projects/${project.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ title, description }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to update project');
-      }
-
-      router.refresh();
-      onClose();
-    } catch (error) {
-      console.error('Error updating project:', error);
-      setError(error instanceof Error ? error.message : 'Failed to update project');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
+  const modal = (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
-        <h2 className={styles.modalTitle}>Edit Project</h2>
-        
-        {error && (
-          <div className={styles.error}>
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <h2 className={styles.modalTitle}>Update Project</h2>
+        <form action={formAction} className={styles.form}>
+          <input type="hidden" name="id" value={project.id} />
+          {state.error && !state.success && (
+            <div className={styles.error}>{state.error}</div>
+          )}
           <div className={styles.formGroup}>
             <label htmlFor="title" className={styles.label}>
-              Title
+              Project Title
             </label>
             <input
               type="text"
               id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              name="title"
               className={styles.input}
-              placeholder="e.g. Marketing Campaign"
+              defaultValue={project.title}
               required
             />
           </div>
-
           <div className={styles.formGroup}>
             <label htmlFor="description" className={styles.label}>
               Description
             </label>
             <textarea
               id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              name="description"
               className={styles.textarea}
-              placeholder="e.g. This project will handle our Q4 marketing initiatives"
-              rows={3}
+              defaultValue={project.description}
             />
           </div>
-
           <div className={styles.buttonGroup}>
-            <button
-              type="button"
-              onClick={onClose}
-              className={styles.cancelButton}
-              disabled={isLoading}
-            >
+            <button type="button" onClick={onClose} className={styles.cancelButton}>
               Cancel
             </button>
-            <button
-              type="submit"
-              className={styles.submitButton}
-              disabled={isLoading}
-            >
-              {isLoading ? 'Updating...' : 'Update Project'}
-            </button>
+            <SubmitButton />
           </div>
         </form>
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 } 
