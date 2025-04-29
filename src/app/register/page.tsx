@@ -4,7 +4,7 @@ import { useFormState } from 'react-dom';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from './register.module.css';
-import { useEffect } from 'react';
+import { useActionState, useEffect } from 'react';
 import { registerUser } from '@/features/register/actions/actions';
 
 const initialState = {
@@ -13,7 +13,7 @@ const initialState = {
 };
 
 export default function RegisterPage() {
-  const [state, formAction] = useFormState(registerUser, initialState);
+  const [state, formAction] = useActionState(registerUser, initialState);
   const router = useRouter();
 
   useEffect(() => {

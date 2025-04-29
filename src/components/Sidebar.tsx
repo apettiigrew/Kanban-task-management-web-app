@@ -7,7 +7,6 @@ import styles from './Sidebar.module.css';
 import ProjectModal from './ProjectModal';
 import UpdateProjectModal from './UpdateProjectModal';
 import DeleteProjectModal from './DeleteProjectModal';
-import { getProjects } from '@/features/project/actions/project';
 
 interface Project {
   id: string;
@@ -25,8 +24,16 @@ export default function Sidebar() {
   const [projects, setProjects] = useState<Project[]>([]);
 
   const fetchProjects = async () => {
-    const { projects: fetchedProjects = [] } = await getProjects();
-    setProjects(fetchedProjects);
+    try {
+      const response = await fetch('http://localhost:3000/api/projects');
+      if (!response.ok) {
+        throw new Error('Failed to fetch projects');
+      }
+      const data = await response.json();
+      setProjects(data.projects);
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+    }
   };
 
   useEffect(() => {

@@ -1,118 +1,136 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { CreateProjectDto, Project } from '@/types/project'
 import { z } from 'zod'
-import { createProject as dbCreateProject, getProjects as dbGetProjects, getProject as dbGetProject, updateProject as dbUpdateProject, deleteProject as dbDeleteProject } from '@/lib/db'
 
-interface Project {
-  id: string
-  title: string
-  description: string
-  createdAt: Date
+type ActionState = {
+  success: true;
+  project: Project;
+  error?: undefined;
+} | {
+  success: false;
+  error: string;
+  project?: undefined;
 }
-
-// In-memory database
-let projects: Project[] = []
 
 const ProjectSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100, 'Title must be less than 100 characters'),
   description: z.string().max(500, 'Description must be less than 500 characters').optional(),
 })
 
-export async function createProject(prevState: any, formData: FormData) {
+export async function createProject(
+  prevState: { success: boolean; error: null | string; project: any },
+  formData: FormData
+): Promise<{ success: boolean; error: null | string; project: any }> {
   try {
-    const validatedFields = ProjectSchema.safeParse({
-      title: formData.get('title'),
-      description: formData.get('description'),
-    })
-
-    if (!validatedFields.success) {
-      return {
-        error: validatedFields.error.issues[0].message,
-      }
-    }
-
-    const { title, description } = validatedFields.data
-    await dbCreateProject({ title, description: description || '' })
+    const data = {
+      title: formData.get('title') as string,
+      description: formData.get('description') as string
+    };
     
-    revalidatePath('/')
+    const response = await fetch('http://localhost:3000/api/projects', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
 
-    return { success: true }
-  } catch (error) {
-    return {
-      error: 'Failed to create project. Please try again.',
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to create project in actions/project.ts');
     }
+
+    const result = await response.json();
+    return { success: true, error: null, project: result.project };
+  } catch (error) {
+    console.error('Error creating project in actions/project.ts:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to create project in actions/project.ts', project: null };
   }
 }
 
 export async function getProjects() {
   try {
-    const projects = await dbGetProjects() as Project[]
-    return { success: true, projects }
-  } catch (error) {
-    console.error('Error fetching projects:', error)
-    return {
-      success: false,
-      error: 'Failed to fetch projects. Please try again.',
+    const response = await fetch('http://localhost:3000/api/projects', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch projects');
     }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    throw error;
   }
 }
 
 export async function getProject(id: string) {
   try {
-    const project = await dbGetProject(id)
-    return { success: true, project }
-  } catch (error) {
-    console.error('Error fetching project:', error)
-    return {
-      success: false,
-      error: 'Failed to fetch project. Please try again.',
+    const response = await fetch(`http://localhost:3000/api/projects/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch project');
     }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching project:', error);
+    throw error;
   }
 }
 
-export async function updateProject(prevState: any, formData: FormData) {
+export async function updateProject(id: string, data: Partial<CreateProjectDto>) {
   try {
-    const validatedFields = ProjectSchema.safeParse({
-      title: formData.get('title'),
-      description: formData.get('description'),
-    })
+    const response = await fetch(`http://localhost:3000/api/projects/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
 
-    if (!validatedFields.success) {
-      return {
-        error: validatedFields.error.issues[0].message,
-        success: false
-      }
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to update project');
     }
 
-    const id = formData.get('id') as string;
-    const { title, description } = validatedFields.data;
-    await dbUpdateProject(id, { title, description: description || '' })
-    
-    revalidatePath('/')
-    revalidatePath('/projects')
-    return { success: true }
+    const result = await response.json();
+    return { success: true, project: result.project };
   } catch (error) {
-    return {
-      error: 'Failed to update project. Please try again.',
-      success: false
-    }
+    console.error('Error updating project:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to update project' };
   }
 }
 
-export async function deleteProject(prevState: any, formData: FormData) {
+export async function deleteProject(id: string) {
   try {
-    const id = formData.get('id') as string;
-    console.log("Deleted project:", id);
-    await dbDeleteProject(id);
-    
-    revalidatePath('/')
-    revalidatePath('/projects')
-    return { success: true }
-  } catch (error) {
-    return {
-      error: 'Failed to delete project. Please try again.',
-      success: false
+    const response = await fetch(`http://localhost:3000/api/projects/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to delete project');
     }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting project:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to delete project' };
   }
 } 

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import styles from './ProjectView.module.css';
-import { getProjects } from '@/features/project/actions/project';
 import Sidebar from './Sidebar';
 
 interface Project {
@@ -20,8 +19,12 @@ export default function ProjectView() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const { projects: fetchedProjects = [] } = await getProjects();
-        setProjects(fetchedProjects);
+        const response = await fetch('/api/projects');
+        if (!response.ok) {
+          throw new Error('Failed to fetch projects');
+        }
+        const data = await response.json();
+        setProjects(data.projects);
       } catch (error) {
         console.error('Error fetching projects:', error);
       } finally {
@@ -36,8 +39,8 @@ export default function ProjectView() {
     return (
       <div className="min-h-screen">
         <Sidebar />
-      <div className={styles.projectView}>
-        <div className={styles.loading}>Loading projects...</div>
+        <div className={styles.projectView}>
+          <div className={styles.loading}>Loading projects...</div>
         </div>
       </div>
     );
@@ -45,7 +48,7 @@ export default function ProjectView() {
 
   return (
     <div className="min-h-screen">
-      <Sidebar />
+    <Sidebar />
     <div className={styles.projectView}>
       <header className={styles.header}>
         <h1 className={styles.title}>My Projects</h1>
