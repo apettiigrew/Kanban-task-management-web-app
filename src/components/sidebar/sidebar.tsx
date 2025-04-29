@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import styles from './sidebar.module.css';
-import ProjectModal from '../modals/project/create/project-modal';
-import UpdateProjectModal from '../modals/project/update/update-project-modal';
-import DeleteProjectModal from '../modals/project/delete/delete-project-modal';
+import ProjectModal from '@/components/modals/project/create/project-modal';
+import UpdateProjectModal from '@/components/modals/project/update/update-project-modal';
+import DeleteProjectModal from '@/components/modals/project/delete/delete-project-modal';
 
 interface Project {
   id: string;

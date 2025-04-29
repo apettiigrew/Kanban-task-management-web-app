@@ -18,6 +18,7 @@
   width: 100%;
   max-width: 480px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
 .deleteModal {
@@ -62,6 +63,11 @@
   color: #000112;
 }
 
+.input:focus {
+  outline: none;
+  border-color: #635FC7;
+}
+
 .textarea {
   padding: 0.5rem 1rem;
   border: 1px solid #E4EBFA;
@@ -72,26 +78,59 @@
   resize: vertical;
 }
 
+.textarea:focus {
+  outline: none;
+  border-color: #635FC7;
+}
+
 .buttonGroup {
   display: flex;
   gap: 1rem;
+  justify-content: flex-end;
   margin-top: 1rem;
 }
 
 .cancelButton {
+  padding: 0.75rem 1.5rem;
   background: rgba(99, 95, 199, 0.1);
   color: #635FC7;
   border: none;
-  padding: 0.75rem 1.5rem;
   border-radius: 24px;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
-  flex: 1;
 }
 
 .cancelButton:hover {
   background: rgba(99, 95, 199, 0.25);
+}
+
+.submitButton {
+  padding: 0.75rem 1.5rem;
+  background: #635FC7;
+  color: white;
+  border: none;
+  border-radius: 24px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submitButton:hover {
+  background: #A8A4FF;
+}
+
+.submitButton:disabled {
+  background: #A8A4FF;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #EA5555;
+  background-color: #FFE2E2;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
 }
 
 .deleteConfirmButton {
@@ -113,12 +152,6 @@
 .deleteConfirmButton:disabled {
   background-color: #FF9898;
   cursor: not-allowed;
-}
-
-.error {
-  color: #EA5555;
-  font-size: 0.875rem;
-  margin-bottom: 1rem;
 }
 
 .deleteMessage {

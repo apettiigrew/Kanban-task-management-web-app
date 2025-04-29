@@ -37,6 +37,9 @@ export default function ProjectModal({ isOpen, onClose, onProjectCreated }: Proj
 
   if (!isOpen) return null;
 
+  // Only create portal if we're in the browser
+  if (typeof window === 'undefined') return null;
+
   const modal = (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
