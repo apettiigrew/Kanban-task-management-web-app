@@ -1,44 +1,48 @@
-.container {
-  padding: 2rem;
-  height: 100%;
+.pageContent {
+  flex: 1;
+  min-height: 100vh;
+  background-color: #F4F7FD;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  margin-left: 300px;
+  width: calc(100% - 300px);
+  padding: 2rem;
 }
 
 .header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  background-color: white;
+  padding: 1.5rem 2rem;
+  margin: -2rem -2rem 2rem -2rem;
+  border-bottom: 1px solid #E4EBFA;
 }
 
 .title {
-  font-size: 2rem;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #000112;
+  margin-bottom: 0.5rem;
 }
 
 .description {
-  font-size: 1rem;
-  color: #666;
-  margin: 0;
+  color: #828FA3;
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 .loading {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   height: 100%;
-  font-size: 1.2rem;
-  color: #666;
+  color: #828FA3;
+  font-size: 1rem;
 }
 
 .error {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   height: 100%;
-  font-size: 1.2rem;
-  color: #dc2626;
+  color: #EA5555;
+  font-size: 1rem;
 } 
