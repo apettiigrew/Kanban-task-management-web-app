@@ -1,8 +1,8 @@
-import NextAuth from 'next-auth';
+import NextAuth, { AuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { UserService } from '@/lib/services/userService';
 
-const handler = NextAuth({
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -34,6 +34,8 @@ const handler = NextAuth({
           id: user.id,
           email: user.email,
           name: `${user.firstName} ${user.lastName}`,
+          firstName: user.firstName,
+          lastName: user.lastName,
         };
       }
     })
@@ -43,15 +45,18 @@ const handler = NextAuth({
   },
   session: {
     strategy: 'jwt',
-    // make this 1 hour
     maxAge: 60 * 60, // 1 hour
   },
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
         token.name = user.name;
+        token.firstName = user.firstName;
+        token.lastName = user.lastName;
       }
       return token;
     },
@@ -60,10 +65,14 @@ const handler = NextAuth({
         session.user.id = token.id as string;
         session.user.email = token.email ?? null;
         session.user.name = token.name ?? null;
+        session.user.firstName = token.firstName as string ?? null;
+        session.user.lastName = token.lastName as string ?? null;
       }
       return session;
     },
   },
-});
+};
+
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST }; 

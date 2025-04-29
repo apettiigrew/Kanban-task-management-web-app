@@ -1,9 +1,9 @@
 'use client';
 
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useActionState, useEffect } from 'react';
+import { useFormState, useFormStatus } from 'react-dom';
 import { createTask, updateTask } from '@/features/project/actions/task';
-import styles from './ProjectModal.module.css';
+import styles from './TaskModal.module.css';
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -18,83 +18,95 @@ interface TaskModalProps {
   };
 }
 
-const initialState = {
-  message: null,
-  success: false,
-};
+type ActionState = {
+  success: boolean;
+  task?: any;
+  error?: string;
+} | null;
 
-function SubmitButton({ isEdit }: { isEdit: boolean }) {
+function SubmitButton() {
   const { pending } = useFormStatus();
+  
   return (
-    <button type="submit" className={styles.submitButton} disabled={pending}>
-      {pending ? (isEdit ? 'Saving...' : 'Creating...') : isEdit ? 'Save Changes' : 'Create Task'}
+    <button 
+      type="submit" 
+      className={styles.submitButton}
+      disabled={pending}
+    >
+      {pending ? 'Saving...' : 'Save Task'}
     </button>
   );
 }
 
 export default function TaskModal({ isOpen, onClose, onTaskSaved, projectId, task }: TaskModalProps) {
-  const isEdit = !!task;
-  const [state, formAction] = useActionState(isEdit ? updateTask : createTask, initialState);
+  const initialState: ActionState = null;
 
-  // Call onTaskSaved on success
-  if (state.success && isOpen) {
-    onTaskSaved();
-  }
+  const [state, formAction] = useActionState(task ? updateTask : createTask,initialState);
+
+  useEffect(() => {
+    if (state?.success) {
+      onTaskSaved();
+    }
+  }, [state?.success, onTaskSaved]);
 
   if (!isOpen) return null;
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
-        <h2 className={styles.modalTitle}>{isEdit ? 'Edit Task' : 'Create Task'}</h2>
+        <h2 className={styles.modalTitle}>{task ? 'Edit Task' : 'Create Task'}</h2>
         <form action={formAction} className={styles.form}>
-          {isEdit && <input type="hidden" name="id" value={task.id} />}
           <input type="hidden" name="projectId" value={projectId} />
+          {task && <input type="hidden" name="id" value={task.id} />}
+          {state?.error && (
+            <div className={styles.error}>{state.error}</div>
+          )}
           <div className={styles.formGroup}>
-            <label htmlFor="title" className={styles.label}>Title</label>
+            <label htmlFor="title" className={styles.label}>
+              Task Title
+            </label>
             <input
               type="text"
               id="title"
               name="title"
               className={styles.input}
-              defaultValue={task?.title || ''}
-              placeholder="e.g. Design login page"
+              placeholder="e.g. Research competitors"
+              defaultValue={task?.title}
               required
             />
           </div>
           <div className={styles.formGroup}>
-            <label htmlFor="description" className={styles.label}>Description</label>
+            <label htmlFor="description" className={styles.label}>
+              Description
+            </label>
             <textarea
               id="description"
               name="description"
               className={styles.textarea}
-              defaultValue={task?.description || ''}
-              placeholder="e.g. Implement the login UI and validation"
-              required
+              placeholder="e.g. Analyze top 5 competitors in our market"
+              defaultValue={task?.description}
             />
           </div>
           <div className={styles.formGroup}>
-            <label htmlFor="status" className={styles.label}>Status</label>
+            <label htmlFor="status" className={styles.label}>
+              Status
+            </label>
             <select
               id="status"
               name="status"
-              className={styles.input}
+              className={styles.select}
               defaultValue={task?.status || 'todo'}
-              required
             >
-              <option value="todo">To Do</option>
+              <option value="todo">Todo</option>
               <option value="doing">Doing</option>
               <option value="done">Done</option>
             </select>
           </div>
-          {state.error && !state.success && (
-            <div className={styles.error}>{state.error}</div>
-          )}
           <div className={styles.buttonGroup}>
             <button type="button" onClick={onClose} className={styles.cancelButton}>
               Cancel
             </button>
-            <SubmitButton isEdit={isEdit} />
+            <SubmitButton />
           </div>
         </form>
       </div>

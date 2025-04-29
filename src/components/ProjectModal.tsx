@@ -13,8 +13,9 @@ interface ProjectModalProps {
 } 
 
 const initialState = {
-  message: null,
   success: false,
+  error: null,
+  project: []
 };
 
 function SubmitButton() {

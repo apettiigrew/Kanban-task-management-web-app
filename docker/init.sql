@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS "projects" (
     deleted_at TIMESTAMP WITH TIME ZONE,
     CONSTRAINT fk_user
         FOREIGN KEY(user_id) 
-        REFERENCES "User"(id)
+        REFERENCES "users"(id)
         ON DELETE CASCADE
 );
 
@@ -38,6 +38,6 @@ CREATE TABLE IF NOT EXISTS "tasks" (
     deleted_at TIMESTAMP WITH TIME ZONE,
     CONSTRAINT fk_project
         FOREIGN KEY(project_id) 
-        REFERENCES "Project"(id)
+        REFERENCES "projects"(id)
         ON DELETE CASCADE
 );

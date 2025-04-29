@@ -78,25 +78,7 @@ export default function LoginForm() {
         />
       </div>
 
-      <div className={styles.checkboxGroup}>
-        <div className={styles.rememberMe}>
-          <input
-            id="remember-me"
-            name="remember-me"
-            type="checkbox"
-            className={styles.checkbox}
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
-          />
-          <label htmlFor="remember-me" className={styles.checkboxLabel}>
-            Remember Me
-          </label>
-        </div>
-
-        <Link href="/forgot-password" className={styles.forgotPassword}>
-          Forgot Password?
-        </Link>
-      </div>
+      
 
       {error && <div className={styles.error}>{error}</div>}
 

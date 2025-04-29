@@ -75,17 +75,46 @@ export default function ProjectKanbanBoard({ projectId }: ProjectKanbanBoardProp
 
   const onDragEnd = async (result: DropResult) => {
     const { destination, source, draggableId } = result;
-    if (!destination || destination.droppableId === source.droppableId) return;
-    const task = tasks.find((t) => t.id === draggableId);
+    
+    if (!destination) return;
+
+    const task = tasks.find((t) => t.id == draggableId);
+    
     if (!task) return;
-    // Update status in backend
+    
+    console.log("destination", destination);
+    // Create new task array with updated status
+    const updatedTasks = tasks.map(t => 
+      t.id == draggableId 
+        ? { ...t, status: destination.droppableId as 'todo' | 'doing' | 'done' }
+        : t
+    );
+
+    console.log("updatedTasks", updatedTasks);
+    // Update UI immediately
+    setTasks(updatedTasks);
+
+   
+    // Update backend
     const formData = new FormData();
     formData.append('id', task.id);
     formData.append('projectId', projectId);
     formData.append('status', destination.droppableId);
-    await updateTask(null, formData);
-    fetchTasks();
+    formData.append('title', task.title);
+    formData.append('description', task.description || '');
+
+    try {
+      await updateTask(null, formData);
+    } catch (error) {
+      console.error('Error updating task:', error);
+      // Revert to original state if update fails
+      setTasks(tasks);
+    }
   };
+
+  if (isLoading) {
+    return <div className={styles.loading}>Loading tasks...</div>;
+  }
 
   return (
     <div className={styles.kanbanBoard}>
@@ -119,13 +148,14 @@ export default function ProjectKanbanBoard({ projectId }: ProjectKanbanBoardProp
                     {tasks
                       .filter((t) => t.status === col.key)
                       .map((task, idx) => (
-                        <Draggable draggableId={task.id} index={idx} key={task.id}>
-                          {(provided) => (
+                        <Draggable key={task.id} draggableId={task.id+""} index={idx}>
+                          {(provided, snapshot) => (
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              className={styles.taskCard}
+                              onClick={() => openEditTaskModal(task)}
+                              className={`${styles.taskCard} ${snapshot.isDragging ? styles.isDragging : ''}`}
                             >
                               <div className={styles.taskTitle}>{task.title}</div>
                               <div className={styles.taskDescription}>{task.description}</div>
@@ -145,7 +175,7 @@ export default function ProjectKanbanBoard({ projectId }: ProjectKanbanBoardProp
           ))}
         </div>
       </DragDropContext>
-      {/* Modals for create/edit/delete task */}
+     
       {isTaskModalOpen && (modalType === 'create' || modalType === 'edit') && (
         <TaskModal
           isOpen={isTaskModalOpen}

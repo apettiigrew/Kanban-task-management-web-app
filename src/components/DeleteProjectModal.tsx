@@ -1,69 +1,84 @@
 'use client';
 
-import { useActionState, useEffect } from 'react';
-import { useFormStatus } from 'react-dom';
-import { deleteProject } from '@/features/project/actions/project';
-import styles from './ProjectModal.module.css';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Project } from '@/types/project';
+import styles from './DeleteProjectModal.module.css';
 
 interface DeleteProjectModalProps {
+  project: Project;
   isOpen: boolean;
   onClose: () => void;
-  onProjectDeleted: () => void;
-  project: {
-    id: string;
-    title: string;
-  };
 }
 
-const initialState = {
-  message: null,
-  success: false,
-};
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  
-  return (
-    <button 
-      type="submit" 
-      className={styles.deleteConfirmButton}
-      disabled={pending}
-    >
-      {pending ? 'Deleting...' : 'Delete'}
-    </button>
-  );
-}
-
-export default function DeleteProjectModal({ isOpen, onClose, onProjectDeleted, project }: DeleteProjectModalProps) {
-  const [state, formAction] = useActionState(deleteProject, initialState);
-
-  useEffect(() => {
-    if (state.success) {
-      onProjectDeleted();
-    }
-  }, [state.success, onProjectDeleted]);
+export default function DeleteProjectModal({ project, isOpen, onClose }: DeleteProjectModalProps) {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
+  const handleDelete = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to delete project');
+      }
+
+      router.refresh();
+      router.push('/projects'); // Redirect to projects list after deletion
+      onClose();
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      setError(error instanceof Error ? error.message : 'Failed to delete project');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.deleteModal} onClick={e => e.stopPropagation()}>
+      <div className={styles.modal} onClick={e => e.stopPropagation()}>
         <h2 className={styles.modalTitle}>Delete Project</h2>
-        <form action={formAction} className={styles.form}>
-          <input type="hidden" name="id" value={project.id} />
-          {state.error && !state.success && (
-            <div className={styles.error}>{state.error}</div>
-          )}
-          <p className={styles.deleteMessage}>
-            Are you sure you want to delete "{project.title}"? This action cannot be undone.
-          </p>
-          <div className={styles.buttonGroup}>
-            <button type="button" onClick={onClose} className={styles.cancelButton}>
-              Cancel
-            </button>
-            <SubmitButton />
+        
+        {error && (
+          <div className={styles.error}>
+            {error}
           </div>
-        </form>
+        )}
+
+        <p className={styles.deleteMessage}>
+          Are you sure you want to delete "{project.title}"? This action cannot be undone.
+        </p>
+
+        <div className={styles.buttonGroup}>
+          <button
+            type="button"
+            onClick={onClose}
+            className={styles.cancelButton}
+            disabled={isLoading}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            className={styles.deleteButton}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Deleting...' : 'Delete Project'}
+          </button>
+        </div>
       </div>
     </div>
   );
