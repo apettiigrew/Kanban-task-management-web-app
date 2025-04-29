@@ -12,6 +12,7 @@ const initialState = {
   message: '',
 };
 
+// Register page
 export default function RegisterPage() {
   const [state, formAction] = useActionState(registerUser, initialState);
   const router = useRouter();
