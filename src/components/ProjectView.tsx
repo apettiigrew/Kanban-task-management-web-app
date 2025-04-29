@@ -5,12 +5,15 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from './ProjectView.module.css';
 import Sidebar from './Sidebar';
+import UpdateProjectModal from './UpdateProjectModal';
+import DeleteProjectModal from './DeleteProjectModal';
 
 interface Project {
   id: string;
   title: string;
   description: string;
   createdAt: Date;
+  updatedAt: Date;
   userId: string;
 }
 
@@ -18,6 +21,9 @@ export default function ProjectView() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -48,6 +54,16 @@ export default function ProjectView() {
 
     fetchProjects();
   }, [router]);
+
+  const handleUpdateClick = (project: Project) => {
+    setSelectedProject(project);
+    setIsUpdateModalOpen(true);
+  };
+
+  const handleDeleteClick = (project: Project) => {
+    setSelectedProject(project);
+    setIsDeleteModalOpen(true);
+  };
 
   if (isLoading) {
     return (
@@ -128,26 +144,62 @@ export default function ProjectView() {
           ) : (
             <div className={styles.projectGrid}>
               {projects.map((project) => (
-                <Link 
-                  key={project.id} 
-                  href={`/projects/${project.id}`}
-                  className={styles.projectCard}
-                >
-                  <h3 className={styles.projectTitle}>{project.title}</h3>
-                  <p className={styles.projectDescription}>
-                    {project.description || 'No description provided'}
-                  </p>
-                  <div className={styles.projectMeta}>
-                    <span className={styles.projectDate}>
-                      Created {new Date(project.createdAt).toLocaleDateString()}
-                    </span>
+                <div key={project.id} className={styles.projectCard}>
+                  <Link 
+                    href={`/projects/${project.id}`}
+                    className={styles.projectLink}
+                  >
+                    <h3 className={styles.projectTitle}>{project.title}</h3>
+                    <p className={styles.projectDescription}>
+                      {project.description || 'No description provided'}
+                    </p>
+                    <div className={styles.projectMeta}>
+                      <span className={styles.projectDate}>
+                        Created {new Date(project.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </Link>
+                  <div className={styles.projectActions}>
+                    <button
+                      onClick={() => handleUpdateClick(project)}
+                      className={styles.actionButton}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(project)}
+                      className={`${styles.actionButton} ${styles.deleteButton}`}
+                    >
+                      Delete
+                    </button>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           )}
         </main>
       </div>
+
+      {selectedProject && (
+        <>
+          <UpdateProjectModal
+            project={selectedProject}
+            isOpen={isUpdateModalOpen}
+            onClose={() => {
+              setIsUpdateModalOpen(false);
+              setSelectedProject(null);
+            }}
+          />
+          <DeleteProjectModal
+            project={selectedProject}
+            isOpen={isDeleteModalOpen}
+            onClose={() => {
+              setIsDeleteModalOpen(false);
+              setSelectedProject(null);
+            }}
+          />
+        </>
+      )}
     </div>
   );
 } 

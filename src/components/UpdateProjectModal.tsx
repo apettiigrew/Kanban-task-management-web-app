@@ -1,93 +1,111 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useActionState } from 'react';
-import { useFormStatus } from 'react-dom';
-import { updateProject } from '@/features/project/actions/project';
-import styles from './ProjectModal.module.css';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Project } from '@/types/project';
+import styles from './UpdateProjectModal.module.css';
 
 interface UpdateProjectModalProps {
+  project: Project;
   isOpen: boolean;
   onClose: () => void;
-  onProjectUpdated: () => void;
-  project: {
-    id: string;
-    title: string;
-    description: string;
-  };
 }
 
-const initialState = {
-  message: null,
-  success: false,
-};
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  
-  return (
-    <button 
-      type="submit" 
-      className={styles.submitButton}
-      disabled={pending}
-    >
-      {pending ? 'Updating...' : 'Update Project'}
-    </button>
-  );
-}
-
-export default function UpdateProjectModal({ isOpen, onClose, onProjectUpdated, project }: UpdateProjectModalProps) {
-  const [state, formAction] = useActionState(updateProject, initialState);
-
-  useEffect(() => {
-    if (state.success) {
-      onProjectUpdated();
-    }
-  }, [state.success, onProjectUpdated]);
+export default function UpdateProjectModal({ project, isOpen, onClose }: UpdateProjectModalProps) {
+  const router = useRouter();
+  const [title, setTitle] = useState(project.title);
+  const [description, setDescription] = useState(project.description || '');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, description }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update project');
+      }
+
+      router.refresh();
+      onClose();
+    } catch (error) {
+      console.error('Error updating project:', error);
+      setError(error instanceof Error ? error.message : 'Failed to update project');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
-        <h2 className={styles.modalTitle}>Update Project</h2>
-        <form action={formAction} className={styles.form}>
-          <input type="hidden" name="id" value={project.id} />
-          {state.error && !state.success && (
-            <div className={styles.error}>{state.error}</div>
-          )}
+        <h2 className={styles.modalTitle}>Edit Project</h2>
+        
+        {error && (
+          <div className={styles.error}>
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
             <label htmlFor="title" className={styles.label}>
-              Project Title
+              Title
             </label>
             <input
               type="text"
               id="title"
-              name="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               className={styles.input}
               placeholder="e.g. Marketing Campaign"
-              defaultValue={project.title}
               required
             />
           </div>
+
           <div className={styles.formGroup}>
             <label htmlFor="description" className={styles.label}>
-              Project Description
+              Description
             </label>
             <textarea
               id="description"
-              name="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               className={styles.textarea}
               placeholder="e.g. This project will handle our Q4 marketing initiatives"
-              defaultValue={project.description}
-              required
+              rows={3}
             />
           </div>
+
           <div className={styles.buttonGroup}>
-            <button type="button" onClick={onClose} className={styles.cancelButton}>
+            <button
+              type="button"
+              onClick={onClose}
+              className={styles.cancelButton}
+              disabled={isLoading}
+            >
               Cancel
             </button>
-            <SubmitButton />
+            <button
+              type="submit"
+              className={styles.submitButton}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Updating...' : 'Update Project'}
+            </button>
           </div>
         </form>
       </div>
