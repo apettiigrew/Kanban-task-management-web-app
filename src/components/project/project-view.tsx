@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import styles from './ProjectView.module.css';
-import Sidebar from './Sidebar';
-import UpdateProjectModal from './UpdateProjectModal';
-import DeleteProjectModal from './DeleteProjectModal';
+import styles from './project-view.module.css';
+import Sidebar from '../sidebar/sidebar';
+import UpdateProjectModal from '../modals/project/update/update-project-modal';
+import DeleteProjectModal from '../modals/project/delete/delete-project-modal';
 
 interface Project {
   id: string;

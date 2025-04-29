@@ -1,38 +1,59 @@
 'use client';
 
 import { useFormStatus } from 'react-dom';
-import { createProject } from '@/features/project/actions/project';
+import { updateProject } from '@/features/project/actions/project';
 import { useActionState } from 'react';
-import styles from './ProjectModal.module.css';
+import styles from './update-project-modal.module.css';
 import { createPortal } from 'react-dom';
 
-interface ProjectModalProps {
+interface Project {
+  id: string;
+  title: string;
+  description?: string;
+}
+
+interface UpdateProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onProjectCreated: () => void;
+  onProjectUpdated: () => void;
+  project: Project;
 }
+
+type ActionState = {
+  success: boolean;
+  project?: any;
+  error?: string;
+};
+
+const initialState: ActionState = {
+  success: false
+};
+
+const wrappedUpdateProject = async (_prevState: ActionState, formData: FormData) => {
+  const id = formData.get('id') as string;
+  return updateProject(id, Object.fromEntries(formData));
+};
 
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <button type="submit" className={styles.submitButton} disabled={pending}>
-      {pending ? 'Creating...' : 'Create Project'}
+      {pending ? 'Updating...' : 'Update Project'}
     </button>
   );
 }
 
-const initialState = {
-  success: false,
-  error: null,
-  project: null
-};
+export default function UpdateProjectModal({ 
+  isOpen, 
+  onClose, 
+  onProjectUpdated, 
+  project 
+}: UpdateProjectModalProps) {
+  const [state, formAction] = useActionState(wrappedUpdateProject, initialState);
 
-export default function ProjectModal({ isOpen, onClose, onProjectCreated }: ProjectModalProps) {
-  const [state, formAction] = useActionState(createProject, initialState);
-
-  // Call onProjectCreated on success
+  // Call onProjectUpdated on success
   if (state.success && isOpen) {
-    onProjectCreated();
+    onProjectUpdated();
   }
 
   if (!isOpen) return null;
@@ -40,8 +61,9 @@ export default function ProjectModal({ isOpen, onClose, onProjectCreated }: Proj
   const modal = (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
-        <h2 className={styles.modalTitle}>Create New Project</h2>
+        <h2 className={styles.modalTitle}>Update Project</h2>
         <form action={formAction} className={styles.form}>
+          <input type="hidden" name="id" value={project.id} />
           {state.error && !state.success && (
             <div className={styles.error}>{state.error}</div>
           )}
@@ -54,7 +76,7 @@ export default function ProjectModal({ isOpen, onClose, onProjectCreated }: Proj
               id="title"
               name="title"
               className={styles.input}
-              placeholder="e.g. Web Design"
+              defaultValue={project.title}
               required
             />
           </div>
@@ -66,7 +88,7 @@ export default function ProjectModal({ isOpen, onClose, onProjectCreated }: Proj
               id="description"
               name="description"
               className={styles.textarea}
-              placeholder="e.g. Design a responsive website for a client"
+              defaultValue={project.description}
             />
           </div>
           <div className={styles.buttonGroup}>

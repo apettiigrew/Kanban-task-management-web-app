@@ -1,8 +1,8 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import ProjectKanbanBoard from '@/components/ProjectKanbanBoard';
-import Sidebar from '@/components/Sidebar';
+import ProjectKanbanBoard from '@/components/kanbanboard/ProjectKanbanBoard';
+import Sidebar from '@/components/sidebar/sidebar';
 import styles from './projects-detail.module.css';
 
 interface Project {

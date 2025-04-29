@@ -3,7 +3,7 @@
 import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { deleteTask } from '@/features/project/actions/task';
-import styles from './ProjectModal.module.css';
+import styles from './delete-task-modal.module.css';
 
 interface DeleteTaskModalProps {
   isOpen: boolean;

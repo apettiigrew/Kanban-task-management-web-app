@@ -3,7 +3,7 @@
 import { useFormStatus } from 'react-dom';
 import { deleteProject } from '@/features/project/actions/project';
 import { useActionState } from 'react';
-import styles from './ProjectModal.module.css';
+import styles from './delete-project-modal.module.css';
 import { createPortal } from 'react-dom';
 
 interface Project {
