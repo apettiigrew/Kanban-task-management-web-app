@@ -36,7 +36,7 @@ const wrappedDeleteProject = async (_prevState: ActionState, formData: FormData)
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" className={styles.deleteConfirmButton} disabled={pending}>
+    <button type="submit" className={styles.deleteButton} disabled={pending}>
       {pending ? 'Deleting...' : 'Delete Project'}
     </button>
   );
@@ -58,18 +58,18 @@ export default function DeleteProjectModal({
   if (!isOpen) return null;
 
   const modal = (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.deleteModal} onClick={e => e.stopPropagation()}>
-        <h2 className={styles.modalTitle}>Delete Project</h2>
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+        <h2 className={styles.title}>Delete Project</h2>
         <form action={formAction} className={styles.form}>
           <input type="hidden" name="id" value={project.id} />
           {state.error && !state.success && (
             <div className={styles.error}>{state.error}</div>
           )}
-          <p className={styles.deleteMessage}>
+          <p className={styles.message}>
             Are you sure you want to delete &quot;{project.title}&quot;? This action cannot be undone.
           </p>
-          <div className={styles.buttonGroup}>
+          <div className={styles.buttons}>
             <button type="button" onClick={onClose} className={styles.cancelButton}>
               Cancel
             </button>
