@@ -77,8 +77,6 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       return Response.json({ error: 'Task ID is required' }, { status: 400 });
     }
 
-
-    
     await TaskService.deleteTask(params.id);
     
     return Response.json({ success: true });
