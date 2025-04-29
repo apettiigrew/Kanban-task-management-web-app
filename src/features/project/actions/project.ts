@@ -1,5 +1,6 @@
 'use server'
 
+import { getBaseUrl } from '@/lib/utils';
 import { CreateProjectDto, Project } from '@/types/project'
 import { headers } from 'next/headers';
 import { z } from 'zod'
@@ -19,10 +20,6 @@ const ProjectSchema = z.object({
   description: z.string().max(500, 'Description must be less than 500 characters').optional(),
 })
 
-function getBaseUrl() {
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
-}
 
 export async function createProject(
   prevState: { success: boolean; error: null | string; project: any },

@@ -1,67 +1,145 @@
 "use server";
 
+import { getBaseUrl } from '@/lib/utils';
 import { z } from 'zod';
-import { revalidatePath } from 'next/cache';
-import { createTask as dbCreateTask, updateTask as dbUpdateTask, deleteTask as dbDeleteTask, getTasksByProject as dbGetTasksByProject } from '@/lib/db';
+import { headers } from 'next/headers';
 
 const TaskSchema = z.object({
-  projectId: z.string().min(1, 'Project ID is required'),
   title: z.string().min(1, 'Title is required').max(100, 'Title must be less than 100 characters'),
   description: z.string().max(500, 'Description must be less than 500 characters').optional(),
-  status: z.enum(['todo', 'doing', 'done']),
+  status: z.enum(['todo', 'doing', 'done']).default('todo'),
+  projectId: z.string().min(1, 'Project ID is required'),
 });
 
-export async function createTask(prevState: any, formData: FormData) {
+type ActionState = {
+  success: true;
+  task: any;
+  error?: undefined;
+} | {
+  success: false;
+  error: string;
+  task?: undefined;
+};
+
+export async function createTask(prevState: ActionState | null,formData: FormData): Promise<ActionState> {
   try {
-    const validatedFields = TaskSchema.safeParse({
-      projectId: formData.get('projectId'),
+    const validatedFields = TaskSchema.parse({
       title: formData.get('title'),
       description: formData.get('description'),
-      status: formData.get('status'),
+      status: formData.get('status') || 'todo',
+      projectId: formData.get('projectId'),
     });
-    if (!validatedFields.success) {
-      return { error: validatedFields.error.issues[0].message };
+
+    const headersList = await headers();
+    const response = await fetch(`${getBaseUrl()}/api/tasks`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: headersList.get('cookie') || '',
+      },
+      body: JSON.stringify(validatedFields),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to create task');
     }
-    const { projectId, title, description, status } = validatedFields.data;
-    await dbCreateTask({ projectId, title, description: description || '', status });
-    revalidatePath(`/projects/${projectId}`);
-    return { success: true };
+
+    const data = await response.json();
+    return { success: true, task: data.task };
   } catch (error) {
-    return { error: 'Failed to create task. Please try again.' };
+    console.error('Error creating task:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to create task',
+    };
   }
 }
 
-export async function updateTask(prevState: any, formData: FormData) {
+export async function updateTask(
+  prevState: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
   try {
-    const id = formData.get('id') as string;
-    const title = formData.get('title') as string | undefined;
-    const description = formData.get('description') as string | undefined;
-    const status = formData.get('status') as 'todo' | 'doing' | 'done' | undefined;
-    await dbUpdateTask(id, { title, description, status });
-    revalidatePath(`/projects/${formData.get('projectId')}`);
-    return { success: true };
+    const taskId = formData.get('id');
+    const headersList = await headers();
+    const response = await fetch(`${getBaseUrl()}/api/tasks/${taskId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: headersList.get('cookie') || '',
+      },
+      body: JSON.stringify({
+        title: formData.get('title'),
+        description: formData.get('description'),
+        status: formData.get('status'),
+        projectId: formData.get('projectId'),
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to update task');
+    }
+
+    const data = await response.json();
+    return { success: true, task: data.task };
   } catch (error) {
-    return { error: 'Failed to update task. Please try again.' };
+    console.error('Error updating task:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update task',
+    };
   }
 }
 
-export async function deleteTask(prevState: any, formData: FormData) {
+export async function deleteTask(
+  prevState: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
   try {
-    const id = formData.get('id') as string;
-    const projectId = formData.get('projectId') as string;
-    await dbDeleteTask(id);
-    revalidatePath(`/projects/${projectId}`);
-    return { success: true };
+    const taskId = formData.get('id');
+    const headersList = await headers();
+    const response = await fetch(`${getBaseUrl()}/api/tasks/${taskId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: headersList.get('cookie') || '',
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to delete task');
+    }
+
+    return { success: true, task: null };
   } catch (error) {
-    return { error: 'Failed to delete task. Please try again.' };
+    console.error('Error deleting task:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to delete task',
+    };
   }
 }
 
 export async function getTasksByProject(projectId: string) {
   try {
-    const tasks = await dbGetTasksByProject(projectId);
-    return { success: true, tasks };
+    const headersList = await headers();
+    const response = await fetch(`${getBaseUrl()}/api/projects/${projectId}/tasks`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: headersList.get('cookie') || '',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch tasks');
+    }
+
+    return await response.json();
   } catch (error) {
-    return { success: false, error: 'Failed to fetch tasks. Please try again.' };
+    console.error('Error fetching tasks:', error);
+    throw error;
   }
 } 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import ProjectKanbanBoard from '@/components/ProjectKanbanBoard';
 import Sidebar from '@/components/Sidebar';
 import styles from './projects-detail.module.css';
@@ -11,15 +11,21 @@ interface Project {
   description: string;
 }
 
-export default function ProjectPage({ params }: { params: { id: string } }) {
+type ProjectPageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default function ProjectPage({ params }: ProjectPageProps) {
+  const { id } =  use(params);
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  
   useEffect(() => {
     async function fetchProject() {
       try {
-        const response = await fetch(`/api/projects/${params.id}`);
+        const response = await fetch(`/api/projects/${id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch project');
         }
@@ -33,7 +39,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
     }
 
     fetchProject();
-  }, [params.id]);
+  }, [id]);
 
   if (loading) {
     return (
@@ -67,7 +73,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             <p className={styles.description}>{project.description}</p>
           )}
         </div>
-        <ProjectKanbanBoard projectId={params.id} />
+        <ProjectKanbanBoard projectId={id} />
       </div>
     </div>
   );
