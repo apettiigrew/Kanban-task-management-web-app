@@ -1,6 +1,7 @@
 'use server'
 
 import { CreateProjectDto, Project } from '@/types/project'
+import { headers } from 'next/headers';
 import { z } from 'zod'
 
 type ActionState = {
@@ -18,6 +19,11 @@ const ProjectSchema = z.object({
   description: z.string().max(500, 'Description must be less than 500 characters').optional(),
 })
 
+function getBaseUrl() {
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
+}
+
 export async function createProject(
   prevState: { success: boolean; error: null | string; project: any },
   formData: FormData
@@ -28,10 +34,12 @@ export async function createProject(
       description: formData.get('description') as string
     };
     
-    const response = await fetch('http://localhost:3000/api/projects', {
+    const headersList = await headers();
+    const response = await fetch(`${getBaseUrl()}/api/projects`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Cookie: headersList.get('cookie') || '',
       },
       body: JSON.stringify(data),
     });
@@ -51,10 +59,12 @@ export async function createProject(
 
 export async function getProjects() {
   try {
-    const response = await fetch('http://localhost:3000/api/projects', {
+    const headersList = await headers();
+    const response = await fetch(`${getBaseUrl()}/api/projects`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        Cookie: headersList.get('cookie') || '',
       },
     });
 
@@ -72,10 +82,12 @@ export async function getProjects() {
 
 export async function getProject(id: string) {
   try {
-    const response = await fetch(`http://localhost:3000/api/projects/${id}`, {
+    const headersList = await headers();
+    const response = await fetch(`${getBaseUrl()}/api/projects/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        Cookie: headersList.get('cookie') || '',
       },
     });
 
@@ -93,10 +105,12 @@ export async function getProject(id: string) {
 
 export async function updateProject(id: string, data: Partial<CreateProjectDto>) {
   try {
-    const response = await fetch(`http://localhost:3000/api/projects/${id}`, {
+    const headersList = await headers();
+    const response = await fetch(`${getBaseUrl()}/api/projects/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        Cookie: headersList.get('cookie') || '',
       },
       body: JSON.stringify(data),
     });
@@ -116,10 +130,12 @@ export async function updateProject(id: string, data: Partial<CreateProjectDto>)
 
 export async function deleteProject(id: string) {
   try {
-    const response = await fetch(`http://localhost:3000/api/projects/${id}`, {
+    const headersList = await headers();
+    const response = await fetch(`${getBaseUrl()}/api/projects/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
+        Cookie: headersList.get('cookie') || '',
       },
     });
 
