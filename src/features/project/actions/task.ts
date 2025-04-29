@@ -56,11 +56,9 @@ export async function createTask(prevState: ActionState | null,formData: FormDat
   }
 }
 
-export async function updateTask(
-  prevState: ActionState | null,
-  formData: FormData
-): Promise<ActionState> {
+export async function updateTask(prevState: ActionState | null,formData: FormData): Promise<ActionState> {
   try {
+    
     const taskId = formData.get('id');
     const headersList = await headers();
     const response = await fetch(`${getBaseUrl()}/api/tasks/${taskId}`, {

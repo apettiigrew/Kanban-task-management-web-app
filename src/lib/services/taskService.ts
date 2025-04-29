@@ -17,6 +17,12 @@ export interface CreateTaskDto {
   status: 'todo' | 'doing' | 'done';
 }
 
+export interface UpdateTaskDto {
+  title?: string;
+  description?: string;
+  status?: 'todo' | 'doing' | 'done';
+}
+
 export class TaskService {
   static async createTask(taskData: CreateTaskDto): Promise<Task> {
     const { projectId, title, description, status } = taskData;
@@ -52,6 +58,31 @@ export class TaskService {
     } catch (error) {
       console.error('Error fetching tasks:', error);
       throw new Error('Failed to fetch tasks');
+    }
+  }
+
+  static async updateTask(taskId: string, projectId: string, updates: UpdateTaskDto): Promise<Task> {
+    try {
+      const result = await pool.query(
+        `UPDATE tasks
+         SET title = COALESCE($1, title),
+             description = COALESCE($2, description),
+             status = COALESCE($3, status),
+             updated_at = CURRENT_TIMESTAMP
+         WHERE id = $4 AND project_id = $5
+         RETURNING id, project_id as "projectId", title, description, status, 
+                   created_at as "createdAt", updated_at as "updatedAt"`,
+        [updates.title, updates.description, updates.status, taskId, projectId]
+      );
+
+      if (result.rows.length === 0) {
+        throw new Error('Task not found');
+      }
+      
+      return result.rows[0];
+    } catch (error) {
+      console.error('Error updating task:', error);
+      throw new Error('Failed to update task');
     }
   }
 } 
