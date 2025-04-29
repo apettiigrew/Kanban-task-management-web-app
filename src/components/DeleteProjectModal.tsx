@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Project } from '@/types/project';
+import styles from './DeleteProjectModal.module.css';
 
 interface DeleteProjectModalProps {
   project: Project;
@@ -46,25 +47,25 @@ export default function DeleteProjectModal({ project, isOpen, onClose }: DeleteP
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h2 className="text-xl font-bold mb-4">Delete Project</h2>
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+        <h2 className={styles.modalTitle}>Delete Project</h2>
         
         {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
+          <div className={styles.error}>
             {error}
           </div>
         )}
 
-        <p className="mb-6 text-gray-600">
+        <p className={styles.deleteMessage}>
           Are you sure you want to delete "{project.title}"? This action cannot be undone.
         </p>
 
-        <div className="flex justify-end gap-3">
+        <div className={styles.buttonGroup}>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+            className={styles.cancelButton}
             disabled={isLoading}
           >
             Cancel
@@ -72,7 +73,7 @@ export default function DeleteProjectModal({ project, isOpen, onClose }: DeleteP
           <button
             type="button"
             onClick={handleDelete}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+            className={styles.deleteButton}
             disabled={isLoading}
           >
             {isLoading ? 'Deleting...' : 'Delete Project'}
