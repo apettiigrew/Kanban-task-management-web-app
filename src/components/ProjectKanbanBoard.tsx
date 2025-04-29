@@ -154,6 +154,7 @@ export default function ProjectKanbanBoard({ projectId }: ProjectKanbanBoardProp
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
+                              onClick={() => openEditTaskModal(task)}
                               className={`${styles.taskCard} ${snapshot.isDragging ? styles.isDragging : ''}`}
                             >
                               <div className={styles.taskTitle}>{task.title}</div>
