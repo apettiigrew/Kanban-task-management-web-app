@@ -178,7 +178,6 @@ export default function ProjectView() {
               setSelectedProject(null);
             }}
             onProjectDeleted={() => {
-              // router.refresh();
               refetchProjects();
               setIsDeleteModalOpen(false);
               setSelectedProject(null);

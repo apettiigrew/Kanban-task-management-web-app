@@ -5,6 +5,7 @@ import { createProject } from '@/features/project/actions/project';
 import { useActionState } from 'react';
 import styles from './project-modal.module.css';
 import { createPortal } from 'react-dom';
+import { useEffect } from 'react';
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -30,10 +31,11 @@ const initialState = {
 export default function ProjectModal({ isOpen, onClose, onProjectCreated }: ProjectModalProps) {
   const [state, formAction] = useActionState(createProject, initialState);
 
-  // Call onProjectCreated on success
-  if (state.success && isOpen) {
-    onProjectCreated();
-  }
+  useEffect(() => {
+    if (state.success && isOpen) {
+      onProjectCreated();
+    }
+  }, [state.success, isOpen, onProjectCreated]);
 
   if (!isOpen) return null;
 

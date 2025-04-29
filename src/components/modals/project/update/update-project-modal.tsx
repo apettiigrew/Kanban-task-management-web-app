@@ -5,12 +5,8 @@ import { updateProject } from '@/features/project/actions/project';
 import { useActionState } from 'react';
 import styles from './update-project-modal.module.css';
 import { createPortal } from 'react-dom';
-
-interface Project {
-  id: string;
-  title: string;
-  description?: string;
-}
+import { useEffect } from 'react';
+import { Project } from '@/types/project';
 
 interface UpdateProjectModalProps {
   isOpen: boolean;
@@ -51,10 +47,11 @@ export default function UpdateProjectModal({
 }: UpdateProjectModalProps) {
   const [state, formAction] = useActionState(wrappedUpdateProject, initialState);
 
-  // Call onProjectUpdated on success
-  if (state.success && isOpen) {
-    onProjectUpdated();
-  }
+  useEffect(() => {
+    if (state.success && isOpen) {
+      onProjectUpdated();
+    }
+  }, [state.success, isOpen, onProjectUpdated]);
 
   if (!isOpen) return null;
 
