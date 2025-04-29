@@ -9,12 +9,12 @@ import UpdateProjectModal from '../modals/project/update/update-project-modal';
 import DeleteProjectModal from '../modals/project/delete/delete-project-modal';
 import AppButton from '../button/app-button';
 import ProjectModal from '../modals/project/create/project-modal';
-import { useProjects } from '@/hooks/useProject';
 import type { Project } from '@/types/project';
+import { useProjectContext } from '@/providers/ProjectContextProvider';
 
 export default function ProjectView() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { projects, loading, error, refetch } = useProjects();
+  const { projects, loading, error, refetchProjects } = useProjectContext();
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -50,7 +50,7 @@ export default function ProjectView() {
 
   const handleProjectCreated = useCallback(() => {
     setIsModalOpen(false);
-    refetch();
+    refetchProjects();
   }, []);
 
   const handleUpdateClick = (project: Project) => {
@@ -178,7 +178,8 @@ export default function ProjectView() {
               setSelectedProject(null);
             }}
             onProjectDeleted={() => {
-              router.refresh();
+              // router.refresh();
+              refetchProjects();
               setIsDeleteModalOpen(false);
               setSelectedProject(null);
             }}

@@ -2,6 +2,7 @@
 
 import { getBaseUrl } from '@/lib/utils';
 import { CreateProjectDto, Project } from '@/types/project'
+import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { z } from 'zod'
 
@@ -46,6 +47,7 @@ export async function createProject(
       throw new Error(error.error || 'Failed to create project in actions/project.ts');
     }
 
+    revalidatePath('/projects');
     const result = await response.json();
     return { success: true, error: null, project: result.project };
   } catch (error) {
@@ -140,7 +142,7 @@ export async function deleteProject(id: string) {
       const error = await response.json();
       throw new Error(error.error || 'Failed to delete project');
     }
-
+    revalidatePath('/projects');
     return { success: true };
   } catch (error) {
     console.error('Error deleting project:', error);

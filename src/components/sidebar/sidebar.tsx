@@ -7,54 +7,36 @@ import styles from './sidebar.module.css';
 import ProjectModal from '@/components/modals/project/create/project-modal';
 import UpdateProjectModal from '@/components/modals/project/update/update-project-modal';
 import DeleteProjectModal from '@/components/modals/project/delete/delete-project-modal';
+import { useProjectContext } from '@/providers/ProjectContextProvider';
+import { Project } from '@/types/project';
 
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  createdAt: Date;
-}
+
 
 export default function Sidebar() {
   const { data: session } = useSession();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);  
+  const { projects, loading, error, refetchProjects, setProjects } = useProjectContext();
 
-  const fetchProjects = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/api/projects');
-      if (!response.ok) {
-        throw new Error('Failed to fetch projects');
-      }
-      const data = await response.json();
-      setProjects(data.projects);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchProjects();
-  }, []);
 
   const handleProjectCreated = useCallback(() => {
     setIsModalOpen(false);
-    fetchProjects();
+    refetchProjects();
   }, []);
 
   const handleProjectUpdated = useCallback(() => {
     setIsUpdateModalOpen(false);
     setSelectedProject(null);
-    fetchProjects();
+    refetchProjects();
   }, []);
 
   const handleProjectDeleted = useCallback(() => {
     setIsDeleteModalOpen(false);
     setSelectedProject(null);
-    fetchProjects();
+    refetchProjects();
+    
   }, []);
 
   const handleProjectClick = useCallback((project: Project) => {

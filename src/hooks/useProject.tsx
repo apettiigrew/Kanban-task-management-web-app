@@ -25,5 +25,5 @@ export function useProjects() {
     fetchProjects();
   }, [fetchProjects]);
 
-  return { projects, loading, error, refetch: fetchProjects };
+  return { projects, loading, error, fetchProjects, setProjects };
 }

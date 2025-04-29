@@ -5,11 +5,8 @@ import { deleteProject } from '@/features/project/actions/project';
 import { useActionState } from 'react';
 import styles from './delete-project-modal.module.css';
 import { createPortal } from 'react-dom';
+import { Project } from '@/types/project';
 
-interface Project {
-  id: string;
-  title: string;
-}
 
 interface DeleteProjectModalProps {
   isOpen: boolean;
@@ -49,8 +46,6 @@ export default function DeleteProjectModal({
   project 
 }: DeleteProjectModalProps) {
   const [state, formAction] = useActionState(wrappedDeleteProject, initialState);
-
-  // Call onProjectDeleted on success
   if (state.success && isOpen) {
     onProjectDeleted();
   }
