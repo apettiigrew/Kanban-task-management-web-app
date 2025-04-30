@@ -161,7 +161,15 @@ export default function ProjectKanbanBoard({ projectId }: ProjectKanbanBoardProp
                               <div className={styles.taskDescription}>{task.description}</div>
                               <div className={styles.taskActions}>
                                 <button onClick={() => openEditTaskModal(task)} className={styles.editButton}>Edit</button>
-                                <button onClick={() => openDeleteTaskModal(task)} className={styles.deleteButton}>Delete</button>
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openDeleteTaskModal(task);
+                                  }} 
+                                  className={styles.deleteButton}
+                                >
+                                  Delete
+                                </button>
                               </div>
                             </div>
                           )}

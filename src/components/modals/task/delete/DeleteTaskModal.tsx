@@ -4,56 +4,72 @@ import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { deleteTask } from '@/features/project/actions/task';
 import styles from './delete-task-modal.module.css';
+import { createPortal } from 'react-dom';
+import { useEffect } from 'react';
+
+interface Task {
+  id: string;
+  title: string;
+}
 
 interface DeleteTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   onTaskDeleted: () => void;
   projectId: string;
-  task: {
-    id: string;
-    title: string;
-  };
+  task: Task;
 }
 
-const initialState = {
-  success: false,
-  task: null
+type ActionState = {
+  success: boolean;
+  task?: any;
+  error?: string;
+};
+
+const initialState: ActionState = {
+  success: false
 };
 
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" className={styles.deleteConfirmButton} disabled={pending}>
-      {pending ? 'Deleting...' : 'Delete'}
+    <button type="submit" className={styles.deleteButton} disabled={pending}>
+      {pending ? 'Deleting...' : 'Delete Task'}
     </button>
   );
 }
 
-export default function DeleteTaskModal({ isOpen, onClose, onTaskDeleted, projectId, task }: DeleteTaskModalProps) {
+export default function DeleteTaskModal({ 
+  isOpen, 
+  onClose, 
+  onTaskDeleted, 
+  projectId,
+  task 
+}: DeleteTaskModalProps) {
   const [state, formAction] = useActionState(deleteTask, initialState);
 
-  // Call onTaskDeleted on success
-  if (state.success && isOpen) {
-    onTaskDeleted();
-  }
+  useEffect(() => {
+    if (state.success && isOpen) {
+      onTaskDeleted();
+    }
+  }, [state.success, isOpen, onTaskDeleted]);
 
   if (!isOpen) return null;
 
-  return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.deleteModal} onClick={e => e.stopPropagation()}>
-        <h2 className={styles.modalTitle}>Delete Task</h2>
+  const modal = (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={e => e.stopPropagation()}>
+        <h2 className={styles.title}>Delete Task</h2>
         <form action={formAction} className={styles.form}>
           <input type="hidden" name="id" value={task.id} />
           <input type="hidden" name="projectId" value={projectId} />
           {state.error && !state.success && (
             <div className={styles.error}>{state.error}</div>
           )}
-          <p className={styles.deleteMessage}>
-            Are you sure you want to delete "{task.title}"? This action cannot be undone.
+          <p className={styles.message}>
+            Are you sure you want to delete &quot;{task.title}&quot;? This action cannot be undone.
           </p>
-          <div className={styles.buttonGroup}>
+          <div className={styles.buttons}>
             <button type="button" onClick={onClose} className={styles.cancelButton}>
               Cancel
             </button>
@@ -63,4 +79,6 @@ export default function DeleteTaskModal({ isOpen, onClose, onTaskDeleted, projec
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 } 
