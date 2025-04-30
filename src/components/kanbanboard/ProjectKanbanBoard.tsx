@@ -82,7 +82,6 @@ export default function ProjectKanbanBoard({ projectId }: ProjectKanbanBoardProp
     
     if (!task) return;
     
-    console.log("destination", destination);
     // Create new task array with updated status
     const updatedTasks = tasks.map(t => 
       t.id == draggableId 
@@ -90,7 +89,7 @@ export default function ProjectKanbanBoard({ projectId }: ProjectKanbanBoardProp
         : t
     );
 
-    console.log("updatedTasks", updatedTasks);
+    
     // Update UI immediately
     setTasks(updatedTasks);
 

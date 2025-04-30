@@ -11,8 +11,11 @@ import { useProjectContext } from '@/providers/ProjectContextProvider';
 import { Project } from '@/types/project';
 
 
+interface SidebarProps {
+  onProjectDeleted?: () => void | undefined;
+}
 
-export default function Sidebar() {
+export default function Sidebar({ onProjectDeleted }: SidebarProps) {
   const { data: session } = useSession();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -35,6 +38,7 @@ export default function Sidebar() {
   const handleProjectDeleted = useCallback(() => {
     setIsDeleteModalOpen(false);
     setSelectedProject(null);
+    onProjectDeleted?.();
     refetchProjects();
     
   }, []);
