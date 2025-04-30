@@ -1,13 +1,14 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useCallback, ReactNode } from 'react';
 import type { Project } from '@/types/project';
 import { useProjects } from '@/hooks/useProject';
+import { useSession } from 'next-auth/react';
+
 interface ProjectContextType {
   projects: Project[];
   loading: boolean;
   error: string | null;
-  // setProjects: (projects: Project[]) => void;
   addProject: (project: Project) => void;
   updateProject: (project: Project) => void;
   deleteProject: (projectId: string) => void;
@@ -17,35 +18,38 @@ interface ProjectContextType {
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
 export function ProjectContextProvider({ children }: { children: ReactNode }) {
-  // const [projects, setProjects] = useState<Project[]>([]);
-  // const [loading, setLoading] = useState(true);
-  // const [error, setError] = useState<string | null>(null);
-  const { projects, loading, error, setProjects, fetchProjects } = useProjects();
- 
+  const { status } = useSession();
+  const { projects, loading, error, refetchProjects } = useProjects();
+
   const addProject = useCallback((project: Project) => {
-    setProjects(prev => [...prev, project]);
-  }, []);
+    projects.push(project);
+    refetchProjects();
+  }, [projects, refetchProjects]);
 
   const updateProject = useCallback((updatedProject: Project) => {
-    setProjects(prev => 
-      prev.map(project => 
-        project.id === updatedProject.id ? updatedProject : project
-      )
-    );
-  }, []);
+    const index = projects.findIndex(p => p.id === updatedProject.id);
+    if (index !== -1) {
+      projects[index] = updatedProject;
+      refetchProjects();
+    }
+  }, [projects, refetchProjects]);
 
   const deleteProject = useCallback((projectId: string) => {
-    setProjects(prev => prev.filter(project => project.id !== projectId));
-  }, []);
+    const index = projects.findIndex(p => p.id === projectId);
+    if (index !== -1) {
+      projects.splice(index, 1);
+      refetchProjects();
+    }
+  }, [projects, refetchProjects]);
 
   const value = {
-    projects,
-    loading,
+    projects: status === 'authenticated' ? projects : [],
+    loading: status === 'loading' || loading,
     error,
     addProject,
     updateProject,
     deleteProject,
-    refetchProjects: fetchProjects
+    refetchProjects
   };
 
   return (
