@@ -56,7 +56,6 @@ export default function Sidebar() {
   return (
     <aside className={styles.sidebar}>
       <Link href="/" className={styles.logo}>
-        <div className={styles.logoIcon}>|||</div>
         <span className={styles.logoText}>kanban</span>
       </Link>
 
