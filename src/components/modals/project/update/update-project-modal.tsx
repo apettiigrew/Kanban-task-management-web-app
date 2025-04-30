@@ -7,6 +7,7 @@ import styles from './update-project-modal.module.css';
 import { createPortal } from 'react-dom';
 import { useEffect } from 'react';
 import { Project } from '@/types/project';
+import AppButton from '@/components/button/app-button';
 
 interface UpdateProjectModalProps {
   isOpen: boolean;
@@ -33,9 +34,9 @@ const wrappedUpdateProject = async (_prevState: ActionState, formData: FormData)
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" className={styles.submitButton} disabled={pending}>
+    <AppButton type="submit" className={styles.submitButton} disabled={pending}>
       {pending ? 'Updating...' : 'Update Project'}
-    </button>
+    </AppButton>
   );
 }
 
