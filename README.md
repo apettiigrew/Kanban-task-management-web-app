@@ -125,3 +125,5 @@ src/
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+Note: 
+There were many compromises made in terms of robustness, scalablity and maintainablity as my main goal was to implement has many features as possible given the time I had. :) 
