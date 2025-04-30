@@ -42,9 +42,20 @@ A modern, full-stack Kanban board application built with Next.js, TypeScript, an
 
 ## Prerequisites
 
-- Node.js 18+ 
-- PostgreSQL
-- npm or yarn
+### Required Tools
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [npm](https://www.npmjs.com/) (v9 or higher) or [yarn](https://yarnpkg.com/) (v1.22 or higher)
+- [Docker](https://www.docker.com/) (v24 or higher)
+- [Docker Compose](https://docs.docker.com/compose/) (v2 or higher)
+- [Git](https://git-scm.com/) (v2 or higher)
+
+### Required Services
+- PostgreSQL (will be provided via Docker)
+
+### Recommended Tools
+- [Visual Studio Code](https://code.visualstudio.com/) (or any code editor of your choice)
+- [Postman](https://www.postman.com/) (for API testing)
+- [DBeaver](https://dbeaver.io/) (for database management)
 
 ## Getting Started
 
