@@ -43,6 +43,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   }, [id]);
 
   const onProjectDeleted = () => {
+    
     router.push('/projects');
   };
 

@@ -6,6 +6,7 @@ import { useActionState } from 'react';
 import styles from './delete-project-modal.module.css';
 import { createPortal } from 'react-dom';
 import { useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { Project } from '@/types/project';
 
 
@@ -47,12 +48,18 @@ export default function DeleteProjectModal({
   project 
 }: DeleteProjectModalProps) {
   const [state, formAction] = useActionState(wrappedDeleteProject, initialState);
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (state.success && isOpen) {
       onProjectDeleted();
+      console.log("pathname", pathname);
+      if (pathname === `/projects/${project.id}`) {
+        router.push('/projects');
+      }
     }
-  }, [state.success, isOpen, onProjectDeleted]);
+  }, [state.success, isOpen, onProjectDeleted, pathname, project.id, router]);
 
   if (!isOpen) return null;
 
