@@ -18,7 +18,7 @@ export default function Sidebar() {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);  
-  const { projects, loading, error, refetchProjects, setProjects } = useProjectContext();
+  const { projects, loading, error, refetchProjects, addProject } = useProjectContext();
 
 
   const handleProjectCreated = useCallback(() => {

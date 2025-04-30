@@ -20,48 +20,28 @@ export default function ProjectView() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const router = useRouter();
 
-  //   const fetchProjects = async () => {
-  //     try {
-  //       setIsLoading(true);
-  //       setError(null);
-  //       const response = await fetch('/api/projects');
-        
-  //       if (response.status === 401) {
-  //         router.push('/login');
-  //         return;
-  //       }
-
-  //       if (!response.ok) {
-  //         throw new Error('Failed to fetch projects');
-  //       }
-
-  //       const data = await response.json();
-  //       setProjects(data.projects || []);
-  //     } catch (error) {
-  //       console.error('Error fetching projects:', error);
-  //       setError('Failed to load projects. Please try again later.');
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   fetchProjects();
-  // }, [router]);
-
   const handleProjectCreated = useCallback(() => {
-    setIsModalOpen(false);
     refetchProjects();
+    setIsModalOpen(false);
+  }, [refetchProjects]);
+
+  const handleCreateProjectClick = useCallback(() => {
+    setIsModalOpen(true);
   }, []);
 
-  const handleUpdateClick = (project: Project) => {
+  const handleUpdateClick = useCallback((project: Project) => {
     setSelectedProject(project);
     setIsUpdateModalOpen(true);
-  };
+  }, []);
 
-  const handleDeleteClick = (project: Project) => {
+  const handleDeleteClick = useCallback((project: Project) => {
     setSelectedProject(project);
     setIsDeleteModalOpen(true);
-  };
+  }, []);
+
+  const handleCloseCreateModal = useCallback(() => {
+    setIsModalOpen(false);
+  }, []);
 
   if (loading) {
     return (
@@ -106,7 +86,12 @@ export default function ProjectView() {
             <div className={styles.emptyState}>
               <h2 className={styles.emptyTitle}>No projects yet</h2>
               <p className={styles.emptyText}>Create your first project to get started</p>
-              <AppButton variant="primary" size="medium" fullWidth onClick={() => setIsModalOpen(true)}>
+              <AppButton 
+                variant="primary" 
+                size="medium" 
+                fullWidth 
+                onClick={handleCreateProjectClick}
+              >
                 Create Project
               </AppButton>
             </div>
@@ -151,7 +136,7 @@ export default function ProjectView() {
 
       <ProjectModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleCloseCreateModal}
         onProjectCreated={handleProjectCreated}
       />
       
@@ -165,7 +150,7 @@ export default function ProjectView() {
               setSelectedProject(null);
             }}
             onProjectUpdated={() => {
-              // router.refresh();
+              refetchProjects();
               setIsUpdateModalOpen(false);
               setSelectedProject(null);
             }}

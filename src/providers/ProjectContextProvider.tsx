@@ -7,7 +7,7 @@ interface ProjectContextType {
   projects: Project[];
   loading: boolean;
   error: string | null;
-  setProjects: (projects: Project[]) => void;
+  // setProjects: (projects: Project[]) => void;
   addProject: (project: Project) => void;
   updateProject: (project: Project) => void;
   deleteProject: (projectId: string) => void;
@@ -42,7 +42,6 @@ export function ProjectContextProvider({ children }: { children: ReactNode }) {
     projects,
     loading,
     error,
-    setProjects,
     addProject,
     updateProject,
     deleteProject,
