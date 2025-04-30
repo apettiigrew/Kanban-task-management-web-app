@@ -126,11 +126,15 @@ export default function Sidebar() {
         </div>
       )}
 
-      <ProjectModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onProjectCreated={handleProjectCreated}
-      />
+      {
+        isModalOpen && (
+          <ProjectModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onProjectCreated={handleProjectCreated}
+          />
+        )
+      }
 
       {selectedProject && (
         <UpdateProjectModal

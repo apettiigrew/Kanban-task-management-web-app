@@ -20,10 +20,17 @@ export default function ProjectView() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const router = useRouter();
 
+  const handleCloseCreateModal = useCallback(() => {
+    setIsModalOpen(false);
+    setTimeout(() => {
+      setIsModalOpen(false);
+    }, 0);
+  }, []);
+
   const handleProjectCreated = useCallback(() => {
     refetchProjects();
-    setIsModalOpen(false);
-  }, [refetchProjects]);
+    handleCloseCreateModal();
+  }, [refetchProjects, handleCloseCreateModal]);
 
   const handleCreateProjectClick = useCallback(() => {
     setIsModalOpen(true);
@@ -37,10 +44,6 @@ export default function ProjectView() {
   const handleDeleteClick = useCallback((project: Project) => {
     setSelectedProject(project);
     setIsDeleteModalOpen(true);
-  }, []);
-
-  const handleCloseCreateModal = useCallback(() => {
-    setIsModalOpen(false);
   }, []);
 
   if (loading) {
@@ -133,12 +136,14 @@ export default function ProjectView() {
           )}
         </main>
       </div>
-
-      <ProjectModal
-        isOpen={isModalOpen}
-        onClose={handleCloseCreateModal}
-        onProjectCreated={handleProjectCreated}
-      />
+          
+      {isModalOpen && (
+        <ProjectModal
+          isOpen={isModalOpen}
+          onClose={handleCloseCreateModal}
+          onProjectCreated={handleProjectCreated}
+        />
+      )}
       
       {selectedProject && (
         <>
