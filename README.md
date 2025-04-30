@@ -1,4 +1,4 @@
-# Kanban Board Application
+# Kanban Board Application - ![WIP](https://img.shields.io/badge/status-work%20in%20progress-yellow)
 
 A modern, full-stack Kanban board application built with Next.js, TypeScript, and PostgreSQL. This application allows users to manage projects and tasks in a visual, drag-and-drop interface.
 
