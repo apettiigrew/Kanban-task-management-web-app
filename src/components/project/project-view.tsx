@@ -165,7 +165,7 @@ export default function ProjectView() {
               setSelectedProject(null);
             }}
             onProjectUpdated={() => {
-              router.refresh();
+              // router.refresh();
               setIsUpdateModalOpen(false);
               setSelectedProject(null);
             }}
