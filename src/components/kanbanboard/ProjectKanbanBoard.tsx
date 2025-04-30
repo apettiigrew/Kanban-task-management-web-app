@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getTasksByProject, updateTask } from '@/features/project/actions/task';
-import TaskModal from './TaskModal';
-import DeleteTaskModal from './DeleteTaskModal';
+import TaskModal from '../modals/task/create/TaskModal';
+import DeleteTaskModal from '../modals/task/delete/DeleteTaskModal';
 import styles from './ProjectKanbanBoard.module.css';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
@@ -82,7 +82,6 @@ export default function ProjectKanbanBoard({ projectId }: ProjectKanbanBoardProp
     
     if (!task) return;
     
-    console.log("destination", destination);
     // Create new task array with updated status
     const updatedTasks = tasks.map(t => 
       t.id == draggableId 
@@ -90,7 +89,7 @@ export default function ProjectKanbanBoard({ projectId }: ProjectKanbanBoardProp
         : t
     );
 
-    console.log("updatedTasks", updatedTasks);
+    
     // Update UI immediately
     setTasks(updatedTasks);
 
@@ -161,7 +160,15 @@ export default function ProjectKanbanBoard({ projectId }: ProjectKanbanBoardProp
                               <div className={styles.taskDescription}>{task.description}</div>
                               <div className={styles.taskActions}>
                                 <button onClick={() => openEditTaskModal(task)} className={styles.editButton}>Edit</button>
-                                <button onClick={() => openDeleteTaskModal(task)} className={styles.deleteButton}>Delete</button>
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openDeleteTaskModal(task);
+                                  }} 
+                                  className={styles.deleteButton}
+                                >
+                                  Delete
+                                </button>
                               </div>
                             </div>
                           )}

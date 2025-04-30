@@ -3,58 +3,44 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import styles from './Sidebar.module.css';
-import ProjectModal from './ProjectModal';
-import UpdateProjectModal from './UpdateProjectModal';
-import DeleteProjectModal from './DeleteProjectModal';
+import styles from './sidebar.module.css';
+import ProjectModal from '@/components/modals/project/create/project-modal';
+import UpdateProjectModal from '@/components/modals/project/update/update-project-modal';
+import DeleteProjectModal from '@/components/modals/project/delete/delete-project-modal';
+import { useProjectContext } from '@/providers/ProjectContextProvider';
+import { Project } from '@/types/project';
 
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  createdAt: Date;
+
+interface SidebarProps {
+  onProjectDeleted?: () => void | undefined;
 }
 
-export default function Sidebar() {
+export default function Sidebar({ onProjectDeleted }: SidebarProps) {
   const { data: session } = useSession();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);  
+  const { projects, loading, error, refetchProjects, addProject } = useProjectContext();
 
-  const fetchProjects = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/api/projects');
-      if (!response.ok) {
-        throw new Error('Failed to fetch projects');
-      }
-      const data = await response.json();
-      setProjects(data.projects);
-    } catch (error) {
-      console.error('Error fetching projects:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchProjects();
-  }, []);
 
   const handleProjectCreated = useCallback(() => {
     setIsModalOpen(false);
-    fetchProjects();
+    refetchProjects();
   }, []);
 
   const handleProjectUpdated = useCallback(() => {
     setIsUpdateModalOpen(false);
     setSelectedProject(null);
-    fetchProjects();
+    refetchProjects();
   }, []);
 
   const handleProjectDeleted = useCallback(() => {
     setIsDeleteModalOpen(false);
     setSelectedProject(null);
-    fetchProjects();
+    onProjectDeleted?.();
+    refetchProjects();
+    
   }, []);
 
   const handleProjectClick = useCallback((project: Project) => {
@@ -74,7 +60,6 @@ export default function Sidebar() {
   return (
     <aside className={styles.sidebar}>
       <Link href="/" className={styles.logo}>
-        <div className={styles.logoIcon}>|||</div>
         <span className={styles.logoText}>kanban</span>
       </Link>
 
@@ -144,11 +129,15 @@ export default function Sidebar() {
         </div>
       )}
 
-      <ProjectModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onProjectCreated={handleProjectCreated}
-      />
+      {
+        isModalOpen && (
+          <ProjectModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onProjectCreated={handleProjectCreated}
+          />
+        )
+      }
 
       {selectedProject && (
         <UpdateProjectModal

@@ -1,71 +1,52 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import styles from './ProjectView.module.css';
-import Sidebar from './Sidebar';
-import UpdateProjectModal from './UpdateProjectModal';
-import DeleteProjectModal from './DeleteProjectModal';
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  createdAt: Date;
-  updatedAt: Date;
-  userId: string;
-}
+import styles from './project-view.module.css';
+import Sidebar from '../sidebar/sidebar';
+import UpdateProjectModal from '../modals/project/update/update-project-modal';
+import DeleteProjectModal from '../modals/project/delete/delete-project-modal';
+import AppButton from '../button/app-button';
+import ProjectModal from '../modals/project/create/project-modal';
+import type { Project } from '@/types/project';
+import { useProjectContext } from '@/providers/ProjectContextProvider';
 
 export default function ProjectView() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { projects, loading, error, refetchProjects } = useProjectContext();
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await fetch('/api/projects');
-        
-        if (response.status === 401) {
-          router.push('/login');
-          return;
-        }
+  const handleCloseCreateModal = useCallback(() => {
+    setIsModalOpen(false);
+    setTimeout(() => {
+      setIsModalOpen(false);
+    }, 0);
+  }, []);
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch projects');
-        }
+  const handleProjectCreated = useCallback(() => {
+    refetchProjects();
+    handleCloseCreateModal();
+  }, [refetchProjects, handleCloseCreateModal]);
 
-        const data = await response.json();
-        setProjects(data.projects || []);
-      } catch (error) {
-        console.error('Error fetching projects:', error);
-        setError('Failed to load projects. Please try again later.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const handleCreateProjectClick = useCallback(() => {
+    setIsModalOpen(true);
+  }, []);
 
-    fetchProjects();
-  }, [router]);
-
-  const handleUpdateClick = (project: Project) => {
+  const handleUpdateClick = useCallback((project: Project) => {
     setSelectedProject(project);
     setIsUpdateModalOpen(true);
-  };
+  }, []);
 
-  const handleDeleteClick = (project: Project) => {
+  const handleDeleteClick = useCallback((project: Project) => {
     setSelectedProject(project);
     setIsDeleteModalOpen(true);
-  };
+  }, []);
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen">
         <Sidebar />
@@ -101,22 +82,6 @@ export default function ProjectView() {
       <div className={styles.projectView}>
         <header className={styles.header}>
           <h1 className={styles.title}>My Projects</h1>
-          <Link href="/projects/new" className={styles.createButton}>
-            <svg 
-              width="12" 
-              height="12" 
-              viewBox="0 0 12 12" 
-              fill="none" 
-              xmlns="http://www.w3.org/2000/svg"
-              className={styles.plusIcon}
-            >
-              <path 
-                d="M7.368 12V7.344H12V4.632H7.368V0H4.656V4.632H0V7.344H4.656V12H7.368Z" 
-                fill="currentColor"
-              />
-            </svg>
-            Create Project
-          </Link>
         </header>
 
         <main className={styles.content}>
@@ -124,22 +89,14 @@ export default function ProjectView() {
             <div className={styles.emptyState}>
               <h2 className={styles.emptyTitle}>No projects yet</h2>
               <p className={styles.emptyText}>Create your first project to get started</p>
-              <Link href="/projects/new" className={styles.createButton}>
-                <svg 
-                  width="12" 
-                  height="12" 
-                  viewBox="0 0 12 12" 
-                  fill="none" 
-                  xmlns="http://www.w3.org/2000/svg"
-                  className={styles.plusIcon}
-                >
-                  <path 
-                    d="M7.368 12V7.344H12V4.632H7.368V0H4.656V4.632H0V7.344H4.656V12H7.368Z" 
-                    fill="currentColor"
-                  />
-                </svg>
+              <AppButton 
+                variant="primary" 
+                size="medium" 
+                fullWidth 
+                onClick={handleCreateProjectClick}
+              >
                 Create Project
-              </Link>
+              </AppButton>
             </div>
           ) : (
             <div className={styles.projectGrid}>
@@ -179,7 +136,15 @@ export default function ProjectView() {
           )}
         </main>
       </div>
-
+          
+      {isModalOpen && (
+        <ProjectModal
+          isOpen={isModalOpen}
+          onClose={handleCloseCreateModal}
+          onProjectCreated={handleProjectCreated}
+        />
+      )}
+      
       {selectedProject && (
         <>
           <UpdateProjectModal
@@ -189,11 +154,21 @@ export default function ProjectView() {
               setIsUpdateModalOpen(false);
               setSelectedProject(null);
             }}
+            onProjectUpdated={() => {
+              refetchProjects();
+              setIsUpdateModalOpen(false);
+              setSelectedProject(null);
+            }}
           />
           <DeleteProjectModal
             project={selectedProject}
             isOpen={isDeleteModalOpen}
             onClose={() => {
+              setIsDeleteModalOpen(false);
+              setSelectedProject(null);
+            }}
+            onProjectDeleted={() => {
+              refetchProjects();
               setIsDeleteModalOpen(false);
               setSelectedProject(null);
             }}

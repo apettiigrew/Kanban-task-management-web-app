@@ -1,49 +1,48 @@
 'use client';
 
-import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { createProject } from '@/features/project/actions/project';
-import styles from './ProjectModal.module.css';
+import { useActionState } from 'react';
+import styles from './project-modal.module.css';
+import { createPortal } from 'react-dom';
 import { useEffect } from 'react';
 
 interface ProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
   onProjectCreated: () => void;
-} 
-
-const initialState = {
-  success: false,
-  error: null,
-  project: []
-};
+}
 
 function SubmitButton() {
   const { pending } = useFormStatus();
-  
   return (
-    <button 
-      type="submit" 
-      className={styles.submitButton}
-      disabled={pending}
-    >
+    <button type="submit" className={styles.submitButton} disabled={pending}>
       {pending ? 'Creating...' : 'Create Project'}
     </button>
   );
 }
 
+const initialState = {
+  success: false,
+  error: null,
+  project: null
+};
+
 export default function ProjectModal({ isOpen, onClose, onProjectCreated }: ProjectModalProps) {
   const [state, formAction] = useActionState(createProject, initialState);
 
   useEffect(() => {
-    if (state.success) {
+    if (state.success && isOpen) {
       onProjectCreated();
     }
-  }, [state.success, onProjectCreated]);
+  }, [state.success, isOpen, onProjectCreated]);
 
   if (!isOpen) return null;
 
-  return (
+  // Only create portal if we're in the browser
+  if (typeof window === 'undefined') return null;
+
+  const modal = (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
         <h2 className={styles.modalTitle}>Create New Project</h2>
@@ -60,20 +59,19 @@ export default function ProjectModal({ isOpen, onClose, onProjectCreated }: Proj
               id="title"
               name="title"
               className={styles.input}
-              placeholder="e.g. Marketing Campaign"
+              placeholder="e.g. Web Design"
               required
             />
           </div>
           <div className={styles.formGroup}>
             <label htmlFor="description" className={styles.label}>
-              Project Description
+              Description
             </label>
             <textarea
               id="description"
               name="description"
               className={styles.textarea}
-              placeholder="e.g. This project will handle our Q4 marketing initiatives"
-              required
+              placeholder="e.g. Design a responsive website for a client"
             />
           </div>
           <div className={styles.buttonGroup}>
@@ -86,4 +84,6 @@ export default function ProjectModal({ isOpen, onClose, onProjectCreated }: Proj
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 } 

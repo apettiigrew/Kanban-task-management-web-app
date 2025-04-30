@@ -1,10 +1,10 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import ProjectKanbanBoard from '@/components/ProjectKanbanBoard';
-import Sidebar from '@/components/Sidebar';
-import styles from './projects-detail.module.css';
-
+import ProjectKanbanBoard from '@/components/kanbanboard/ProjectKanbanBoard';
+import Sidebar from '@/components/sidebar/sidebar';
+import styles from './page.module.css';
+import { useRouter } from 'next/navigation';
 interface Project {
   id: string;
   title: string;
@@ -21,7 +21,8 @@ export default function ProjectPage({ params }: ProjectPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  
+  const router = useRouter();
+
   useEffect(() => {
     async function fetchProject() {
       try {
@@ -40,6 +41,11 @@ export default function ProjectPage({ params }: ProjectPageProps) {
 
     fetchProject();
   }, [id]);
+
+  const onProjectDeleted = () => {
+    
+    router.push('/projects');
+  };
 
   if (loading) {
     return (
@@ -65,7 +71,7 @@ export default function ProjectPage({ params }: ProjectPageProps) {
 
   return (
     <div className="min-h-screen">
-      <Sidebar />
+      <Sidebar onProjectDeleted={onProjectDeleted} />
       <div className={styles.pageContent}>
         <div className={styles.header}>
           <h1 className={styles.title}>{project.title}</h1>
