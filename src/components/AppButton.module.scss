@@ -1,0 +1,50 @@
+@use "./../styles/utils/index" as u;
+
+.button {
+  border: none;
+  outline: none;
+  border-radius: u.rem(24);
+  font-weight: 700;
+  font-size: u.rem(12);
+  padding: u.rem(20) u.rem(64);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  font-family: inherit;
+}
+
+// .large {
+//   font-size: u.rem(32);
+//   padding: u.rem(20) u.rem(64);
+// }
+
+// .small {
+//   font-size: u.rem(24);
+//   padding: u.rem(20) u.rem(48);
+// }
+
+// .primary.idle {
+//   background: #6863c7;
+//   color: #fff;
+// }
+// .primary.hover {
+//   background: #a6a3f7;
+//   color: #fff;
+// }
+
+// .secondary.idle {
+//   background: #f2f2fa;
+//   color: #6863c7;
+// }
+// .secondary.hover {
+//   background: #d7d6ef;
+//   color: #6863c7;
+// }
+
+// .destructive.idle {
+//   background: #d35d5d;
+//   color: #fff;
+// }
+// .destructive.hover {
+//   background: #eea3a3;
+//   color: #fff;
+// } 
