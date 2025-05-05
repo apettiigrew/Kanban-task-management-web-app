@@ -3,6 +3,8 @@ import styles from './Header.module.scss';
 import { AddIcon } from './AddIcon';
 
 const Header: React.FC<{ onAddClick: () => void }> = ({ onAddClick }) => {
+
+  
   return (
     <header className={styles.header}>
       <div className={styles.left}>

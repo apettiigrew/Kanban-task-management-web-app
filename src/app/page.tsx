@@ -7,6 +7,7 @@ import styles from './page.module.scss';
 import Heading from '@/components/Heading';
 import Header from '@/components/Header';
 import AddProjectModal from '@/components/AddProjectModal';
+import Sidebar from '@/components/Sidebar';
 
 export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -17,6 +18,7 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
+      <Sidebar />
       <div className={styles.container}>
         <div className={styles.header}>
           <Header onAddClick={() => setModalOpen(true)} />
