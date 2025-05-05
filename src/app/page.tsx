@@ -1,21 +1,40 @@
+'use client';
+
+import React, { useState } from 'react';
 import { AppButton } from '@/components/AppButton';
 import { AddIcon } from '@/components/AddIcon';
 import styles from './page.module.scss';
 import Heading from '@/components/Heading';
+import Header from '@/components/Header';
+import AddProjectModal from '@/components/AddProjectModal';
 
 export default function Home() {
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const handleAddProject = (title: string) => {
+    alert(`Project added: ${title}`); // Replace with real logic
+  };
+
   return (
     <main className={styles.main}>
       <div className={styles.container}>
-        <div className={styles.message}>
-          <Heading>
-            This board is empty. Create a new column to get started.
-          </Heading>
+        <div>
+          <Header onAddClick={() => setModalOpen(true)} />
+          <AddProjectModal
+            open={modalOpen}
+            onClose={() => setModalOpen(false)}
+            onSubmit={handleAddProject}
+          />
         </div>
-        <AppButton variant="primary" size="large">
-          <AddIcon style={{ marginRight: 8, verticalAlign: 'middle' }} />
-          Add New Column
-        </AppButton>
+        <div>
+          <div className={styles.message}>
+            This board is empty. Create a new column to get started.
+          </div>
+          <AppButton variant="primary" size="large">
+            <AddIcon style={{ marginRight: 8, verticalAlign: 'middle' }} />
+            Add New Column
+          </AppButton>
+        </div>
       </div>
     </main>
   );

@@ -1,0 +1,27 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  align-items: stretch;
+}
+.label {
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 0.2rem;
+}
+.input {
+  padding: 0.7rem 1rem;
+  border: 1px solid #e4ebfa;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s;
+}
+.input:focus {
+  border-color: #635fc7;
+}
+.error {
+  color: #ea5555;
+  font-size: 0.95rem;
+  margin-bottom: -0.8rem;
+} 
