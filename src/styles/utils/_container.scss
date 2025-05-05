@@ -23,9 +23,9 @@ $container-width-percentages-small: (
 @function container-perc($key, $size: default){
 	// s = small
 	@if $size == s {
-		@return map-get($container-width-percentages-small, $key);
+		@return map.get($container-width-percentages-small, $key);
 	} @else {
-		@return map-get($container-width-percentages, $key);
+		@return map.get($container-width-percentages, $key);
 	}
 }
 

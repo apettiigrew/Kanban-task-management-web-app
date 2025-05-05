@@ -13,7 +13,7 @@ $width-breakpoints: (
 
 @function get-bp($key)
 {
-	@return map-get($map: $width-breakpoints, $key: $key);
+	@return map.get($width-breakpoints, $key);
 }
 
 // WIDTHS
@@ -24,7 +24,7 @@ $width-breakpoints: (
 	}
 }
 @mixin mqw-from($breakPoint) {
-	$pixels: map-get($map: $width-breakpoints, $key: $breakPoint);
+	$pixels: map.get($width-breakpoints, $breakPoint);
 
 	@media only screen and (min-width:f.em($pixels)) {
 		@content;
@@ -32,7 +32,7 @@ $width-breakpoints: (
 }
 
 @mixin mqw-to($breakPoint) {
-	$pixels: map-get($map: $width-breakpoints, $key: $breakPoint);
+	$pixels: map.get($width-breakpoints, $breakPoint);
 
 	@media only screen and (max-width:f.em($pixels)) {
 		@content;
@@ -40,8 +40,8 @@ $width-breakpoints: (
 }
 
 @mixin mqw($fromBreakPoint, $toBreakPoint) {
-	$fromPixels: map-get($map: $width-breakpoints, $key: $fromBreakPoint);
-	$toPixels: map-get($map: $width-breakpoints, $key: $toBreakPoint);
+	$fromPixels: map.get($width-breakpoints, $fromBreakPoint);
+	$toPixels: map.get($width-breakpoints, $toBreakPoint);
 
 	@media only screen and (min-width:f.em($fromPixels)) and (max-width:f.em($toPixels)) {
 		@content;
@@ -58,7 +58,7 @@ $width-breakpoints: (
 // HEIGHT
 
 @mixin mqh-to($breakPoint) {
-	$pixels: map-get($map: $width-breakpoints, $key: $breakPoint);
+	$pixels: map.get($width-breakpoints, $breakPoint);
 
 	@media only screen and (max-height:f.em($pixels)) {
 		@content;
@@ -66,7 +66,7 @@ $width-breakpoints: (
 }
 
 @mixin mqh-from($breakPoint) {
-	$pixels: map-get($map: $width-breakpoints, $key: $breakPoint);
+	$pixels: map.get($width-breakpoints, $breakPoint);
 
 	@media only screen and (min-height:f.em($pixels)) {
 		@content;

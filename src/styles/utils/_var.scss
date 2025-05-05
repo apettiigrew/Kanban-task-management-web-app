@@ -4,5 +4,5 @@ $radius: (
 );
 
 @function get-radius($key) {
-    @return map-get($map: $radius, $key: $key);
+    @return map.get($radius, $key);
 }

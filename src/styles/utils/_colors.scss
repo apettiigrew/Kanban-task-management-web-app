@@ -15,7 +15,7 @@ $colors: (
 );
 
 @function color($key) {
-	@return map-get($map: $colors, $key: $key);
+	@return map.get($colors, $key);
 }
 
 // Add to image wrapper to show a black square while
