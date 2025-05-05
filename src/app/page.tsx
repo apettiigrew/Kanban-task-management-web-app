@@ -1,4 +1,5 @@
 import { AppButton } from '@/components/AppButton';
+import { AddIcon } from '@/components/AddIcon';
 import styles from './page.module.scss';
 import Heading from '@/components/Heading';
 
@@ -12,7 +13,8 @@ export default function Home() {
           </Heading>
         </div>
         <AppButton variant="primary" size="large">
-          + Add New Column
+          <AddIcon style={{ marginRight: 8, verticalAlign: 'middle' }} />
+          Add New Column
         </AppButton>
       </div>
     </main>
