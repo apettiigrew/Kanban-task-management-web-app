@@ -18,7 +18,7 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <div className={styles.container}>
-        <div>
+        <div className={styles.header}>
           <Header onAddClick={() => setModalOpen(true)} />
           <AddProjectModal
             open={modalOpen}
@@ -26,7 +26,7 @@ export default function Home() {
             onSubmit={handleAddProject}
           />
         </div>
-        <div>
+        {/* <div>
           <div className={styles.message}>
             This board is empty. Create a new column to get started.
           </div>
@@ -34,7 +34,7 @@ export default function Home() {
             <AddIcon style={{ marginRight: 8, verticalAlign: 'middle' }} />
             Add New Column
           </AppButton>
-        </div>
+        </div> */}
       </div>
     </main>
   );
