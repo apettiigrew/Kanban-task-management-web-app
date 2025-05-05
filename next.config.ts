@@ -1,10 +1,10 @@
 import type { NextConfig } from "next";
-import path from 'path'
+const path = require('path');
 
 
 const nextConfig: NextConfig = {
   sassOptions: {
-    includePaths: [path.join(__dirname, "styles")],
+    includePaths: [path.resolve(__dirname, 'styles')],
   },
 };
 
