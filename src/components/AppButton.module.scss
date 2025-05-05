@@ -8,8 +8,16 @@
   font-size: u.rem(12);
   padding: u.rem(20) u.rem(64);
   cursor: pointer;
+  background: u.color(primary);
+  color: u.color(white);
   transition: background 0.2s, color 0.2s;
   font-family: inherit;
+
+  @include u.mqw-from(tablet) {
+		border-radius: u.rem(31);
+    font-size: u.rem(15);
+    padding: u.rem(23) u.rem(83);
+	}
 }
 
 // .large {

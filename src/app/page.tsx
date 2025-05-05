@@ -1,12 +1,15 @@
 import { AppButton } from '@/components/AppButton';
 import styles from './page.module.scss';
+import Heading from '@/components/Heading';
 
 export default function Home() {
   return (
     <main className={styles.main}>
       <div className={styles.container}>
         <div className={styles.message}>
-          This board is empty. Create a new column to get started.
+          <Heading>
+            This board is empty. Create a new column to get started.
+          </Heading>
         </div>
         <AppButton variant="primary" size="large">
           + Add New Column

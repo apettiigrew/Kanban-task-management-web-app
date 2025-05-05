@@ -1,19 +1,18 @@
 @use 'sass:map';
 
 $colors: (
-	primary-marine-blue: #022959,
-	primary-purplish-blue: #5850EC,
-	primary-pastel-blue: #C7D2FE,
-	primary-light-blue: #B2D9E9,
-	error: #EF4444,
-	warning: #f6e58d,
-	neutral-cool-gray: #A3A3A3,
-	neutral-light-gray: #E5E7EB,
-	neutral-magnolia: #F0F9FF,
-	neutral-alabaster: #F8FAFC,
-	neutral-white: #FFFFFF,
-	neutral-black: #1B202B,
-	yellow-color: #F9DE57,
+	primary: #635FC7,
+	primary-light: #A8A4FF,
+	black-1: #000112,
+	black-2: #20212C,
+	dark-1: #2B2C37,
+	dark-2: #3E3F4E,
+	gray: #828FA3,
+	gray-light: #E4EBFA,
+	bg-light: #F4F7FD,
+	white: #FFFFFF,
+	red: #EA5555,
+	red-light: #FF9898,
 );
 
 @function color($key) {
@@ -23,5 +22,5 @@ $colors: (
 // Add to image wrapper to show a black square while
 // image is still loading in
 @mixin load-image-background-color {
-	background: color(neutral-light-gray);
+	background: color(gray-light);
 }
