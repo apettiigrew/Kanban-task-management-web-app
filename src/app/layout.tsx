@@ -1,13 +1,11 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { Providers } from '@/components/providers/Providers';
-
-const inter = Inter({ subsets: ["latin"] });
+import './globals.scss';
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from "next/font/google";
+import "./../styles/main.scss";
 
 export const metadata: Metadata = {
-  title: "Kanban App",
-  description: "A modern kanban board application",
+  title: 'Next.js App with SCSS Modules',
+  description: 'A Next.js application using SCSS modules for styling',
 };
 
 export default function RootLayout({
@@ -17,9 +15,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <Providers>{children}</Providers>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
