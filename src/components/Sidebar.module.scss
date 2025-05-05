@@ -159,4 +159,35 @@
 }
 .hideSidebar:hover {
   background: #f4f7fd;
+}
+.showSidebar {
+  display: none;
+}
+@media (min-width: 601px) {
+  .showSidebar {
+    position: fixed;
+    left: 1.5rem;
+    bottom: 1.5rem;
+    z-index: 100;
+    background: #635fc7;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(99,95,199,0.10);
+    transition: background 0.2s;
+    padding: 0;
+  }
+  .showSidebar:hover {
+    background: #a8a4ff;
+  }
+  .showSidebar svg {
+    display: block;
+    width: 28px;
+    height: 28px;
+  }
 } 
