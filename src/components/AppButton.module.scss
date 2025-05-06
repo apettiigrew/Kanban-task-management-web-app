@@ -3,12 +3,15 @@
 .button {
   display: flex;
   align-items: center;
+  justify-content: center;
+  height: u.rem(40);
+  line-height: u.rem(40);
   border: none;
   outline: none;
   border-radius: u.rem(50);
   font-weight: 700;
   font-size: u.rem(16);
-  padding: u.rem(20);
+  padding: 0 u.rem(20);
   cursor: pointer;
   background: u.color(primary);
   color: u.color(white);
@@ -16,10 +19,12 @@
   font-family: inherit;
 
   @include u.mqw-from(tablet) {
-		border-radius: u.rem(31);
+    border-radius: u.rem(31);
     font-size: u.rem(15);
-    padding: u.rem(23) u.rem(83);
-	}
+    height: u.rem(40);
+    line-height: u.rem(40);
+    padding: 0 u.rem(83);
+  }
 
   &:hover {
     // Default hover for primary
