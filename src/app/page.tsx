@@ -8,7 +8,7 @@ import Heading from '@/components/Heading';
 import Header from '@/components/Header';
 import AddProjectModal from '@/components/AddProjectModal';
 import Sidebar from '@/components/Sidebar';
-
+import DesktopHeader from '@/components/DesktopHeader';
 export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -26,14 +26,15 @@ export default function Home() {
       />
       <div className={styles.container}>
         <div className={styles.header}>
-          <Header onAddClick={() => setModalOpen(true)} />
+          <DesktopHeader onAddTask={() => setModalOpen(true)} />
+          {/* <Header onAddClick={() => setModalOpen(true)} /> */}
           <AddProjectModal
             open={modalOpen}
             onClose={() => setModalOpen(false)}
             onSubmit={handleAddProject}
           />
         </div>
-        <div>
+        {/* <div>
           <div className={styles.message}>
             This board is empty. Create a new column to get started.
           </div>
@@ -41,7 +42,7 @@ export default function Home() {
             <AddIcon style={{ marginRight: 8, verticalAlign: 'middle' }} />
             Add New Column
           </AppButton>
-        </div>
+        </div> */}
       </div>
     </main>
   );
