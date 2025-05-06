@@ -1,6 +1,5 @@
-import React from 'react';
-import Modal from './Modal';
-import AddProjectForm from './AddProjectForm';
+import { AddProjectForm } from "../forms/add-project-form";
+import { Modal } from "./modal";
 
 interface AddProjectModalProps {
   open: boolean;
@@ -8,7 +7,7 @@ interface AddProjectModalProps {
   onSubmit: (title: string) => void;
 }
 
-const AddProjectModal: React.FC<AddProjectModalProps> = ({ open, onClose, onSubmit }) => {
+export const AddProjectModal: React.FC<AddProjectModalProps> = ({ open, onClose, onSubmit }) => {
   const handleSubmit = (title: string) => {
     onSubmit(title);
     onClose();
@@ -20,5 +19,3 @@ const AddProjectModal: React.FC<AddProjectModalProps> = ({ open, onClose, onSubm
     </Modal>
   );
 };
-
-export default AddProjectModal; 

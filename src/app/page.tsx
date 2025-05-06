@@ -1,18 +1,19 @@
 'use client';
 
-import React, { useContext, useState } from 'react';
-import { AppButton } from '@/components/AppButton';
-import { AddIcon } from '@/components/AddIcon';
-import styles from './page.module.scss';
-import Heading from '@/components/Heading';
-import Header from '@/components/Header';
-import AddProjectModal from '@/components/AddProjectModal';
-import Sidebar from '@/components/Sidebar';
-import DesktopHeader from '@/components/DesktopHeader';
-import { DeviceInfoContext } from '@/providers/device-info-provider';
-import { BreakpointPlatform } from '@/models/css-vars';
+import { useContext } from "react";
+
+import { DeviceInfoContext } from "@/providers/device-info-provider";
+import { useState } from "react";
+import { BreakpointPlatform } from "@/models/css-vars";
+import { Sidebar } from "@/components/sidebar/sidebar";
+import { MobileHeader } from "@/components/header/mobile-header";
+import { DesktopHeader } from "@/components/header/desktop-header";
+import styles from "./page.module.scss";
+import { AddProjectModal } from "@/components/modals/add-project-modal";
+
+        
 export default function Home() {
-  const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);              
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
 
@@ -34,7 +35,7 @@ export default function Home() {
       <div className={styles.container}>
         <div className={styles.header}>
           {showMobileCards ? (
-            <Header onAddClick={() => setModalOpen(true)} />
+            <MobileHeader onAddClick={() => setModalOpen(true)} />
           ) : (
             <DesktopHeader onAddTask={() => setModalOpen(true)} />
           )}

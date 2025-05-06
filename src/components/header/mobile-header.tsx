@@ -1,8 +1,8 @@
 import React from 'react';
-import styles from './Header.module.scss';
-import { AddIcon } from './AddIcon';
+import styles from './mobile-header.module.scss';
+import { AddIcon } from '../icons/icons';
 
-const Header: React.FC<{ onAddClick: () => void }> = ({ onAddClick }) => {
+export const MobileHeader: React.FC<{ onAddClick: () => void }> = ({ onAddClick }) => {
 
   
   return (
@@ -29,5 +29,3 @@ const Header: React.FC<{ onAddClick: () => void }> = ({ onAddClick }) => {
     </header>
   );
 };
-
-export default Header; 

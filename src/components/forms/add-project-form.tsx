@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import styles from './AddProjectForm.module.scss';
-import { AppButton } from './AppButton';
+import styles from './add-project-form.module.scss';
+import { AppButton } from '../button/AppButton';
 
 interface AddProjectFormProps {
   onSubmit: (title: string) => void;
 }
 
-const AddProjectForm: React.FC<AddProjectFormProps> = ({ onSubmit }) => {
+export const AddProjectForm: React.FC<AddProjectFormProps> = ({ onSubmit }) => {
   const [title, setTitle] = useState('');
   const [error, setError] = useState('');
 
@@ -39,4 +39,3 @@ const AddProjectForm: React.FC<AddProjectFormProps> = ({ onSubmit }) => {
   );
 };
 
-export default AddProjectForm; 

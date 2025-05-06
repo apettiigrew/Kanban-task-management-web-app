@@ -1,8 +1,8 @@
 import React from 'react';
-import styles from './DesktopHeader.module.scss';
-import Heading from './Heading';
-import { AppButton, AppButtonWithIcon } from './AppButton';
-import { AddIcon } from './AddIcon';
+import styles from './desktop-header.module.scss';
+import { AppButtonWithIcon } from '../button/AppButton';
+import { AddIcon } from '../icons/icons';
+import { Heading } from '../heading/heading';
 
 interface DesktopHeaderProps {
   onAddTask: () => void;
@@ -10,7 +10,7 @@ interface DesktopHeaderProps {
   title?: string;
 }
 
-const DesktopHeader: React.FC<DesktopHeaderProps> = ({
+export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   onAddTask,
   onMenuClick,
   title = 'Platform Launch',
@@ -28,5 +28,3 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
     </header>
   );
 };
-
-export default DesktopHeader; 

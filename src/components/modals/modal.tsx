@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import styles from './Modal.module.scss';
+import styles from './modal.module.scss';
 
 interface ModalProps {
   open: boolean;
@@ -8,7 +8,7 @@ interface ModalProps {
   children: React.ReactNode;
 }
 
-const Modal: React.FC<ModalProps> = ({ open, onClose, children }) => {
+export const Modal: React.FC<ModalProps> = ({ open, onClose, children }) => {
   useEffect(() => {
     if (!open) return;
     const handleKey = (e: KeyboardEvent) => {
@@ -29,5 +29,3 @@ const Modal: React.FC<ModalProps> = ({ open, onClose, children }) => {
     document.body
   );
 };
-
-export default Modal; 

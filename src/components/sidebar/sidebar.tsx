@@ -1,7 +1,8 @@
 import React from 'react';
-import styles from './Sidebar.module.scss';
-import { AppButton, AppButtonWithIcon } from './AppButton';
-import { AddIcon } from './AddIcon';
+import styles from './sidebar.module.scss';
+import { AddIcon, EyeIcon } from '../icons/icons';
+import { AppButtonWithIcon } from '../button/AppButton';
+
 
 const boards = [
   { name: 'Platform Launch', active: true },
@@ -9,14 +10,6 @@ const boards = [
   { name: 'Roadmap', active: false },
 ];
 
-const EyeIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="12" cy="12" rx="8" ry="5" fill="#fff" fillOpacity="0.2"/>
-    <ellipse cx="12" cy="12" rx="7" ry="4" fill="#fff"/>
-    <circle cx="12" cy="12" r="2" fill="#635FC7"/>
-    <ellipse cx="12" cy="12" rx="8" ry="5" stroke="#fff" strokeWidth="2"/>
-  </svg>
-);
 
 interface SidebarProps {
   collapsed: boolean;
@@ -24,7 +17,7 @@ interface SidebarProps {
   onHideSidebar: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ collapsed, onShowSidebar, onHideSidebar }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onShowSidebar, onHideSidebar }) => {
   if (collapsed) {
     return (
       <button className={styles.showSidebar} onClick={onShowSidebar}>
@@ -75,5 +68,3 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onShowSidebar, onHideSideb
     </aside>
   );
 };
-
-export default Sidebar; 
