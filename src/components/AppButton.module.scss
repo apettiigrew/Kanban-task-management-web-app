@@ -1,9 +1,11 @@
 @use "./../styles/utils/index" as u;
 
 .button {
+  display: flex;
+  align-items: center;
   border: none;
   outline: none;
-  border-radius: u.rem(24);
+  border-radius: u.rem(50);
   font-weight: 700;
   font-size: u.rem(16);
   padding: u.rem(20);
@@ -75,4 +77,9 @@
 // .destructive.hover {
 //   background: #eea3a3;
 //   color: #fff;
-// } 
+// }
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+} 

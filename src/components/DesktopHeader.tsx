@@ -1,7 +1,8 @@
 import React from 'react';
 import styles from './DesktopHeader.module.scss';
 import Heading from './Heading';
-import { AppButton } from './AppButton';
+import { AppButton, AppButtonWithIcon } from './AppButton';
+import { AddIcon } from './AddIcon';
 
 interface DesktopHeaderProps {
   onAddTask: () => void;
@@ -18,9 +19,8 @@ const DesktopHeader: React.FC<DesktopHeaderProps> = ({
     <header className={styles['desktop-header']}>
       <Heading>{title}</Heading>
       <div className={styles.actions}>
-        <AppButton onClick={onAddTask} className={styles.addTaskBtn}>
-          + Add New Task
-        </AppButton>
+      <AppButtonWithIcon icon={<AddIcon />}>Add New Task</AppButtonWithIcon>
+      
         <button className={styles.menuBtn} onClick={onMenuClick} aria-label="Open menu">
           <span className={styles.ellipsis}>⋮</span>
         </button>

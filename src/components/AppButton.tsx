@@ -35,3 +35,23 @@ export const AppButton: React.FC<AppButtonProps> = ({
     </button>
   );
 };
+
+interface AppButtonWithIconProps extends AppButtonProps {
+  icon?: React.ReactNode;
+}
+
+export const AppButtonWithIcon: React.FC<AppButtonWithIconProps> = ({
+  icon,
+  children,
+  className = '',
+  ...props
+}) => {
+  return (
+    <AppButton {...props} className={className}>
+      {icon && <span className={styles.icon}>{icon}</span>}
+      {children}
+    </AppButton>
+  );
+};
+
+

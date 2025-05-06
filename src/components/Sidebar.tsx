@@ -1,5 +1,7 @@
 import React from 'react';
 import styles from './Sidebar.module.scss';
+import { AppButton, AppButtonWithIcon } from './AppButton';
+import { AddIcon } from './AddIcon';
 
 const boards = [
   { name: 'Platform Launch', active: true },
@@ -52,9 +54,8 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onShowSidebar, onHideSideb
               {board.name}
             </li>
           ))}
-          <li className={styles.createBoard}>
-            <span className={styles.boardIcon}>＋</span>
-            + Create New Board
+          <li>
+          <AppButtonWithIcon icon={<AddIcon />}>Create New Board</AppButtonWithIcon>
           </li>
         </ul>
       </div>
