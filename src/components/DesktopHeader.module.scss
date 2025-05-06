@@ -4,37 +4,37 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
-  padding: 1.5rem 2rem 1.5rem 1.5rem;
-  box-shadow: 0 1px 4px rgba(99, 95, 199, 0.04);
+  background: u.color(white);
+  padding: u.rem(24) u.rem(32) u.rem(24) u.rem(24);
+  box-shadow: 0 u.rem(1) u.rem(4) rgba(99, 95, 199, 0.04);
 }
 
 .actions {
   display: flex;
   align-items: center;
-  gap: 1.2rem;
+  gap: u.rem(19.2);
 }
 
 .addTaskBtn {
-  background: #635fc7;
-  color: #fff;
+  background: u.color(purple);
+  color: u.color(white);
   font-weight: 700;
-  font-size: 1rem;
-  border-radius: 2rem;
-  padding: 0.7rem 2rem;
+  font-size: u.rem(16);
+  border-radius: u.rem(32);
+  padding: u.rem(11.2) u.rem(32);
   box-shadow: none;
   transition: background 0.2s;
 }
 .addTaskBtn:hover {
-  background: #8471f2;
+  background: u.color(purple-hover);
 }
 
 .menuBtn {
   background: none;
   border: none;
   border-radius: 50%;
-  width: 2.2rem;
-  height: 2.2rem;
+  width: u.rem(35.2);
+  height: u.rem(35.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -43,11 +43,11 @@
   padding: 0;
 }
 .menuBtn:hover {
-  background: #f4f7fd;
+  background: u.color(light-gray);
 }
 
 .ellipsis {
-  font-size: 1.5rem;
-  color: #828fa3;
+  font-size: u.rem(24);
+  color: u.color(gray);
   line-height: 1;
 } 
