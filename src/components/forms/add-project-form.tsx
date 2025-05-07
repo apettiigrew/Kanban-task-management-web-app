@@ -1,6 +1,27 @@
-import { useState } from 'react';
-import { CreateProjectDTO } from '@/models/project';
+'use client';
+
+import { createProject } from '@/actions/projectActions';
+import { useActionState, useEffect } from 'react';
+import { z } from 'zod';
 import styles from './add-project-form.module.scss';
+
+const projectSchema = z.object({
+  title: z.string().min(1, { message: "Title is required" }),
+  description: z.string().min(1, { message: "Description is required" })
+});
+
+type ProjectFormData = z.infer<typeof projectSchema>;
+type FormErrors = Partial<Record<keyof ProjectFormData, string>>;
+
+// Define the validation result type to match the server action return type
+type ProjectValidationResult = {
+  success: boolean;
+  errors?: z.ZodFormattedError<{
+    title: string;
+    description: string;
+  }>;
+  message?: string;
+};
 
 interface AddProjectFormProps {
   onClose: () => void;
@@ -8,43 +29,31 @@ interface AddProjectFormProps {
 }
 
 export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
-  const [formData, setFormData] = useState<CreateProjectDTO>({
-    title: '',
-    description: ''
-  });
-  const [error, setError] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [state, action, pending] = useActionState(createProject, null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch('/api/projects', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to create project');
-      }
-
+  useEffect(() => {
+    if (state?.success) {
       onSuccess?.();
       onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create project');
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+  }, [state, onSuccess, onClose]);
+
+  // Extract errors from formState
+  const errors: FormErrors = {};
+  if (state?.errors) {
+    if (state.errors.title?._errors.length) {
+      errors.title = state.errors.title._errors[0];
+    }
+    if (state.errors.description?._errors.length) {
+      errors.description = state.errors.description._errors[0];
+    }
+  }
+
+  // Get the server error message
+  const serverError = state && !state.success ? state.message : '';
 
   return (
-    <form onSubmit={handleSubmit} className={styles.form}>
+    <form action={action} className={styles.form}>
       <div className={styles.formGroup}>
         <label htmlFor="title" className={styles.label}>
           Project Title
@@ -52,11 +61,12 @@ export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
         <input
           type="text"
           id="title"
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          className={styles.input}
-          required
+          name="title"
+          className={`${styles.input} ${errors.title ? styles.error : ''}`}
         />
+        {errors.title && (
+          <div className={styles.errorText}>{errors.title}</div>
+        )}
       </div>
 
       <div className={styles.formGroup}>
@@ -65,15 +75,17 @@ export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
         </label>
         <textarea
           id="description"
-          value={formData.description || ''}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          name="description"
           rows={3}
-          className={styles.textarea}
+          className={`${styles.textarea} ${errors.description ? styles.error : ''}`}
         />
+        {errors.description && (
+          <div className={styles.errorText}>{errors.description}</div>
+        )}
       </div>
 
-      {error && (
-        <div className={styles.error}>{error}</div>
+      {serverError && (
+        <div className={styles.error}>{serverError}</div>
       )}
 
       <div className={styles.actions}>
@@ -86,10 +98,10 @@ export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
         </button>
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={pending}
           className={`${styles.button} ${styles.submitButton}`}
         >
-          {isSubmitting ? 'Creating...' : 'Create Project'}
+          {pending ? 'Creating...' : 'Create Project'}
         </button>
       </div>
     </form>
