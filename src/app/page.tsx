@@ -2,22 +2,72 @@
 
 import { useContext } from "react";
 
-import { DeviceInfoContext } from "@/providers/device-info-provider";
-import { useState } from "react";
-import { BreakpointPlatform } from "@/models/css-vars";
-import { Sidebar } from "@/components/sidebar/sidebar";
-import { MobileHeader } from "@/components/header/mobile-header";
 import { DesktopHeader } from "@/components/header/desktop-header";
+import { MobileHeader } from "@/components/header/mobile-header";
+import { Sidebar } from "@/components/sidebar/sidebar";
+import { useDebounce } from '@/hooks/useDebounce';
+import { useProjectsQuery } from '@/hooks/useProjects';
+import { BreakpointPlatform } from "@/models/css-vars";
+import { DeviceInfoContext } from "@/providers/device-info-provider";
+import { ChangeEvent, useMemo, useState } from "react";
 import styles from "./page.module.scss";
-import { AddProjectModal } from "@/components/modals/add-project-modal";
 
         
 export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);              
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [search, setSearch] = useState('');
+  const [sort, setSort] = useState<'desc' | 'asc'>('desc');
 
   const deviceInfoContext = useContext(DeviceInfoContext);
   const showMobileCards = deviceInfoContext.breakPoint === BreakpointPlatform.phone;
+
+  // Fetch projects
+  const { data: projects, isLoading, isError } = useProjectsQuery();
+
+  // Debounced search value
+  const debouncedSearch = useDebounce(search, 300);
+
+  // Filter and sort projects
+  const filteredProjects = useMemo(() => {
+    if (!projects) return [];
+    let filtered = projects;
+    if (debouncedSearch) {
+      filtered = filtered.filter(p => p.title.toLowerCase().includes(debouncedSearch.toLowerCase()));
+    }
+    filtered = filtered.sort((a, b) => {
+      if (sort === 'desc') {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      } else {
+        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+      }
+    });
+    return filtered;
+  }, [projects, debouncedSearch, sort]);
+
+  // ProjectCard component
+  function ProjectCard({ project }: { project: any }) {
+    return (
+      <div className={styles.projectCard}>
+        <div className={styles.projectCardHeader}>{project.title}</div>
+        <div className={styles.projectCardDesc}>{project.description}</div>
+      </div>
+    );
+  }
+
+  // ProjectGrid component
+  function ProjectGrid() {
+    if (isLoading) return <div>Loading projects...</div>;
+    if (isError) return <div>Failed to load projects.</div>;
+    if (!filteredProjects.length) return <div>No projects found.</div>;
+    return (
+      <div className={styles.projectsGrid}>
+        {filteredProjects.map(project => (
+          <ProjectCard key={project.id} project={project} />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <main className={styles.main}>
@@ -34,15 +84,28 @@ export default function Home() {
             <DesktopHeader onAddTask={() => setModalOpen(true)} />
           )}
         </div>
-        {/* <div>
-          <div className={styles.message}>
-            This board is empty. Create a new column to get started.
+        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24}}>
+          <div>
+            <label htmlFor="sort" style={{marginRight: 8, fontWeight: 500}}>Sort by</label>
+            <select id="sort" value={sort} onChange={e => setSort(e.target.value as 'desc' | 'asc')}>
+              <option value="desc">Most recently active</option>
+              <option value="asc">Oldest first</option>
+            </select>
           </div>
-          <AppButton variant="primary" size="large">
-            <AddIcon style={{ marginRight: 8, verticalAlign: 'middle' }} />
-            Add New Column
-          </AppButton>
-        </div> */}
+          <div>
+            <label htmlFor="search" style={{marginRight: 8, fontWeight: 500}}>Search</label>
+            <input
+              id="search"
+              type="text"
+              placeholder="Search boards"
+              value={search}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+              style={{padding: '0.5rem 1rem', borderRadius: 6, border: '1px solid #ccc', minWidth: 220}}
+            />
+          </div>
+        </div>
+        <h2 style={{marginTop: 32, marginBottom: 0}}>Boards</h2>
+        <ProjectGrid />
       </div>
     </main>
   );

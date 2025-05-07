@@ -16,7 +16,7 @@ export interface CreateProjectDTO {
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 // Fetch all projects
-export function useProjects() {
+export function useProjectsQuery() {
   return useQuery<Project[]>({
     queryKey: ['projects'],
     queryFn: async () => {

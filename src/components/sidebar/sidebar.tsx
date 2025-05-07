@@ -1,9 +1,9 @@
+import { useProjectsQuery } from '@/hooks/useProjects';
 import React, { useState } from 'react';
-import styles from './sidebar.module.scss';
-import { AddIcon, EyeIcon } from '../icons/icons';
 import { AppButtonWithIcon } from '../button/AppButton';
+import { AddIcon, EyeIcon } from '../icons/icons';
 import { AddProjectModal } from '../modals/add-project-modal';
-import { useProjects, Project } from '@/hooks/useProjects';
+import styles from './sidebar.module.scss';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -15,8 +15,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onShowSidebar, onHi
   const [modalOpen, setModalOpen] = useState(false);
   const [activeProjectId, setActiveProjectId] = useState<number | null>(null);
   
-  // Use TanStack Query to fetch projects
-  const { data: projects, isLoading, isError, refetch } = useProjects();
+  const { data: projects, isLoading, isError, refetch } = useProjectsQuery();
 
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
