@@ -2,6 +2,8 @@
 
 import { useContext } from "react";
 
+import { AppInput } from "@/components/AppInput";
+import { DropdownMenu } from '@/components/dropdown-menu/DropdownMenu';
 import { DesktopHeader } from "@/components/header/desktop-header";
 import { MobileHeader } from "@/components/header/mobile-header";
 import { Sidebar } from "@/components/sidebar/sidebar";
@@ -9,10 +11,9 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useProjectsQuery } from '@/hooks/useProjects';
 import { BreakpointPlatform } from "@/models/css-vars";
 import { DeviceInfoContext } from "@/providers/device-info-provider";
-import { ChangeEvent, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import styles from "./page.module.scss";
-import { DropdownMenu } from '@/components/dropdown-menu/DropdownMenu';
-
+import { SearchIcon } from "@/components/icons/icons";
 
 export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -23,28 +24,11 @@ export default function Home() {
   const deviceInfoContext = useContext(DeviceInfoContext);
   const showMobileCards = deviceInfoContext.breakPoint === BreakpointPlatform.phone;
 
-  // Fetch projects
-  const { data: projects, isLoading, isError } = useProjectsQuery();
-
   // Debounced search value
   const debouncedSearch = useDebounce(search, 300);
 
-  // Filter and sort projects
-  const filteredProjects = useMemo(() => {
-    if (!projects) return [];
-    let filtered = projects;
-    if (debouncedSearch) {
-      filtered = filtered.filter(p => p.title.toLowerCase().includes(debouncedSearch.toLowerCase()));
-    }
-    filtered = filtered.sort((a, b) => {
-      if (sort === 'desc') {
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      } else {
-        return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-      }
-    });
-    return filtered;
-  }, [projects, debouncedSearch, sort]);
+  // Fetch projects (filtered for main page)
+  const { data: projects, isLoading, isError } = useProjectsQuery({ search: debouncedSearch, sort });
 
   // ProjectCard component
   function ProjectCard({ project }: { project: any }) {
@@ -60,10 +44,10 @@ export default function Home() {
   function ProjectGrid() {
     if (isLoading) return <div>Loading projects...</div>;
     if (isError) return <div>Failed to load projects.</div>;
-    if (!filteredProjects.length) return <div>No projects found.</div>;
+    if (!projects || !projects.length) return <div>No projects found.</div>;
     return (
       <div className={styles.projectsGrid}>
-        {filteredProjects.map(project => (
+        {projects.map(project => (
           <ProjectCard key={project.id} project={project} />
         ))}
       </div>
@@ -107,14 +91,14 @@ export default function Home() {
               />
             </div>
             <div>
-              <label htmlFor="search" className={styles.searchLabel}>Search</label>
-              <input
-                id="search"
-                type="text"
-                placeholder="Search boards"
+              <AppInput
                 value={search}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+                onChange={setSearch}
+                placeholder="Search boards"
                 className={styles.searchInput}
+                id="search"
+                wrapperClassName={styles.searchBoxWrapper}
+                icon={<SearchIcon />}
               />
             </div>
           </div>

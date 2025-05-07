@@ -13,18 +13,40 @@ export interface CreateProjectDTO {
   description?: string;
 }
 
+export interface ProjectsQueryParams {
+  search?: string;
+  sort?: 'asc' | 'desc';
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
-// Fetch all projects
-export function useProjectsQuery() {
+// Fetch all projects or filtered projects
+export function useProjectsQuery(params?: ProjectsQueryParams) {
   return useQuery<Project[]>({
-    queryKey: ['projects'],
+    queryKey: ['projects', params || {}],
     queryFn: async () => {
+      // Always fetch all projects from the API (since your API does not support search/sort params)
       const response = await fetch(`${API_URL}/api/projects`);
       if (!response.ok) {
         throw new Error('Failed to fetch projects');
       }
-      return response.json();
+      let projects: Project[] = await response.json();
+      // If params are provided, filter/sort client-side
+      if (params) {
+        if (params.search) {
+          projects = projects.filter(p => p.title.toLowerCase().includes(params.search!.toLowerCase()));
+        }
+        if (params.sort) {
+          projects = projects.sort((a, b) => {
+            if (params.sort === 'desc') {
+              return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+            } else {
+              return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+            }
+          });
+        }
+      }
+      return projects;
     },
   });
 }
@@ -50,7 +72,7 @@ export function useCreateProject() {
       return response.json();
     },
     onSuccess: () => {
-      // Invalidate projects query to trigger a refetch
+      // Invalidate all projects queries to trigger a refetch
       queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
   });
