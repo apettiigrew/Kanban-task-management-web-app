@@ -4,22 +4,44 @@
   gap: 1.2rem;
   align-items: stretch;
 }
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #222;
+  margin: 0;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
 .label {
   font-weight: 600;
   color: #222;
-  margin-bottom: 0.2rem;
 }
-.input {
+
+.input, .textarea {
   padding: 0.7rem 1rem;
   border: 1px solid #e4ebfa;
   border-radius: 0.5rem;
   font-size: 1rem;
   outline: none;
   transition: border 0.2s;
+  font-family: inherit;
+  resize: vertical;
 }
-.input:focus {
+
+.textarea {
+  min-height: 100px;
+}
+
+.input:focus, .textarea:focus {
   border-color: #635fc7;
 }
+
 .error {
   color: #ea5555;
   font-size: 0.95rem;

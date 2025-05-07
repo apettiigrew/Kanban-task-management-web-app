@@ -1,15 +1,20 @@
 import { AddProjectForm } from "../forms/add-project-form";
 import { Modal } from "./modal";
 
+interface ProjectData {
+  title: string;
+  description: string;
+}
+
 interface AddProjectModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (title: string) => void;
+  onSubmit: (data: ProjectData) => void;
 }
 
 export const AddProjectModal: React.FC<AddProjectModalProps> = ({ open, onClose, onSubmit }) => {
-  const handleSubmit = (title: string) => {
-    onSubmit(title);
+  const handleSubmit = (data: ProjectData) => {
+    onSubmit(data);
     onClose();
   };
 
