@@ -1,10 +1,12 @@
+@use "../../styles/utils/index" as u;
+
 .backdrop {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0,0,0,0.18);
+  background: rgba(0, 0, 0, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,10 +17,17 @@
   background: #fff;
   border-radius: 1rem;
   padding: 2rem 1.2rem 1.2rem 1.2rem;
-  min-width: 90vw;
-  max-width: 400px;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.12);
+  width: 90vw;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.12);
   position: relative;
+
+  @include u.mqw-from(tablet_p) {
+    width: 77vw;
+  }
+
+  @include u.mqw-from(tablet_l) {
+    width: 44vw;
+  }
 }
 
 .close {
@@ -30,4 +39,4 @@
   font-size: 2rem;
   color: #828fa3;
   cursor: pointer;
-} 
+}
