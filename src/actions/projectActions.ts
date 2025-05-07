@@ -9,8 +9,8 @@ const projectSchema = z.object({
   description: z.string().min(1, { message: "Description is required" })
 });
 
-type ProjectValidationResult = {
-  success: boolean;
+export interface ProjectValidationResult {
+  success: boolean
   errors?: z.ZodFormattedError<{
     title: string;
     description: string;
@@ -18,7 +18,7 @@ type ProjectValidationResult = {
   message?: string;
 };
 
-export async function createProject(formData: FormData): Promise<ProjectValidationResult> {
+export async function createProject(prevState: ProjectValidationResult, formData: FormData): Promise<ProjectValidationResult> {
   
   const title = formData.get('title') as string;
   const description = formData.get('description') as string;

@@ -13,7 +13,6 @@ const projectSchema = z.object({
 type ProjectFormData = z.infer<typeof projectSchema>;
 type FormErrors = Partial<Record<keyof ProjectFormData, string>>;
 
-// Define the validation result type to match the server action return type
 type ProjectValidationResult = {
   success: boolean;
   errors?: z.ZodFormattedError<{
@@ -23,13 +22,17 @@ type ProjectValidationResult = {
   message?: string;
 };
 
+const initialState: ProjectValidationResult = {
+  success: false,
+};
+
 interface AddProjectFormProps {
   onClose: () => void;
   onSuccess?: () => void;
 }
 
 export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
-  const [state, action, pending] = useActionState(createProject, null);
+  const [state, formAction, pending] = useActionState(createProject, initialState);
 
   useEffect(() => {
     if (state?.success) {
@@ -38,7 +41,6 @@ export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
     }
   }, [state, onSuccess, onClose]);
 
-  // Extract errors from formState
   const errors: FormErrors = {};
   if (state?.errors) {
     if (state.errors.title?._errors.length) {
@@ -49,11 +51,10 @@ export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
     }
   }
 
-  // Get the server error message
   const serverError = state && !state.success ? state.message : '';
 
   return (
-    <form action={action} className={styles.form}>
+    <form action={formAction} className={styles.form}>
       <div className={styles.formGroup}>
         <label htmlFor="title" className={styles.label}>
           Project Title
@@ -84,9 +85,9 @@ export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
         )}
       </div>
 
-      {serverError && (
+      {/* {serverError && (
         <div className={styles.error}>{serverError}</div>
-      )}
+      )} */}
 
       <div className={styles.actions}>
         <button
