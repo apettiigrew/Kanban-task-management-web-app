@@ -7,6 +7,7 @@ import { AddProjectModal } from '../modals/add-project-modal';
 interface Board {
   name: string;
   active: boolean;
+  description?: string;
 }
 
 interface SidebarProps {
@@ -26,10 +27,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onShowSidebar, onHi
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
   
-  const handleCreateProject = (title: string) => {
+  const handleCreateProject = (data: { title: string; description: string }) => {
     // Create new board and set it as active
     const newBoards = boards.map(board => ({ ...board, active: false }));
-    newBoards.push({ name: title, active: true });
+    newBoards.push({ 
+      name: data.title, 
+      description: data.description,
+      active: true 
+    });
     setBoards(newBoards);
     setModalOpen(false);
   };

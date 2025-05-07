@@ -1,64 +1,97 @@
-import React, { useState } from 'react';
-import styles from './add-project-form.module.scss';
-import { AppButton } from '../button/AppButton';
-
-interface ProjectData {
-  title: string;
-  description: string;
-}
+import { useState } from 'react';
+import { CreateProjectDTO } from '@/models/project';
 
 interface AddProjectFormProps {
-  onSubmit: (data: ProjectData) => void;
+  onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export const AddProjectForm: React.FC<AddProjectFormProps> = ({ onSubmit }) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [error, setError] = useState('');
+export default function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
+  const [formData, setFormData] = useState<CreateProjectDTO>({
+    title: '',
+    description: ''
+  });
+  const [error, setError] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) {
-      setError('Title is required');
-      return;
-    }
     setError('');
-    onSubmit({
-      title: title.trim(),
-      description: description.trim()
-    });
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to create project');
+      }
+
+      onSuccess?.();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create project');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit}>
-      <h2 className={styles.title}>Add Project</h2>
-      <div className={styles.field}>
-        <label className={styles.label} htmlFor="project-title">Title</label>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+          Project Title
+        </label>
         <input
-          id="project-title"
-          className={styles.input}
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          placeholder="Enter project title"
-          autoFocus
+          type="text"
+          id="title"
+          value={formData.title}
+          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          required
         />
       </div>
-      <div className={styles.field}>
-        <label className={styles.label} htmlFor="project-description">Description</label>
+
+      <div>
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+          Description
+        </label>
         <textarea
-          id="project-description"
-          className={styles.textarea}
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-          placeholder="Enter project description"
-          rows={4}
+          id="description"
+          value={formData.description}
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          rows={3}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
         />
       </div>
-      {error && <div className={styles.error}>{error}</div>}
-      <AppButton type="submit" variant="primary" size="large">
-        Add Project
-      </AppButton>
+
+      {error && (
+        <div className="text-red-600 text-sm">{error}</div>
+      )}
+
+      <div className="flex justify-end space-x-3">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+        >
+          {isSubmitting ? 'Creating...' : 'Create Project'}
+        </button>
+      </div>
     </form>
   );
-};
+}
 
