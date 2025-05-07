@@ -11,7 +11,7 @@ import { BreakpointPlatform } from "@/models/css-vars";
 import { DeviceInfoContext } from "@/providers/device-info-provider";
 import { ChangeEvent, useMemo, useState } from "react";
 import styles from "./page.module.scss";
-import { DropdownMenu } from '@/components/DropdownMenu';
+import { DropdownMenu } from '@/components/dropdown-menu/DropdownMenu';
 
 
 export default function Home() {

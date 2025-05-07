@@ -1,3 +1,5 @@
+@use "./../../styles/utils/index" as u;
+
 .dropdown {
   position: relative;
   display: inline-block;
@@ -24,7 +26,7 @@
   border-color: #635fc7;
 }
 .arrow {
-  margin-left: auto;
+  margin-left: u.rem(10);
   font-size: 1.1em;
   color: #635fc7;
 }
