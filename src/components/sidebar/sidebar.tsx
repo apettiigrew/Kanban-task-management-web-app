@@ -3,15 +3,7 @@ import styles from './sidebar.module.scss';
 import { AddIcon, EyeIcon } from '../icons/icons';
 import { AppButtonWithIcon } from '../button/AppButton';
 import { AddProjectModal } from '../modals/add-project-modal';
-import useSWR from 'swr';
-
-interface Project {
-  id: number;
-  title: string;
-  description?: string;
-  created_at: string;
-  updated_at: string;
-}
+import { useProjects, Project } from '@/hooks/useProjects';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -19,17 +11,12 @@ interface SidebarProps {
   onHideSidebar: () => void;
 }
 
-// Fetcher function for SWR
-const fetcher = (url: string) => fetch(url).then(res => res.json());
-
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onShowSidebar, onHideSidebar }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [activeProjectId, setActiveProjectId] = useState<number | null>(null);
   
-  const { data: projects, error, isLoading, mutate } = useSWR<Project[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/projects`, fetcher, {
-    refreshInterval: 10000,
-    revalidateOnFocus: true,
-  });
+  // Use TanStack Query to fetch projects
+  const { data: projects, isLoading, isError, refetch } = useProjects();
 
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
@@ -64,7 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onShowSidebar, onHi
             <ul className={styles.boardList}>
               {isLoading ? (
                 <li className={styles.loadingItem}>Loading projects...</li>
-              ) : error ? (
+              ) : isError ? (
                 <li className={styles.errorItem}>Failed to load projects</li>
               ) : projects?.length ? (
                 projects.map((project) => (
@@ -96,7 +83,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onShowSidebar, onHi
       </aside>
       <AddProjectModal isOpen={modalOpen} onClose={handleCloseModal} onSuccess={() => {
         setModalOpen(false);
-        mutate(); // Refresh the projects list after creating a new project
+        refetch(); // Refresh the projects list after creating a new project
       }} />
     </>
   );

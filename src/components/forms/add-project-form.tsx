@@ -1,9 +1,9 @@
 'use client';
 
-import { createProject } from '@/actions/projectActions';
-import { useActionState, useEffect } from 'react';
+import { useState } from 'react';
 import { z } from 'zod';
 import styles from './add-project-form.module.scss';
+import { useCreateProject } from '@/hooks/useProjects';
 
 const projectSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
@@ -13,48 +13,70 @@ const projectSchema = z.object({
 type ProjectFormData = z.infer<typeof projectSchema>;
 type FormErrors = Partial<Record<keyof ProjectFormData, string>>;
 
-type ProjectValidationResult = {
-  success: boolean;
-  errors?: z.ZodFormattedError<{
-    title: string;
-    description: string;
-  }>;
-  message?: string;
-};
-
-const initialState: ProjectValidationResult = {
-  success: false,
-};
-
 interface AddProjectFormProps {
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess: () => void;
 }
 
 export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
-  const [state, formAction, pending] = useActionState(createProject, initialState);
+  const [formData, setFormData] = useState<ProjectFormData>({
+    title: '',
+    description: ''
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
+  
+  // Use the mutation hook from TanStack Query
+  const createProjectMutation = useCreateProject();
 
-  useEffect(() => {
-    if (state?.success) {
-      onSuccess?.();
-      onClose();
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear error for this field when user types
+    if (errors[name as keyof ProjectFormData]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
     }
-  }, [state, onSuccess, onClose]);
+  };
 
-  const errors: FormErrors = {};
-  if (state?.errors) {
-    if (state.errors.title?._errors.length) {
-      errors.title = state.errors.title._errors[0];
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate form data
+    const validationResult = projectSchema.safeParse(formData);
+    
+    if (!validationResult.success) {
+      const formattedErrors = validationResult.error.format();
+      const newErrors: FormErrors = {};
+      
+      if (formattedErrors.title?._errors.length) {
+        newErrors.title = formattedErrors.title._errors[0];
+      }
+      
+      if (formattedErrors.description?._errors.length) {
+        newErrors.description = formattedErrors.description._errors[0];
+      }
+      
+      setErrors(newErrors);
+      return;
     }
-    if (state.errors.description?._errors.length) {
-      errors.description = state.errors.description._errors[0];
-    }
-  }
-
-  const serverError = state && !state.success ? state.message : '';
+    
+    // Submit the form using the mutation
+    createProjectMutation.mutate(formData, {
+      onSuccess: () => {
+        onSuccess?.();
+        onClose();
+      }
+    });
+  };
 
   return (
-    <form action={formAction} className={styles.form}>
+    <form onSubmit={handleSubmit} className={styles.form}>
       <div className={styles.formGroup}>
         <label htmlFor="title" className={styles.label}>
           Project Title
@@ -63,6 +85,8 @@ export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
           type="text"
           id="title"
           name="title"
+          value={formData.title}
+          onChange={handleInputChange}
           className={`${styles.input} ${errors.title ? styles.error : ''}`}
         />
         {errors.title && (
@@ -78,6 +102,8 @@ export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
           id="description"
           name="description"
           rows={3}
+          value={formData.description}
+          onChange={handleInputChange}
           className={`${styles.textarea} ${errors.description ? styles.error : ''}`}
         />
         {errors.description && (
@@ -85,9 +111,13 @@ export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
         )}
       </div>
 
-      {/* {serverError && (
-        <div className={styles.error}>{serverError}</div>
-      )} */}
+      {createProjectMutation.isError && (
+        <div className={styles.error}>
+          {createProjectMutation.error instanceof Error 
+            ? createProjectMutation.error.message 
+            : 'An error occurred while creating the project'}
+        </div>
+      )}
 
       <div className={styles.actions}>
         <button
@@ -99,10 +129,10 @@ export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
         </button>
         <button
           type="submit"
-          disabled={pending}
+          disabled={createProjectMutation.isPending}
           className={`${styles.button} ${styles.submitButton}`}
         >
-          {pending ? 'Creating...' : 'Create Project'}
+          {createProjectMutation.isPending ? 'Creating...' : 'Create Project'}
         </button>
       </div>
     </form>

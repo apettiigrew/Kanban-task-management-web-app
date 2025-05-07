@@ -5,7 +5,7 @@ import { AddProjectForm } from '../forms/add-project-form';
 interface AddProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess: () => void;
 }
 
 export function AddProjectModal({ isOpen, onClose, onSuccess }: AddProjectModalProps) {
