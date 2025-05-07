@@ -1,9 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { revalidatePath } from 'next/cache';
 
-// Define the schema with Zod
 const projectSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
   description: z.string().min(1, { message: "Description is required" })
@@ -22,7 +20,6 @@ export async function createProject(prevState: ProjectValidationResult, formData
   
   const title = formData.get('title') as string;
   const description = formData.get('description') as string;
-  
   
   const validationResult = projectSchema.safeParse({ title, description });
   
@@ -52,7 +49,6 @@ export async function createProject(prevState: ProjectValidationResult, formData
       };
     }
 
-    
     return {
       success: true,
       message: 'Project created successfully'
