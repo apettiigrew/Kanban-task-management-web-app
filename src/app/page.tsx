@@ -12,9 +12,9 @@ import { DeviceInfoContext } from "@/providers/device-info-provider";
 import { ChangeEvent, useMemo, useState } from "react";
 import styles from "./page.module.scss";
 
-        
+
 export default function Home() {
-  const [modalOpen, setModalOpen] = useState(false);              
+  const [modalOpen, setModalOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<'desc' | 'asc'>('desc');
@@ -84,28 +84,30 @@ export default function Home() {
             <DesktopHeader onAddTask={() => setModalOpen(true)} />
           )}
         </div>
-        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24}}>
-          <div>
-            <label htmlFor="sort" style={{marginRight: 8, fontWeight: 500}}>Sort by</label>
-            <select id="sort" value={sort} onChange={e => setSort(e.target.value as 'desc' | 'asc')}>
-              <option value="desc">Most recently active</option>
-              <option value="asc">Oldest first</option>
-            </select>
+        <div className={styles.content}>
+          <div className={styles.filterBar}>
+            <div>
+              <label htmlFor="sort" className={styles.sortLabel}>Sort by</label>
+              <select id="sort" value={sort} onChange={e => setSort(e.target.value as 'desc' | 'asc')}>
+                <option value="desc">Most recently active</option>
+                <option value="asc">Oldest first</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="search" className={styles.searchLabel}>Search</label>
+              <input
+                id="search"
+                type="text"
+                placeholder="Search boards"
+                value={search}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
+                className={styles.searchInput}
+              />
+            </div>
           </div>
-          <div>
-            <label htmlFor="search" style={{marginRight: 8, fontWeight: 500}}>Search</label>
-            <input
-              id="search"
-              type="text"
-              placeholder="Search boards"
-              value={search}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
-              style={{padding: '0.5rem 1rem', borderRadius: 6, border: '1px solid #ccc', minWidth: 220}}
-            />
-          </div>
+          <h2 style={{ marginTop: 32, marginBottom: 0 }}>Boards</h2>
+          <ProjectGrid />
         </div>
-        <h2 style={{marginTop: 32, marginBottom: 0}}>Boards</h2>
-        <ProjectGrid />
       </div>
     </main>
   );

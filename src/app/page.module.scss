@@ -11,8 +11,10 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  // align-items: center;
-  // justify-content: center;
+}
+
+.content {
+  padding: u.rem(24);
 }
 
 .header {
@@ -33,6 +35,26 @@
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1.5rem;
   margin-top: 2rem;
+}
+
+.filterBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+}
+
+.sortLabel,
+.searchLabel {
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+.searchInput {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  min-width: 220px;
 }
 
 .projectCard {
