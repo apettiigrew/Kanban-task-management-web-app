@@ -11,6 +11,7 @@ import { BreakpointPlatform } from "@/models/css-vars";
 import { DeviceInfoContext } from "@/providers/device-info-provider";
 import { ChangeEvent, useMemo, useState } from "react";
 import styles from "./page.module.scss";
+import { DropdownMenu } from '@/components/DropdownMenu';
 
 
 export default function Home() {
@@ -88,10 +89,22 @@ export default function Home() {
           <div className={styles.filterBar}>
             <div>
               <label htmlFor="sort" className={styles.sortLabel}>Sort by</label>
-              <select id="sort" value={sort} onChange={e => setSort(e.target.value as 'desc' | 'asc')}>
-                <option value="desc">Most recently active</option>
-                <option value="asc">Oldest first</option>
-              </select>
+              <DropdownMenu
+                label={sort === 'desc' ? 'Most recently active' : 'Oldest first'}
+                items={[
+                  {
+                    label: 'Most recently active',
+                    onClick: () => setSort('desc'),
+                    disabled: sort === 'desc',
+                  },
+                  {
+                    label: 'Oldest first',
+                    onClick: () => setSort('asc'),
+                    disabled: sort === 'asc',
+                  },
+                ]}
+                align="left"
+              />
             </div>
             <div>
               <label htmlFor="search" className={styles.searchLabel}>Search</label>
