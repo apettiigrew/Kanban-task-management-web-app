@@ -17,6 +17,7 @@
     "react-dom": "^19.0.0",
     "reset-css": "^5.0.2",
     "sass": "^1.87.0",
+    "swr": "^2.3.3",
     "zod": "^3.24.4"
   },
   "devDependencies": {

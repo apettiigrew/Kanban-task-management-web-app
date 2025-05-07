@@ -3,11 +3,14 @@ import styles from './sidebar.module.scss';
 import { AddIcon, EyeIcon } from '../icons/icons';
 import { AppButtonWithIcon } from '../button/AppButton';
 import { AddProjectModal } from '../modals/add-project-modal';
+import useSWR from 'swr';
 
-interface Board {
-  name: string;
-  active: boolean;
+interface Project {
+  id: number;
+  title: string;
   description?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface SidebarProps {
@@ -16,23 +19,23 @@ interface SidebarProps {
   onHideSidebar: () => void;
 }
 
+// Fetcher function for SWR
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onShowSidebar, onHideSidebar }) => {
   const [modalOpen, setModalOpen] = useState(false);
-  const [boards, setBoards] = useState<Board[]>([
-    { name: 'Platform Launch', active: true },
-    { name: 'Marketing Plan', active: false },
-    { name: 'Roadmap', active: false },
-  ]);
+  const [activeProjectId, setActiveProjectId] = useState<number | null>(null);
+  
+  const { data: projects, error, isLoading, mutate } = useSWR<Project[]>(`${process.env.NEXT_PUBLIC_API_URL}/api/projects`, fetcher, {
+    refreshInterval: 10000,
+    revalidateOnFocus: true,
+  });
 
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
   
-  const handleBoardClick = (boardName: string) => {
-    const newBoards = boards.map(board => ({
-      ...board,
-      active: board.name === boardName
-    }));
-    setBoards(newBoards);
+  const handleProjectClick = (projectId: number) => {
+    setActiveProjectId(projectId);
   };
 
   if (collapsed) {
@@ -55,15 +58,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onShowSidebar, onHi
         </div>
         <div className={styles.boardsSection}>
           <div className={styles.boardsLabel}>
-            <p>ALL BOARDS</p>
+            <p>ALL BOARDS ({isLoading ? '...' : projects?.length || 0})</p>
           </div>
-          <ul className={styles.boardList}>
-            <li>
-              <AppButtonWithIcon icon={<AddIcon />} onClick={handleOpenModal}>
-                Create New Board
-              </AppButtonWithIcon>
-            </li>
-          </ul>
+          <div className={styles.projectsContainer}>
+            <ul className={styles.boardList}>
+              {isLoading ? (
+                <li className={styles.loadingItem}>Loading projects...</li>
+              ) : error ? (
+                <li className={styles.errorItem}>Failed to load projects</li>
+              ) : projects?.length ? (
+                projects.map((project) => (
+                  <li 
+                    key={project.id} 
+                    className={`${styles.projectItem} ${project.id === activeProjectId ? styles.active : ''}`}
+                    onClick={() => handleProjectClick(project.id)}
+                  >
+                    <span className={styles.projectIcon}>📋</span>
+                    {project.title}
+                  </li>
+                ))
+              ) : (
+                <li className={styles.emptyItem}>No projects found</li>
+              )}
+            </ul>
+          </div>
+          <div className={styles.createButtonWrapper}>
+            <AppButtonWithIcon icon={<AddIcon />} onClick={handleOpenModal}>
+              Create New Board
+            </AppButtonWithIcon>
+          </div>
         </div>
         <div className={styles.bottomSection}>
           <button className={styles.hideSidebar} onClick={onHideSidebar}>
@@ -71,8 +94,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onShowSidebar, onHi
           </button>
         </div>
       </aside>
-      <AddProjectModal isOpen={modalOpen} onClose={handleCloseModal} onSuccess={()=>{
+      <AddProjectModal isOpen={modalOpen} onClose={handleCloseModal} onSuccess={() => {
         setModalOpen(false);
+        mutate(); // Refresh the projects list after creating a new project
       }} />
     </>
   );

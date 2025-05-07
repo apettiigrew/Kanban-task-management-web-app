@@ -32,7 +32,7 @@ export async function createProject(prevState: ProjectValidationResult, formData
   }
   
   try {
-    // Make API call or database operation
+    
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/projects`, {
       method: 'POST',
       headers: {

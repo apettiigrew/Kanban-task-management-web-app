@@ -46,6 +46,8 @@
 }
 .boardsSection {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 .boardsLabel {
   color: #828fa3;
@@ -190,4 +192,67 @@
     width: 28px;
     height: 28px;
   }
+}
+
+.projectsContainer {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  /* Add scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: #635fc7 #f4f7fd;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f4f7fd;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: #635fc7;
+    border-radius: 3px;
+  }
+}
+
+.projectItem {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.7rem 1.2rem;
+  border-radius: 0 2rem 2rem 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #828fa3;
+  margin-bottom: 0.3rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  
+  &:hover {
+    background: #f4f7fd;
+  }
+  
+  &.active {
+    background: #635fc7;
+    color: #fff;
+  }
+}
+
+.projectIcon {
+  font-size: 1.2rem;
+}
+
+.loadingItem,
+.errorItem,
+.emptyItem {
+  padding: 0.7rem 1.2rem;
+  color: #828fa3;
+  font-style: italic;
+}
+
+.createButtonWrapper {
+  margin-top: auto;
+  padding-bottom: 0.5rem;
 } 
