@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { CreateProjectDTO } from '@/models/project';
+import styles from './add-project-form.module.scss';
 
 interface AddProjectFormProps {
   onClose: () => void;
   onSuccess?: () => void;
 }
 
-export default function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
+export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
   const [formData, setFormData] = useState<CreateProjectDTO>({
     title: '',
     description: ''
@@ -43,9 +44,9 @@ export default function AddProjectForm({ onClose, onSuccess }: AddProjectFormPro
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+    <form onSubmit={handleSubmit} className={styles.form}>
+      <div className={styles.formGroup}>
+        <label htmlFor="title" className={styles.label}>
           Project Title
         </label>
         <input
@@ -53,40 +54,40 @@ export default function AddProjectForm({ onClose, onSuccess }: AddProjectFormPro
           id="title"
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          className={styles.input}
           required
         />
       </div>
 
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+      <div className={styles.formGroup}>
+        <label htmlFor="description" className={styles.label}>
           Description
         </label>
         <textarea
           id="description"
-          value={formData.description}
+          value={formData.description || ''}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           rows={3}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          className={styles.textarea}
         />
       </div>
 
       {error && (
-        <div className="text-red-600 text-sm">{error}</div>
+        <div className={styles.error}>{error}</div>
       )}
 
-      <div className="flex justify-end space-x-3">
+      <div className={styles.actions}>
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className={`${styles.button} ${styles.cancelButton}`}
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+          className={`${styles.button} ${styles.submitButton}`}
         >
           {isSubmitting ? 'Creating...' : 'Create Project'}
         </button>

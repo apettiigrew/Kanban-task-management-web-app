@@ -16,13 +16,7 @@ export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);              
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-
   const deviceInfoContext = useContext(DeviceInfoContext);
-  
-  const handleAddProject = (title: string) => {
-    alert(`Project added: ${title}`); // Replace with real logic
-  };
-
   const showMobileCards = deviceInfoContext.breakPoint === BreakpointPlatform.phone;
 
   return (
@@ -39,11 +33,6 @@ export default function Home() {
           ) : (
             <DesktopHeader onAddTask={() => setModalOpen(true)} />
           )}
-          <AddProjectModal
-            open={modalOpen}
-            onClose={() => setModalOpen(false)}
-            onSubmit={handleAddProject}
-          />
         </div>
         {/* <div>
           <div className={styles.message}>
