@@ -15,7 +15,9 @@
   cursor: pointer;
   background: u.color(primary);
   color: u.color(white);
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
   font-family: inherit;
 
   @include u.mqw-from(tablet) {
@@ -43,9 +45,20 @@
 
   &:active {
     transform: scale(0.96);
-    box-shadow: 0 2px 8px 0 rgba(99, 95, 199, 0.10);
+    box-shadow: 0 2px 8px 0 rgba(99, 95, 199, 0.1);
   }
-}
+
+  &.secondary {
+    background: none;
+    color: u.color(primary);
+    border: u.rem(1) solid;
+  }
+
+  &.destructive {
+    background: u.color(red);
+    color: u.color(white);
+  }
+} 
 
 // .large {
 //   font-size: u.rem(32);
@@ -87,4 +100,4 @@
 .icon {
   display: inline-flex;
   align-items: center;
-} 
+}

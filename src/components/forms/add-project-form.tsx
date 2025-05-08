@@ -5,6 +5,7 @@ import { z } from 'zod';
 import styles from './add-project-form.module.scss';
 import { useCreateProject } from '@/hooks/useProjects';
 import { AppInput } from '../input/AppInput';
+import { AppButton } from '../button/AppButton';
 
 const projectSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
@@ -25,7 +26,7 @@ export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
     description: ''
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  
+
   // Use the mutation hook from TanStack Query
   const createProjectMutation = useCreateProject();
 
@@ -35,7 +36,7 @@ export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
       ...prev,
       [name]: value
     }));
-    
+
     // Clear error for this field when user types
     if (errors[name as keyof ProjectFormData]) {
       setErrors(prev => ({
@@ -47,26 +48,26 @@ export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form data
     const validationResult = projectSchema.safeParse(formData);
-    
+
     if (!validationResult.success) {
       const formattedErrors = validationResult.error.format();
       const newErrors: FormErrors = {};
-      
+
       if (formattedErrors.title?._errors.length) {
         newErrors.title = formattedErrors.title._errors[0];
       }
-      
+
       if (formattedErrors.description?._errors.length) {
         newErrors.description = formattedErrors.description._errors[0];
       }
-      
+
       setErrors(newErrors);
       return;
     }
-    
+
     // Submit the form using the mutation
     createProjectMutation.mutate(formData, {
       onSuccess: () => {
@@ -110,27 +111,25 @@ export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
 
       {createProjectMutation.isError && (
         <div className={styles.error}>
-          {createProjectMutation.error instanceof Error 
-            ? createProjectMutation.error.message 
+          {createProjectMutation.error instanceof Error
+            ? createProjectMutation.error.message
             : 'An error occurred while creating the project'}
         </div>
       )}
 
       <div className={styles.actions}>
-        <button
+        <AppButton
           type="button"
           onClick={onClose}
-          className={`${styles.button} ${styles.cancelButton}`}
-        >
+          variant="secondary">
           Cancel
-        </button>
-        <button
+        </AppButton>
+        <AppButton
           type="submit"
           disabled={createProjectMutation.isPending}
-          className={`${styles.button} ${styles.submitButton}`}
-        >
+          variant="primary">
           {createProjectMutation.isPending ? 'Creating...' : 'Create Project'}
-        </button>
+        </AppButton>
       </div>
     </form>
   );

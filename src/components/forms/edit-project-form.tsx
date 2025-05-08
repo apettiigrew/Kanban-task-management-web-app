@@ -47,16 +47,14 @@ export function EditProjectForm({ project, onClose, onSuccess }: EditProjectForm
           id="title"
           value={title}
           onChange={setTitle}
-          placeholder="Enter project title"
         />
       </div>
       <div className={styles.formGroup}>
-        <label htmlFor="description">Description (optional)</label>
+        <label htmlFor="description">Description</label>
         <AppInput
           id="description"
           value={description}
           onChange={setDescription}
-          placeholder="Enter project description"
         />
       </div>
       {error && <div className={styles.error}>{error}</div>}
@@ -65,7 +63,7 @@ export function EditProjectForm({ project, onClose, onSuccess }: EditProjectForm
           Cancel
         </AppButton>
         <AppButton type="submit" disabled={updateProject.isPending}>
-          Save Changes
+          Update
         </AppButton>
       </div>
     </form>

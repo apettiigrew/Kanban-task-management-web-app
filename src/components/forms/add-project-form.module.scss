@@ -74,38 +74,3 @@
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
 }
-
-.cancelButton {
-  background-color: white;
-  color: #4b5563;
-  border: 1px solid #d1d5db;
-  
-  &:hover {
-    background-color: #f9fafb;
-  }
-  
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-  }
-}
-
-.submitButton {
-  background-color: #6366f1;
-  color: white;
-  border: 1px solid transparent;
-  
-  &:hover {
-    background-color: #4f46e5;
-  }
-  
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-  }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-} 
