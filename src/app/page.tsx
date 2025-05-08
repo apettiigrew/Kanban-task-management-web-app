@@ -2,12 +2,14 @@
 
 import { useContext } from "react";
 
-import { AppInput } from "@/components/input/AppInput";
 import { DropdownMenu } from '@/components/dropdown-menu/DropdownMenu';
 import { DesktopHeader } from "@/components/header/desktop-header";
 import { MobileHeader } from "@/components/header/mobile-header";
-import { DeleteIcon, EditIcon, SearchIcon } from "@/components/icons/icons";
+import { SearchIcon } from "@/components/icons/icons";
+import { AppInput } from "@/components/input/AppInput";
+import { DeleteProjectModal } from "@/components/modals/delete-project-modal";
 import { EditProjectModal } from '@/components/modals/edit-project-modal';
+import { ProjectGrid } from "@/components/project-grid/project-grid";
 import { Sidebar } from "@/components/sidebar/sidebar";
 import { useDebounce } from '@/hooks/useDebounce';
 import { Project, useProjectsQuery } from '@/hooks/useProjects';
@@ -15,7 +17,6 @@ import { BreakpointPlatform } from "@/models/css-vars";
 import { DeviceInfoContext } from "@/providers/device-info-provider";
 import { useState } from "react";
 import styles from "./page.module.scss";
-import { DeleteProjectModal } from "@/components/modals/delete-project-modal";
 
 export default function Home() {
   const [, setModalOpen] = useState(false);
@@ -33,56 +34,6 @@ export default function Home() {
 
   // Fetch projects (filtered for main page)
   const { data: projects, isLoading, isError } = useProjectsQuery({ search: debouncedSearch, sort });
-
-  // ProjectCard component
-  function ProjectCard({ project }: { project: Project }) {
-    return (
-      <div className={styles.projectCard}>
-        <div className={styles.projectCardHeader}>
-          {project.title}
-
-          <div className={styles.iconGroups}>
-            <button
-              className={styles.editButton}
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditingProject(project);
-              }}
-              aria-label="Edit project"
-            >
-              <EditIcon />
-            </button>
-            <button
-              className={styles.editButton}
-              onClick={(e) => {
-                e.stopPropagation();
-                setDeletingProject(project);
-              }}
-              aria-label="Delete project"
-            >
-              <DeleteIcon />
-            </button>
-          </div>
-
-        </div>
-        <div className={styles.projectCardDesc}>{project.description}</div>
-      </div>
-    );
-  }
-
-  // ProjectGrid component
-  function ProjectGrid() {
-    if (isLoading) return <div>Loading projects...</div>;
-    if (isError) return <div>Failed to load projects.</div>;
-    if (!projects || !projects.length) return <div>No projects found.</div>;
-    return (
-      <div className={styles.projectsGrid}>
-        {projects.map(project => (
-          <ProjectCard key={project.id} project={project} />
-        ))}
-      </div>
-    );
-  }
 
   return (
     <main className={styles.main}>
@@ -132,8 +83,14 @@ export default function Home() {
               />
             </div>
           </div>
-          <h2 style={{ marginTop: 32, marginBottom: 0 }}>Boards</h2>
-          <ProjectGrid />
+          <h2 className={styles.title}>Boards</h2>
+          <ProjectGrid 
+            projects={projects}
+            isLoading={isLoading}
+            isError={isError}
+            onEditProject={setEditingProject}
+            onDeleteProject={setDeletingProject}
+          />
         </div>
       </div>
       {editingProject && (

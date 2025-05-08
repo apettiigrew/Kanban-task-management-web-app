@@ -1,17 +1,16 @@
 @use "./../styles/utils/index" as u;
 
+
 .main {
   display: flex;
   min-height: 100vh;
   width: 100vw;
   background: #f4f5fa;
 }
-
-.iconGroups {
-  display: flex;
-  gap: 8px;
+.title{
+  margin-top: 32px;
+  margin-bottom: 0;
 }
-
 .container {
   flex: 1;
   display: flex;
@@ -33,13 +32,6 @@
   text-align: center;
   margin-bottom: 2rem;
   max-width: 90vw;
-}
-
-.projectsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.5rem;
-  margin-top: 2rem;
 }
 
 .filterBar {
@@ -83,77 +75,9 @@
   border-color: #635fc7;
 }
 
-.projectCard {
-  background: #fff;
-  border-radius: 1.2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-height: 140px;
-  cursor: pointer;
-  transition:
-    box-shadow 0.2s,
-    transform 0.2s;
-  position: relative;
-
-  &:hover {
-    box-shadow: 0 4px 16px rgba(99, 95, 199, 0.12);
-    transform: translateY(-2px) scale(1.01);
-  }
-
-  .projectCardHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .editButton {
-    background: none;
-    border: none;
-    padding: 4px;
-    cursor: pointer;
-    color: var(--text-secondary);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-
-    &:hover {
-      background-color: var(--background-hover);
-      color: var(--text-primary);
-    }
-  }
-}
-
-.projectCardHeader {
-  padding: 1.2rem 1.5rem 0.5rem 1.5rem;
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #222;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.projectCardDesc {
-  padding: 0 1.5rem 1.2rem 1.5rem;
-  color: #555;
-  font-size: 1rem;
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 @media (max-width: 600px) {
   .projectsGrid {
     grid-template-columns: 1fr;
     gap: 1rem;
-  }
-  .projectCard {
-    min-height: 100px;
   }
 }
