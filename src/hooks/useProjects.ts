@@ -24,6 +24,10 @@ export interface UpdateProjectDTO {
   description?: string;
 }
 
+export interface DeleteProjectDTO {
+  id: number;
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 // Fetch all projects or filtered projects
@@ -110,6 +114,31 @@ export function useUpdateProject() {
     },
     onSuccess: () => {
       // Invalidate all projects queries to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+} 
+
+export function useDeleteProject() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (project: Project) => {
+      const response = await fetch(`${API_URL}/api/projects`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: project.id }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete project');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
   });

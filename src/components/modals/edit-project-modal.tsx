@@ -15,7 +15,7 @@ export function EditProjectModal({ isOpen, onClose, onSuccess, project }: EditPr
   return (
     <Modal open={isOpen} onClose={onClose}>
       <div className={styles.container}>
-        <h3 className={styles.title}>Edit Project</h3>
+        <h3 className={styles.title}>Update Project</h3>
         <EditProjectForm
           project={project}
           onClose={onClose} 

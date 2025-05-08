@@ -63,7 +63,7 @@ export function EditProjectForm({ project, onClose, onSuccess }: EditProjectForm
           Cancel
         </AppButton>
         <AppButton type="submit" disabled={updateProject.isPending}>
-          Update
+          Update Project
         </AppButton>
       </div>
     </form>

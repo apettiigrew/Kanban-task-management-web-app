@@ -7,6 +7,11 @@
   background: #f4f5fa;
 }
 
+.iconGroups {
+  display: flex;
+  gap: 8px;
+}
+
 .container {
   flex: 1;
   display: flex;
@@ -73,24 +78,27 @@
   outline: none;
   transition: border 0.2s;
 }
-.searchInput:focus, .searchInput:active {
+.searchInput:focus,
+.searchInput:active {
   border-color: #635fc7;
 }
 
 .projectCard {
   background: #fff;
   border-radius: 1.2rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   min-height: 140px;
   cursor: pointer;
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
   position: relative;
 
   &:hover {
-    box-shadow: 0 4px 16px rgba(99,95,199,0.12);
+    box-shadow: 0 4px 16px rgba(99, 95, 199, 0.12);
     transform: translateY(-2px) scale(1.01);
   }
 
@@ -148,4 +156,4 @@
   .projectCard {
     min-height: 100px;
   }
-} 
+}

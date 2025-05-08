@@ -6,7 +6,7 @@ import { AppInput } from "@/components/input/AppInput";
 import { DropdownMenu } from '@/components/dropdown-menu/DropdownMenu';
 import { DesktopHeader } from "@/components/header/desktop-header";
 import { MobileHeader } from "@/components/header/mobile-header";
-import { EditIcon, SearchIcon } from "@/components/icons/icons";
+import { DeleteIcon, EditIcon, SearchIcon } from "@/components/icons/icons";
 import { EditProjectModal } from '@/components/modals/edit-project-modal';
 import { Sidebar } from "@/components/sidebar/sidebar";
 import { useDebounce } from '@/hooks/useDebounce';
@@ -15,13 +15,15 @@ import { BreakpointPlatform } from "@/models/css-vars";
 import { DeviceInfoContext } from "@/providers/device-info-provider";
 import { useState } from "react";
 import styles from "./page.module.scss";
+import { DeleteProjectModal } from "@/components/modals/delete-project-modal";
 
 export default function Home() {
-  const [modalOpen, setModalOpen] = useState(false);
+  const [, setModalOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<'desc' | 'asc'>('desc');
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [deletingProject, setDeletingProject] = useState<Project | null>(null);
 
   const deviceInfoContext = useContext(DeviceInfoContext);
   const showMobileCards = deviceInfoContext.breakPoint === BreakpointPlatform.phone;
@@ -38,16 +40,30 @@ export default function Home() {
       <div className={styles.projectCard}>
         <div className={styles.projectCardHeader}>
           {project.title}
-          <button 
-            className={styles.editButton}
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditingProject(project);
-            }}
-            aria-label="Edit project"
-          >
-            <EditIcon />
-          </button>
+
+          <div className={styles.iconGroups}>
+            <button
+              className={styles.editButton}
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingProject(project);
+              }}
+              aria-label="Edit project"
+            >
+              <EditIcon />
+            </button>
+            <button
+              className={styles.editButton}
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeletingProject(project);
+              }}
+              aria-label="Delete project"
+            >
+              <DeleteIcon />
+            </button>
+          </div>
+
         </div>
         <div className={styles.projectCardDesc}>{project.description}</div>
       </div>
@@ -128,6 +144,16 @@ export default function Home() {
           project={editingProject}
         />
       )}
+
+      {deletingProject && (
+        <DeleteProjectModal
+          isOpen={!!deletingProject}
+          onClose={() => setDeletingProject(null)}
+          onSuccess={() => setDeletingProject(null)}
+          project={deletingProject!}
+        />
+      )}
+
     </main>
   );
 }

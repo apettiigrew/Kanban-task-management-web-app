@@ -24,7 +24,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body: CreateProjectDTO = await request.json();
-    
+
     // Validate required fields
     if (!body.title) {
       return NextResponse.json(
@@ -89,4 +89,26 @@ export async function PUT(request: Request) {
       { status: 500 }
     );
   }
-} 
+}
+
+export async function DELETE(request: Request) {
+  const body = await request.json();
+  const { id } = body;
+
+  try {
+    const result = await pool.query(
+      `UPDATE projects 
+       SET deleted_at = NOW() 
+       WHERE id = $1 AND deleted_at IS NULL`,
+      [id]
+    );
+
+    return NextResponse.json(result.rows, { status: 200 });
+  } catch (error) {
+    console.error('Error fetching projects:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch projects' },
+      { status: 500 }
+    );
+  }
+}
