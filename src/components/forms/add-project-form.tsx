@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { z } from 'zod';
 import styles from './add-project-form.module.scss';
 import { useCreateProject } from '@/hooks/useProjects';
+import { AppInput } from '../input/AppInput';
 
 const projectSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
@@ -81,13 +82,11 @@ export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
         <label htmlFor="title" className={styles.label}>
           Project Title
         </label>
-        <input
-          type="text"
+        <AppInput
           id="title"
-          name="title"
           value={formData.title}
-          onChange={handleInputChange}
-          className={`${styles.input} ${errors.title ? styles.error : ''}`}
+          onChange={(value) => handleInputChange({ target: { name: 'title', value } } as any)}
+          className={errors.title ? styles.error : ''}
         />
         {errors.title && (
           <div className={styles.errorText}>{errors.title}</div>
@@ -98,13 +97,11 @@ export function AddProjectForm({ onClose, onSuccess }: AddProjectFormProps) {
         <label htmlFor="description" className={styles.label}>
           Description
         </label>
-        <textarea
+        <AppInput
           id="description"
-          name="description"
-          rows={3}
           value={formData.description}
-          onChange={handleInputChange}
-          className={`${styles.textarea} ${errors.description ? styles.error : ''}`}
+          onChange={(value) => handleInputChange({ target: { name: 'description', value } } as any)}
+          className={errors.description ? styles.error : ''}
         />
         {errors.description && (
           <div className={styles.errorText}>{errors.description}</div>

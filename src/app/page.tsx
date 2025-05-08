@@ -2,7 +2,7 @@
 
 import { useContext } from "react";
 
-import { AppInput } from "@/components/AppInput";
+import { AppInput } from "@/components/input/AppInput";
 import { DropdownMenu } from '@/components/dropdown-menu/DropdownMenu';
 import { DesktopHeader } from "@/components/header/desktop-header";
 import { MobileHeader } from "@/components/header/mobile-header";

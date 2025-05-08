@@ -49,4 +49,44 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { id, title, description } = body;
+
+    // Validate required fields
+    if (!id || !title) {
+      return NextResponse.json(
+        { error: 'Project id and title are required' },
+        { status: 400 }
+      );
+    }
+
+    console.log("backend route is being called");
+    // Update project in database
+    const result = await pool.query(
+      `UPDATE projects
+       SET title = $1, description = $2, updated_at = NOW()
+       WHERE id = $3 AND deleted_at IS NULL
+       RETURNING id, title, description, created_at, updated_at`,
+      [title, description, id]
+    );
+
+    if (result.rows.length === 0) {
+      return NextResponse.json(
+        { error: 'Project not found or already deleted' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(result.rows[0], { status: 200 });
+  } catch (error) {
+    console.error('Error updating project:', error);
+    return NextResponse.json(
+      { error: 'Failed to update project' },
+      { status: 500 }
+    );
+  }
 } 

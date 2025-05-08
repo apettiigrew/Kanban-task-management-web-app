@@ -90,12 +90,13 @@ export function useUpdateProject() {
   
   return useMutation({
     mutationFn: async (project: UpdateProjectDTO) => {
-      const response = await fetch(`${API_URL}/api/projects/${project.id}`, {
+      const response = await fetch(`${API_URL}/api/projects`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          id: project.id,
           title: project.title,
           description: project.description,
         }),

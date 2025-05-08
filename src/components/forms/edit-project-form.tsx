@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppInput } from '../AppInput';
+import { AppInput } from '../input/AppInput';
 import { AppButton } from '../button/AppButton';
 import { useUpdateProject, Project } from '@/hooks/useProjects';
 import styles from './edit-project-form.module.scss';
@@ -34,6 +34,7 @@ export function EditProjectForm({ project, onClose, onSuccess }: EditProjectForm
       });
       onSuccess();
     } catch (err) {
+      console.log(err);
       setError('Failed to update project');
     }
   };

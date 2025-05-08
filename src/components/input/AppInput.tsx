@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from './AppInput.module.scss';
 
 interface AppInputProps {
   value: string;
@@ -19,33 +20,21 @@ export const AppInput: React.FC<AppInputProps> = ({
   wrapperClassName = '',
   icon,
 }) => {
+  
   return (
-    <div className={wrapperClassName} style={{ position: 'relative', display: 'flex', flexDirection: 'column' }}>
+    <div
+      className={`${styles.appInputWrapper} ${wrapperClassName || ''}`.trim()}
+    >
       <input
         id={id}
         type="text"
         value={value}
         onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={className}
+        placeholder={placeholder ?? ""}
+        className={`${styles.appInput} ${className || ''}`.trim()}
         aria-label={placeholder}
         autoComplete="off"
-        style={icon ? { paddingRight: 38 } : {}}
       />
-      {icon && (
-        <span style={{
-          position: 'absolute',
-          right: 12,
-          top: '50%',
-          transform: 'translateY(-50%)',
-          pointerEvents: 'none',
-          color: '#bfc4d1',
-          display: 'flex',
-          alignItems: 'center',
-        }}>
-          {icon}
-        </span>
-      )}
     </div>
   );
 }; 

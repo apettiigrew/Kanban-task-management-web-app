@@ -1,8 +1,8 @@
 import React from 'react';
 import { Modal } from './modal';
 import styles from './add-project-modal.module.scss';
-import { EditProjectForm } from '../forms/edit-project-form';
 import { Project } from '@/hooks/useProjects';
+import { EditProjectForm } from '@/components/forms/edit-project-form';
 
 interface EditProjectModalProps {
   isOpen: boolean;
@@ -16,7 +16,7 @@ export function EditProjectModal({ isOpen, onClose, onSuccess, project }: EditPr
     <Modal open={isOpen} onClose={onClose}>
       <div className={styles.container}>
         <h3 className={styles.title}>Edit Project</h3>
-        <EditProjectForm 
+        <EditProjectForm
           project={project}
           onClose={onClose} 
           onSuccess={onSuccess} 
