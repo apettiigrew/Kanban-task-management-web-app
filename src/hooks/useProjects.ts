@@ -18,6 +18,12 @@ export interface ProjectsQueryParams {
   sort?: 'asc' | 'desc';
 }
 
+export interface UpdateProjectDTO {
+  id: number;
+  title: string;
+  description?: string;
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 // Fetch all projects or filtered projects
@@ -67,6 +73,36 @@ export function useCreateProject() {
       
       if (!response.ok) {
         throw new Error('Failed to create project');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidate all projects queries to trigger a refetch
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+}
+
+// Update an existing project
+export function useUpdateProject() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (project: UpdateProjectDTO) => {
+      const response = await fetch(`${API_URL}/api/projects/${project.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: project.title,
+          description: project.description,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update project');
       }
       
       return response.json();

@@ -93,6 +93,31 @@
     box-shadow: 0 4px 16px rgba(99,95,199,0.12);
     transform: translateY(-2px) scale(1.01);
   }
+
+  .projectCardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .editButton {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: var(--background-hover);
+      color: var(--text-primary);
+    }
+  }
 }
 
 .projectCardHeader {
