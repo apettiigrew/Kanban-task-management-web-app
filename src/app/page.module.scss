@@ -81,3 +81,42 @@
     gap: 1rem;
   }
 }
+
+.project-links {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #f5f6f8;
+  border-radius: 8px;
+  
+  h2 {
+    margin-bottom: 15px;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  
+  ul {
+    list-style: none;
+    padding: 0;
+    
+    li {
+      margin-bottom: 10px;
+      
+      a {
+        display: block;
+        padding: 10px 15px;
+        background-color: white;
+        border-radius: 6px;
+        color: #0052cc;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        
+        &:hover {
+          background-color: #f0f4ff;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+          transform: translateY(-1px);
+        }
+      }
+    }
+  }
+}
