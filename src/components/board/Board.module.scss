@@ -9,12 +9,13 @@
     border-radius: 12px; // Rounded corners for a modern look
     height: 100vh; // Full height of the browser window
     overflow: hidden; // Prevent content from overflowing the board
+    overflow-x: auto; // Allow horizontal scrolling if columns don't fit
 }
 
 .column {
     display: flex;
     flex-direction: column;
-    flex: 1;
+    flex: 0 0 auto; // Don't allow columns to grow or shrink
     overflow-y: auto; // Enable vertical scrolling for overflowing cards
     padding-right: 0.5rem; // Add padding for scrollbar spacing
 }
