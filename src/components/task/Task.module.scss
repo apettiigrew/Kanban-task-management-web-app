@@ -1,0 +1,15 @@
+// Updated styles for the task card to match the screenshot
+.task {
+    background-color: #ffffff; // Retained white background
+    border-radius: 8px; // More rounded corners for a modern look
+    padding: 1rem; // Increased padding for better spacing
+    color: #1d1d1d; // Slightly darker text for better readability
+    font-size: 1rem; // Slightly larger font size for better visibility
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); // Enhanced shadow for depth
+    transition: transform 0.2s ease, box-shadow 0.2s ease; // Added hover effect
+}
+
+.task:hover {
+    transform: translateY(-2px); // Slight lift on hover
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); // Enhanced shadow on hover
+}
