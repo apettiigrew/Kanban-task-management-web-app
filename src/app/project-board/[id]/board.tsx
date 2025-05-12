@@ -4,7 +4,7 @@ import React, {
     useEffect,
     type ReactNode
 } from 'react';
-import styles from './Board.module.scss'; // <-- Import the SCSS module
+import styles from './board.module.scss'; // <-- Import the SCSS module
 import { useBoardContext } from './board-context';
 
 

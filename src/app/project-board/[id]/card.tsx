@@ -1,10 +1,16 @@
 import ReactDOM from "react-dom";
 import { CardPrimitive } from "./card-primitive";
-import { attachClosestEdge, extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/closest-edge";
-import { Edge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/types";
-import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/dist/types/adapter/element-adapter";
-import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/dist/types/entry-point/element/set-custom-native-drag-preview";
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/dist/types/public-utils/combine";
+import {
+	attachClosestEdge,
+	type Edge,
+	extractClosestEdge,
+} from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
+import {
+	draggable,
+	dropTargetForElements,
+} from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
+import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview';
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { memo, useRef, useState, useEffect, Fragment } from "react";
 import invariant from "tiny-invariant";
 import { Person } from ".";

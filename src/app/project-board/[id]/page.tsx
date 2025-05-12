@@ -1,4 +1,6 @@
 
+"use client";
+
 import { triggerPostMoveFlash } from '@atlaskit/pragmatic-drag-and-drop-flourish/trigger-post-move-flash';
 import * as liveRegion from '@atlaskit/pragmatic-drag-and-drop-live-region';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -11,9 +13,9 @@ import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/ad
 import { extractClosestEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
 import type { Edge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/types';
 import invariant from 'tiny-invariant';
-import { BoardContext } from './board-context';
-import Boards from './board';
+import { BoardContext, BoardContextValue } from './board-context';
 import Board from './board';
+import { Column } from './column';
 
 type Outcome =
     | {

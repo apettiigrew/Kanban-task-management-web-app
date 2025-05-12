@@ -1,21 +1,24 @@
+import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element';
+import {
+	attachClosestEdge,
+	type Edge,
+	extractClosestEdge,
+} from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
+import { DropIndicator } from '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box';
+import {
+	draggable,
+	dropTargetForElements,
+} from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
+import { centerUnderPointer } from '@atlaskit/pragmatic-drag-and-drop/element/center-under-pointer';
+import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import invariant from "tiny-invariant";
 import { ColumnType } from ".";
 import { useBoardContext } from "./board-context";
-import {
-    attachClosestEdge,
-    type Edge,
-    extractClosestEdge,
-} from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
-import { autoScrollForElements } from "@atlaskit/pragmatic-drag-and-drop-auto-scroll/dist/types/entry-point/element";
-import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/dist/types/adapter/element-adapter";
-import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview';
-import invariant from "tiny-invariant";
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/dist/types/public-utils/combine";
-import { centerUnderPointer } from '@atlaskit/pragmatic-drag-and-drop/element/center-under-pointer';
 import { ColumnContext, ColumnContextProps } from "./column-context";
-import { DropIndicator } from '@atlaskit/pragmatic-drag-and-drop-react-drop-indicator/box';
 import styles from "./column.module.scss";
-import { createPortal } from "react-dom";
+import { Card } from "./card";
 
 type State =
     | { type: 'idle' }
