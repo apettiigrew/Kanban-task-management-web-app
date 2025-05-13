@@ -12,6 +12,8 @@
     border: 1px solid #e5e7eb; // Added subtle border for separation
     max-width: 260px; // Added maximum width constraint
     width: 100%; // Ensures column takes full available width up to max-width
+    height: calc(100vh - 4rem); // Set height to fit within the board (accounting for board padding)
+    min-height: 200px; // Minimum height to prevent too small columns
 }
 
 .column h2 {
@@ -26,4 +28,8 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem; // Adjusted gap for better spacing between tasks
+    overflow-y: auto; // Add vertical scroll when needed
+    padding-right: 0.25rem; // Provide a bit of space for the scroll bar
+    flex-grow: 1; // Allow tasks container to grow and fill available space
+    max-height: calc(100% - 2rem); // Leave space for the column title
 }

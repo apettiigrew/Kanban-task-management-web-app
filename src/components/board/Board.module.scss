@@ -16,6 +16,6 @@
     display: flex;
     flex-direction: column;
     flex: 0 0 auto; // Don't allow columns to grow or shrink
-    overflow-y: auto; // Enable vertical scrolling for overflowing cards
+    overflow-y: visible; // Let the column component handle its own scrolling
     padding-right: 0.5rem; // Add padding for scrollbar spacing
 }
