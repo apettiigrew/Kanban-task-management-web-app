@@ -73,7 +73,7 @@ export const BoardContextProvider = ({
   children, 
   initialData = defaultBoardData 
 }: BoardContextProviderProps) => {
-  const [boardData, setBoardData] = useState<BoardContextType>(initialData);
+  const [boardData, ] = useState<BoardContextType>(initialData);
 
   const contextValue = {
     ...boardData,
