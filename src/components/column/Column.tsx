@@ -4,7 +4,7 @@ import {
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { useEffect, useRef, useState } from 'react';
 import { ColumnType } from '../../providers/board-context-provider';
-import { TaskCard } from '../task/card';
+import { CardTask } from '../card/card';
 import styles from './Column.module.scss';
 interface ColumnProps {
     name: string;
@@ -13,7 +13,7 @@ interface ColumnProps {
 
 export function Column(props: ColumnProps) {
     const { name, column } = props;
-    const [highlight, setHighlight] = useState(false);
+    // const [highlight, setHighlight] = useState(false);
     const [isAboutToDrop, setIsAboutToDrop] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
     const tasksToRender = column.cards.length > 0 ? column.cards : column.cards.map(card => card);
@@ -52,7 +52,7 @@ export function Column(props: ColumnProps) {
             <h2>{name}</h2>
             <div className={styles.tasks}>
                 {tasksToRender.map((task, index) => (
-                    <TaskCard card={task} key={index} />
+                    <CardTask card={task} key={index} />
                 ))}
             </div>
         </div>

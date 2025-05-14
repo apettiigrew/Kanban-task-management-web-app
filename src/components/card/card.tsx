@@ -18,7 +18,7 @@ type State =
     | { type: 'dragging' };
 
 const draggingState: State = { type: 'idle' };
-export function TaskCard(props: TaskProps) {
+export function CardTask(props: TaskProps) {
     const { moveCard } = useBoardContext();
     const ref = useRef<HTMLDivElement | null>(null);
     const [isDragging, setIsDragging] = React.useState<State>(draggingState);
