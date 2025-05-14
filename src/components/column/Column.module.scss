@@ -33,3 +33,9 @@
     flex-grow: 1; // Allow tasks container to grow and fill available space
     max-height: calc(100% - 2rem); // Leave space for the column title
 }
+
+
+.dropping {
+    border: 2px solid orange; // Dashed border for visual indication
+    // opacity: 0.8; // Slightly transparent to indicate dropping state
+}

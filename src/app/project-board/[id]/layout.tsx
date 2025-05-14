@@ -6,10 +6,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <BoardContextProvider>
-        {children}
-      </BoardContextProvider>
-    </html>
+    <BoardContextProvider>
+      {children}
+    </BoardContextProvider>
   );
 }

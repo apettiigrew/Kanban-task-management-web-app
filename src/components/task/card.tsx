@@ -21,9 +21,10 @@ const draggingState: State = { type: 'idle' };
 export function TaskCard(props: TaskProps) {
     const { moveCard } = useBoardContext();
     const ref = useRef<HTMLDivElement | null>(null);
+    const [isDragging, setIsDragging] = React.useState<State>(draggingState);
     const { card } = props;
 
-    const [isDragging, setIsDragging] = React.useState<State>(draggingState);
+    const [, setIsAboutToDrop] = React.useState(false); 
     useEffect(() => {
         const element = ref.current;
 
@@ -50,10 +51,17 @@ export function TaskCard(props: TaskProps) {
                 getData: () => {
                     return card;
                 },
+                onDragEnter: () => {
+                    setIsAboutToDrop(true);
+                },
+                canDrop: ({source}) => {
+                    return source.element !== element;
+                },
                 onDrop: ({ source, self }: BaseEventPayload<ElementDragType> & DropTargetLocalizedData) => {
                     const target = self.data as Card;
                     console.log('target', target);
                     console.log('source', source);
+                    setIsAboutToDrop(false);
                     moveCard(
                         source.data.id as string,
                         target.columnId as string,
