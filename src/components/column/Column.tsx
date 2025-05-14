@@ -1,28 +1,26 @@
-import React from 'react';
+import { ColumnType } from '../../providers/board-context-provider';
+import { TaskCard } from '../task/card';
 import styles from './Column.module.scss';
-import { TaskCard } from '../task/task-card';
-import { Task, Task as TaskType } from '../../context/BoardContext';
 
 interface ColumnProps {
-    title: string;
-    tasks?: Task[];
-    column?: TaskType[];
+    name: string;
+    column: ColumnType
 }
 
-const Column: React.FC<ColumnProps> = ({ title, tasks = [], column = [] }) => {
-    // Support both direct tasks array and column data from context
-    const tasksToRender = tasks.length > 0 ? tasks : column.map(task => task);
-    
+export function Column(props: ColumnProps) {
+    const { name, column } = props;
+    const tasksToRender = column.cards.length > 0 ? column.cards : column.cards.map(card => card);
+
     return (
         <div className={styles.column}>
-            <h2>{title}</h2>
+            <h2>{name}</h2>
             <div className={styles.tasks}>
                 {tasksToRender.map((task, index) => (
-                    <TaskCard task={task} key={index}/>
+                    <TaskCard card={task} key={index} />
                 ))}
-            </div>            
+            </div>
         </div>
     );
 };
 
-export default Column;
+

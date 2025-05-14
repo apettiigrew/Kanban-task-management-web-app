@@ -1,4 +1,4 @@
-import { BoardContextProvider } from '@/context/BoardContext';
+import { BoardContextProvider } from '@/providers/board-context-provider';
 
 export default function RootLayout({
   children,

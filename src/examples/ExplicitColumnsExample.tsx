@@ -1,5 +1,5 @@
 import React from 'react';
-import { BoardContextProvider, useBoardContext } from '../context/BoardContext';
+import { BoardContextProvider, useBoardContext } from '../providers/board-context-provider';
 import Board from '../components/board/Board';
 import Column from '../components/column/Column';
 

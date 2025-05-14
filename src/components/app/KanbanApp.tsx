@@ -1,5 +1,5 @@
 import React from 'react';
-import { BoardContextProvider } from '../../context/BoardContext';
+import { BoardContextProvider } from '../../providers/board-context-provider';
 import Board from '../board/Board';
 
 /**
