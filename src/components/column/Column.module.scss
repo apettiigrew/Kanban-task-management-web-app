@@ -35,3 +35,9 @@
 .dropping {
     border: 2px solid orange; 
 }
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}

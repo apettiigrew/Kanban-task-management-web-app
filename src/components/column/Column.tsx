@@ -189,16 +189,36 @@ export function Column(props: ColumnProps) {
                             onKeyDown={handleAddCardInputKeyDown}
                             placeholder="Enter a title or paste a link"
                         />
-                        <AddCardButton
-                            icon={<AddIcon />}
-                            onClick={handleAddCardConfirm}
-                        >
-                            Add card
-                        </AddCardButton>
-                        <CloseButton
-                            onClick={handleAddCardCancel}
-                            icon={<CloseIcon />}
-                        />
+
+                        {isAddingCard && <div className={styles.actions}>
+                            <AddCardButton
+                                className={styles.addListButton}
+                                icon={<AddIcon />}
+                            // onClick={handleAdd}
+                            >
+                                Add card
+                            </AddCardButton>
+                            <CloseButton
+                                className={styles.closeButton}
+                                // onClick={onCancel}
+                                icon={<CloseIcon />}
+                            />
+                        </div>}
+
+                        {!isAddingCard && <div>
+                            <AddCardButton
+                                icon={<AddIcon />}
+                                onClick={handleAddCardConfirm}
+                            >
+                                Add card
+                            </AddCardButton>
+                            <CloseButton
+                                onClick={handleAddCardCancel}
+                                icon={<CloseIcon />}
+                            />
+                        </div>}
+
+
                     </div>
                 ) : (
                     <AddCardButton

@@ -1,5 +1,5 @@
 ---
-applyTo: '**/*.tsx'
+applyTo: '**'
 ---
 Coding standards, domain knowledge, and preferences that AI should follow.
 
@@ -24,6 +24,7 @@ Apply the [general coding guidelines](./general-coding.instructions.md) to all c
 - Use React.FC type for components with children
 - Keep components small and focused
 - Use CSS modules for component styling
+- Never use tailwindCSS
 
 # React Component Structure
 - Use the following as eg how to define react component
