@@ -1,7 +1,6 @@
-import { Card, useBoardContext } from '@/providers/board-context-provider';
+import { Card } from '@/providers/board-context-provider';
 import { cc, classIf } from '@/utils/style-utils';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
-import { BaseEventPayload, DropTargetLocalizedData, ElementDragType } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types';
 import {
     draggable,
     dropTargetForElements
@@ -19,7 +18,7 @@ type State =
 
 const draggingState: State = { type: 'idle' };
 export function CardTask(props: TaskProps) {
-    const { moveCard } = useBoardContext();
+    // const { moveCard } = useBoardContext();
     const ref = useRef<HTMLDivElement | null>(null);
     const [isDragging, setIsDragging] = React.useState<State>(draggingState);
     const { card } = props;
@@ -57,21 +56,18 @@ export function CardTask(props: TaskProps) {
                 canDrop: ({source}) => {
                     return source.element !== element;
                 },
-                onDrop: ({ source, self }: BaseEventPayload<ElementDragType> & DropTargetLocalizedData) => {
-                    const target = self.data as Card;
-                    console.log('target', target);
-                    console.log('source', source);
+                onDrop: () => {
+                
                     setIsAboutToDrop(false);
-                    moveCard(
-                        source.data.id as string,
-                        target.columnId as string,
-                        target.position
-                    );
-
+                    // moveCard(
+                    //     source.data.id as string,
+                    //     target.columnId as string,
+                    //     target.position
+                    // );
                 }
             }),
         );
-    }, [card, moveCard]);
+    }, [card]);
 
     return (
         <div

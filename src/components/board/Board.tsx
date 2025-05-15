@@ -8,7 +8,6 @@ import styles from './Board.module.scss';
 const Board: React.FC<{ children?: React.ReactNode }> = () => {
     const { board } = useBoardContext();
 
-
     return (
         <div className={styles.board}>
             {board.columns.map((column: ColumnType) => (
@@ -17,8 +16,7 @@ const Board: React.FC<{ children?: React.ReactNode }> = () => {
                     name={column.name}
                     column={column}
                 />
-            ))
-            }
+            ))}
         </div>
     );
 };
