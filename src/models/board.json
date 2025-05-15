@@ -1,12 +1,6 @@
 {
   "name": "My board",
   "columns": [
-    {
-      "id": "todo",
-      "name": "To do",
-      "cards": [
-    
-      ]
-    }
+   
   ]
 }

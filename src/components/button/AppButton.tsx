@@ -54,4 +54,27 @@ export const AppButtonWithIcon: React.FC<AppButtonWithIconProps> = ({
   );
 };
 
+// New component for "Add a card" button
+interface AddCardButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  children: React.ReactNode;
+  icon?: React.ReactNode;
+}
+
+export const AddCardButton: React.FC<AddCardButtonProps> = ({
+  children,
+  icon,
+  className = '',
+  ...props
+}) => {
+  return (
+    <button
+      className={`${styles.addCardButton} ${className}`}
+      {...props}
+    >
+      {icon && <span className={styles.icon}>{icon}</span>}
+      {children}
+    </button>
+  );
+};
+
 

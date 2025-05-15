@@ -74,7 +74,7 @@ export function CardTask(props: TaskProps) {
             data-test-id={card.id}
             ref={ref}
             className={cc(styles.task, classIf(isDragging.type === 'dragging', styles.dragging))}>
-            {card.id} {card.title}
+            {card.title}
         </div>
     );
 };

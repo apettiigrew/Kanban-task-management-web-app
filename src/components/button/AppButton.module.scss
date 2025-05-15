@@ -100,4 +100,30 @@
 .icon {
   display: inline-flex;
   align-items: center;
+  margin-right: u.rem(8);
+}
+
+// Add a card button styles
+.addCardButton {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background-color: transparent;
+  color: #6b7280;
+  font-size: 0.875rem;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  font-weight: 500;
+  text-align: left;
+
+  &:hover {
+    background-color: rgba(107, 114, 128, 0.1);
+  }
+
+  .icon {
+    margin-right: 0.5rem;
+  }
 }
