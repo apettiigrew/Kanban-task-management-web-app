@@ -1,9 +1,4 @@
 ---
-applyTo: '**'
----
-Coding standards, domain knowledge, and preferences that AI should follow.
-
----
 applyTo: "**/*.ts,**/*.tsx"
 ---
 # Project coding standards for TypeScript and React

@@ -8,7 +8,7 @@ import { Card, ColumnType, useBoardContext } from '../../providers/board-context
 import { CardTask } from '../card/card';
 import styles from './Column.module.scss';
 import { PlaceholderCard } from '../card/PlaceholderCard';
-import { AddCardButton, CloseButton } from '../button/AppButton';
+import { AddCardButton, AppButtonWithIconSquared, CloseButton } from '../button/AppButton';
 import { AddIcon, CloseIcon } from '../icons/icons';
 import { AppInput } from '../input/AppInput';
 import { ColumnWrapper } from './ColumnWrapper';
@@ -191,21 +191,21 @@ export function Column(props: ColumnProps) {
                         />
 
                         {isAddingCard && <div className={styles.actions}>
-                            <AddCardButton
-                                className={styles.addListButton}
+                            <AppButtonWithIconSquared
+                                // className={styles.addListButton}
                                 icon={<AddIcon />}
-                            // onClick={handleAdd}
+                                onClick={handleAddCardConfirm}
                             >
                                 Add card
-                            </AddCardButton>
+                            </AppButtonWithIconSquared>
                             <CloseButton
-                                className={styles.closeButton}
-                                // onClick={onCancel}
+                                // className={styles.closeButton}
+                                onClick={handleAddCardCancel}
                                 icon={<CloseIcon />}
                             />
                         </div>}
 
-                        {!isAddingCard && <div>
+                        {/* {!isAddingCard && <div>
                             <AddCardButton
                                 icon={<AddIcon />}
                                 onClick={handleAddCardConfirm}
@@ -216,7 +216,7 @@ export function Column(props: ColumnProps) {
                                 onClick={handleAddCardCancel}
                                 icon={<CloseIcon />}
                             />
-                        </div>}
+                        </div>} */}
 
 
                     </div>
