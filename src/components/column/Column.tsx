@@ -8,8 +8,8 @@ import { Card, ColumnType, useBoardContext } from '../../providers/board-context
 import { CardTask } from '../card/card';
 import styles from './Column.module.scss';
 import { PlaceholderCard } from '../card/PlaceholderCard';
-import { AddCardButton } from '../button/AppButton';
-import { AddIcon } from '../icons/icons';
+import { AddCardButton, CloseButton } from '../button/AppButton';
+import { AddIcon, CloseIcon } from '../icons/icons';
 import { AppInput } from '../input/AppInput';
 import { ColumnWrapper } from './ColumnWrapper';
 
@@ -78,8 +78,8 @@ export function Column(props: ColumnProps) {
             onDrop({ source, location }) {
                 const target = location.current.dropTargets[0];
 
-                console.log('Source:', source);
-                console.log('Target:', target);
+                // console.log('Source:', source);
+                // console.log('Target:', target);
                 if (!source || !target) {
                     return;
                 }
@@ -195,14 +195,10 @@ export function Column(props: ColumnProps) {
                         >
                             Add card
                         </AddCardButton>
-                        <button
-                            className={styles.cancelAddCardButton}
+                        <CloseButton
                             onClick={handleAddCardCancel}
-                            aria-label="Cancel add card"
-                            type="button"
-                        >
-                            ×
-                        </button>
+                            icon={<CloseIcon />}
+                        />
                     </div>
                 ) : (
                     <AddCardButton

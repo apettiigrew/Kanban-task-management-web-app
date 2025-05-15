@@ -46,17 +46,3 @@
   background: #174ea6;
 }
 
-.closeButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  transition: background 0.2s;
-}
-
-.closeButton:hover {
-  background: #e2e4e6;
-}

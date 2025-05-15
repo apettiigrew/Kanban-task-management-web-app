@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styles from './AddList.module.scss';
-import { AddCardButton } from '../button/AppButton';
+import { AddCardButton, CloseButton } from '../button/AppButton';
 import { AddIcon, CloseIcon } from '../icons/icons';
 import { ColumnWrapper } from '../column/ColumnWrapper';
 import { AppInput } from '../input/AppInput';
@@ -37,14 +37,11 @@ const AddList: React.FC<AddListProps> = ({ onAdd, onCancel }) => {
           >
             Add list
           </AddCardButton>
-          <button
+          <CloseButton
             className={styles.closeButton}
             onClick={onCancel}
-            aria-label="Cancel"
-            type="button"
-          >
-            <CloseIcon />
-          </button>
+            icon={<CloseIcon />}
+          />
         </div>
       </div>
     </ColumnWrapper>
