@@ -23,7 +23,7 @@ export function CardTask(props: TaskProps) {
     const [isDragging, setIsDragging] = React.useState<State>(draggingState);
     const { card } = props;
 
-    const [, setIsAboutToDrop] = React.useState(false); 
+    const [, setIsAboutToDrop] = React.useState(false);
     useEffect(() => {
         const element = ref.current;
 
@@ -53,17 +53,11 @@ export function CardTask(props: TaskProps) {
                 onDragEnter: () => {
                     setIsAboutToDrop(true);
                 },
-                canDrop: ({source}) => {
+                canDrop: ({ source }) => {
                     return source.element !== element;
                 },
                 onDrop: () => {
-                
                     setIsAboutToDrop(false);
-                    // moveCard(
-                    //     source.data.id as string,
-                    //     target.columnId as string,
-                    //     target.position
-                    // );
                 }
             }),
         );

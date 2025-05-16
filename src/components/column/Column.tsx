@@ -87,8 +87,8 @@ export function Column(props: ColumnProps) {
                 const sourceData = source.data as Card;
                 const targetData = target.data as Card;
 
-                // console.log('Source data:', sourceData);
-                // console.log('Target data:', targetData);
+                console.log('Source data:', sourceData);
+                console.log('Target data:', targetData);
                 if (!sourceData || !targetData) {
                     return;
                 }
@@ -190,35 +190,18 @@ export function Column(props: ColumnProps) {
                             placeholder="Enter a title or paste a link"
                         />
 
-                        {isAddingCard && <div className={styles.actions}>
+                        <div className={styles.actions}>
                             <AppButtonWithIconSquared
-                                // className={styles.addListButton}
                                 icon={<AddIcon />}
                                 onClick={handleAddCardConfirm}
                             >
                                 Add card
                             </AppButtonWithIconSquared>
                             <CloseButton
-                                // className={styles.closeButton}
                                 onClick={handleAddCardCancel}
                                 icon={<CloseIcon />}
                             />
-                        </div>}
-
-                        {/* {!isAddingCard && <div>
-                            <AddCardButton
-                                icon={<AddIcon />}
-                                onClick={handleAddCardConfirm}
-                            >
-                                Add card
-                            </AddCardButton>
-                            <CloseButton
-                                onClick={handleAddCardCancel}
-                                icon={<CloseIcon />}
-                            />
-                        </div>} */}
-
-
+                        </div>
                     </div>
                 ) : (
                     <AddCardButton
