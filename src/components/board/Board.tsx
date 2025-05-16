@@ -18,26 +18,32 @@ export function Board() {
         setShowAddList(false);
     };
 
+    // Extracted AddListButton for DRY and readability
+    const AddListButton = () => (
+        <AddCardButton
+            className={styles.addListButton}
+            icon={<AddIcon />}
+            onClick={() => setShowAddList(true)}
+        >
+            Add a list
+        </AddCardButton>
+    );
+
+    // Extracted AddListInput for DRY and readability
+    const AddListInput = () => (
+        <AddList
+            onAdd={handleAddList}
+            onCancel={() => setShowAddList(false)}
+        />
+    );
+
     return (
         <div className={styles.board}>
             {board.columns.length === 0 ? (
                 <div className={styles.emptyBoard}>
-                    {showAddList ? (
-                        <AddList
-                            onAdd={handleAddList}
-                            onCancel={() => setShowAddList(false)}
-                        />
-                    ) : (
-                        <AddCardButton
-                            className={styles.addListButton}
-                            icon={<AddIcon />}
-                            onClick={() => setShowAddList(true)}
-                        >
-                            Add a list
-                        </AddCardButton>
-                    )}
+                    {showAddList ? <AddListInput /> : <AddListButton />}
                 </div>
-            ) :
+            ) : (
                 <>
                     {board.columns.map((column: ColumnType) => (
                         <Column
@@ -48,23 +54,10 @@ export function Board() {
                     ))}
                     {/* Always keep AddList button/input to the right of the last column */}
                     <div className={styles.addListContainer}>
-                        {showAddList ? (
-                            <AddList
-                                onAdd={handleAddList}
-                                onCancel={() => setShowAddList(false)}
-                            />
-                        ) : (
-                            <AddCardButton
-                                className={styles.addListButton}
-                                icon={<AddIcon />}
-                                onClick={() => setShowAddList(true)}
-                            >
-                                Add a list
-                            </AddCardButton>
-                        )}
+                        {showAddList ? <AddListInput /> : <AddListButton />}
                     </div>
                 </>
-            }
+            )}
         </div>
     );
 };
