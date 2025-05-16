@@ -4,13 +4,13 @@
     color: #1d1d1d;
     box-shadow: none;
     border-radius: 20px;
-    flex: 1;
+    // flex: 1;
     display: flex;
     flex-direction: column;
     gap: 1rem;
     max-width: 260px;
     width: 100%;
-    height: min-content;
+    // height: min-content;
 }
 
 .addListContainer {
@@ -29,6 +29,7 @@
 
 .board {
     display: flex;
+    flex-direction: column;
     gap: 1.5rem; // Increased gap for better spacing
     padding: 2rem; // More padding for a spacious layout
     background-color: #f4f5f7; // Updated light gray background
@@ -37,7 +38,44 @@
     border-radius: 12px; // Rounded corners for a modern look
     height: 100vh; // Full height of the browser window
     overflow: hidden; // Prevent content from overflowing the board
-    overflow-x: auto; // Allow horizontal scrolling if columns don't fit
+}
+
+.listsRow {
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100%;
+    height: 100%;
+    align-items: flex-start;
+    scroll-behavior: smooth;
+    /* Trello-like horizontal scroll */
+    padding-bottom: 0.5rem;
+    /* Hide scrollbar for webkit browsers */
+    &::-webkit-scrollbar {
+        height: 12px;
+        background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 6px;
+    }
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    /* Hide scrollbar for Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+}
+
+.listItem {
+    flex: 0 0 260px; // Fixed width for each item (column or add button)
+    max-width: 260px;
+    min-width: 260px;
+    display: flex;
+    flex-direction: column;
+    /* Remove height: 100% to allow organic height growth */
 }
 
 .column {

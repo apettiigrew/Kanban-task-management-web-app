@@ -44,19 +44,22 @@ export function Board() {
                     {showAddList ? <AddListInput /> : <AddListButton />}
                 </div>
             ) : (
-                <>
+                <div className={styles.listsRow}>
                     {board.columns.map((column: ColumnType) => (
-                        <Column
-                            key={column.id}
-                            name={column.name}
-                            column={column}
-                        />
+                        <div className={styles.listItem} key={column.id}>
+                            <Column
+                                name={column.name}
+                                column={column}
+                            />
+                        </div>
                     ))}
                     {/* Always keep AddList button/input to the right of the last column */}
-                    <div className={styles.addListContainer}>
-                        {showAddList ? <AddListInput /> : <AddListButton />}
+                    <div className={styles.listItem}>
+                        <div className={styles.addListContainer}>
+                            {showAddList ? <AddListInput /> : <AddListButton />}
+                        </div>
                     </div>
-                </>
+                </div>
             )}
         </div>
     );
