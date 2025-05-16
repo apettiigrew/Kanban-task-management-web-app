@@ -1,9 +1,9 @@
-import Board from '@/components/board/Board';
+import { Board } from '@/components/board/Board';
 
 export default function ProjectBoardPage() {
     return (
         <div>
-            <Board /> 
+            <Board />
         </div>
     );
 }

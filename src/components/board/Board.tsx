@@ -1,14 +1,15 @@
 "use client";
 import React from 'react';
 import { ColumnType, useBoardContext } from '../../providers/board-context-provider';
-import { Column } from '../column/Column';
 import { AddCardButton } from '../button/AppButton';
+import { Column } from '../column/Column';
 import { AddIcon } from '../icons/icons';
-import styles from './Board.module.scss';
 import AddList from './AddList';
+import styles from './Board.module.scss';
 
-// The Board component now uses the context
-const Board: React.FC<{ children?: React.ReactNode }> = () => {
+
+export function Board() {
+    
     const { board, addList } = useBoardContext();
     const [showAddList, setShowAddList] = React.useState(false);
 
@@ -36,17 +37,35 @@ const Board: React.FC<{ children?: React.ReactNode }> = () => {
                         </AddCardButton>
                     )}
                 </div>
-            ) : (
-                board.columns.map((column: ColumnType) => (
-                    <Column
-                        key={column.id}
-                        name={column.name}
-                        column={column}
-                    />
-                ))
-            )}
+            ) :
+                <>
+                    {board.columns.map((column: ColumnType) => (
+                        <Column
+                            key={column.id}
+                            name={column.name}
+                            column={column}
+                        />
+                    ))}
+                    {/* Always keep AddList button/input to the right of the last column */}
+                    <div className={styles.addListContainer}>
+                        {showAddList ? (
+                            <AddList
+                                onAdd={handleAddList}
+                                onCancel={() => setShowAddList(false)}
+                            />
+                        ) : (
+                            <AddCardButton
+                                className={styles.addListButton}
+                                icon={<AddIcon />}
+                                onClick={() => setShowAddList(true)}
+                            >
+                                Add a list
+                            </AddCardButton>
+                        )}
+                    </div>
+                </>
+            }
         </div>
     );
 };
 
-export default Board;
