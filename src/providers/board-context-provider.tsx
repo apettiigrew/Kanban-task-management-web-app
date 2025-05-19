@@ -36,6 +36,7 @@ export type BoardContextType = {
   addCard: (columnId: string, title: string) => void;
   deleteList: (columnId: string) => void;
   updateCardDescription: (cardId: string, description: string) => void;
+  updateCardTitle: (cardId: string, title: string) => Promise<void>;
 };
 
 
@@ -46,6 +47,7 @@ const initialContextData: BoardContextType = {
   addCard: noop,
   deleteList: noop,
   updateCardDescription: noop,
+  updateCardTitle: async () => {},
 }
 
 // Create the context with default values
@@ -157,7 +159,7 @@ export const BoardContextProvider = ({ children }: BoardContextProviderProps) =>
       };
       newBoard.columns.push(newColumn);
       return newBoard;
-    });
+    },);
   }, [setBoard]);
 
   const addCard = useCallback((columnId: string, title: string) => {
@@ -221,8 +223,35 @@ export const BoardContextProvider = ({ children }: BoardContextProviderProps) =>
     });
   }, [setBoard]);
 
+  const updateCardTitle = useCallback(async (cardId: string, title: string) => {
+    return new Promise<void>((resolve, reject) => {
+      try {
+        setBoard(prevBoard => {
+          const newBoard = JSON.parse(JSON.stringify(prevBoard));
+          
+          // Find the card in the columns
+          for (const column of newBoard.columns) {
+            const cardIndex = column.cards.findIndex((card: Card) => card.id === cardId);
+            if (cardIndex !== -1) {
+              column.cards[cardIndex].title = title;
+              setTimeout(() => resolve(), 0); // Resolve promise after state update
+              return newBoard;
+            }
+          }
+          
+          console.error(`Card with ID ${cardId} not found`);
+          reject(new Error(`Card with ID ${cardId} not found`));
+          return prevBoard;
+        });
+      } catch (error) {
+        console.error('updateCardTitle error:', error);
+        reject(error);
+      }
+    });
+  }, [setBoard]);
+
   return (
-    <BoardContext.Provider value={{ board, moveCard, addList, addCard, deleteList, updateCardDescription }}>
+    <BoardContext.Provider value={{ board, moveCard, addList, addCard, deleteList, updateCardDescription, updateCardTitle }}>
       {children}
     </BoardContext.Provider>
   );
