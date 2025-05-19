@@ -35,6 +35,7 @@ export type BoardContextType = {
   addList: (name: string) => void;
   addCard: (columnId: string, title: string) => void;
   deleteList: (columnId: string) => void;
+  updateCardDescription: (cardId: string, description: string) => void;
 };
 
 
@@ -44,6 +45,7 @@ const initialContextData: BoardContextType = {
   addList: noop,
   addCard: noop,
   deleteList: noop,
+  updateCardDescription: noop,
 }
 
 // Create the context with default values
@@ -196,8 +198,31 @@ export const BoardContextProvider = ({ children }: BoardContextProviderProps) =>
     });
   }, [setBoard]);
 
+  const updateCardDescription = useCallback((cardId: string, description: string) => {
+    setBoard(prevBoard => {
+      try {
+        const newBoard = JSON.parse(JSON.stringify(prevBoard));
+        
+        // Find the card in the columns
+        for (const column of newBoard.columns) {
+          const cardIndex = column.cards.findIndex((card: Card) => card.id === cardId);
+          if (cardIndex !== -1) {
+            column.cards[cardIndex].description = description;
+            return newBoard;
+          }
+        }
+        
+        console.error(`Card with ID ${cardId} not found`);
+        return prevBoard;
+      } catch (error) {
+        console.error('updateCardDescription error:', error);
+        return prevBoard;
+      }
+    });
+  }, [setBoard]);
+
   return (
-    <BoardContext.Provider value={{ board, moveCard, addList, addCard, deleteList }}>
+    <BoardContext.Provider value={{ board, moveCard, addList, addCard, deleteList, updateCardDescription }}>
       {children}
     </BoardContext.Provider>
   );
