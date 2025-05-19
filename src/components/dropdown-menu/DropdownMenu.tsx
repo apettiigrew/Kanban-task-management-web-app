@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import styles from './DropdownMenu.module.scss';
+import { MenuIcon } from '../icons/icons';
 
 export interface DropdownMenuItem {
   label: string;
@@ -17,8 +18,33 @@ interface DropdownMenuProps {
 export const DropdownMenu: React.FC<DropdownMenuProps> = ({ label, items, align = 'left', focusTrap = false }) => {
   const [open, setOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
+  const [menuAlign, setMenuAlign] = useState<'left' | 'right'>(align);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLUListElement>(null);
+
+  // Create a single "Delete list" item using useMemo
+  // const menuItems = useMemo(() => {
+  //   const deleteListItem = items.find(item => item.label === 'Delete list') || {
+  //     label: 'Delete list',
+  //     onClick: () => console.log('Delete list clicked'),
+  //   };
+  //   return [deleteListItem];
+  // }, [items]);
+
+  // Dynamically set menu placement based on available space
+  useEffect(() => {
+    if (!open) return;
+    const handlePlacement = () => {
+      if (!buttonRef.current) return;
+      const rect = buttonRef.current.getBoundingClientRect();
+      const spaceLeft = rect.left;
+      const spaceRight = window.innerWidth - rect.right;
+      setMenuAlign(spaceLeft > spaceRight ? 'right' : 'left');
+    };
+    handlePlacement();
+    window.addEventListener('resize', handlePlacement);
+    return () => window.removeEventListener('resize', handlePlacement);
+  }, [open]);
 
   // Close on outside click
   useEffect(() => {
@@ -99,11 +125,12 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ label, items, align 
   return (
     <div className={styles.dropdown}>
       <button
-        ref={buttonRef}
-        className={styles.trigger}
+        tabIndex={0}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls="dropdown-menu"
+        ref={buttonRef}
+        // className={styles.trigger}
         onClick={() => setOpen((v) => !v)}
         onKeyDown={(e) => {
           if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
@@ -111,14 +138,14 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ label, items, align 
             setOpen(true);
           }
         }}
-        type="button"
+        style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', padding: 0, background: 'none', border: 'none' }}
       >
-        {label}
-        <span className={styles.arrow} aria-hidden>▾</span>
+        <MenuIcon className={styles.icon} style={{ width: 24, height: 24, display: 'block' }} />
       </button>
+
       {open && (
         <ul
-          className={styles.menu + ' ' + styles[align]}
+          className={styles.menu + ' ' + styles[menuAlign]}
           ref={menuRef}
           id="dropdown-menu"
           role="menu"
@@ -153,4 +180,4 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ label, items, align 
       )}
     </div>
   );
-}; 
+};
