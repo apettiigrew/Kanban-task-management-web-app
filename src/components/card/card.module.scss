@@ -8,7 +8,13 @@
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); // Subtle shadow for depth
     border: 1px solid #e5e7eb; // Added border for separation
     transition: transform 0.2s ease, box-shadow 0.2s ease; // Smooth hover effect
-    cursor: grabbing;
+    cursor: pointer; // Change cursor to pointer to indicate clickable
+    position: relative; // For positioning any potential indicators
+    
+    // Indicate it's both draggable and clickable
+    &:active {
+        cursor: grabbing;
+    }
 }
 
 .task:hover {

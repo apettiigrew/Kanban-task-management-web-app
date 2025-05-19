@@ -1,6 +1,6 @@
 import React from 'react';
 import { BoardContextProvider } from '../../providers/board-context-provider';
-import Board from '../board/Board';
+import { Board } from '../board/Board';
 
 /**
  * KanbanApp component that wraps the Board with the BoardContextProvider
