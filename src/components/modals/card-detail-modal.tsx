@@ -4,6 +4,7 @@ import { Modal } from './modal';
 import { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import { AppButton } from '@/components/button/AppButton';
 import { Tiptap } from '../tiptap/tiptap';
+import { SafeHTMLViewer } from '@/components/common/safe-html-viewer';
 
 interface CardDetailModalProps {
   isOpen: boolean;
@@ -180,8 +181,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                 aria-label="Click to edit description"
               >
                 {card.description ?
-                 <p>{card.description}</p>
-
+                 <SafeHTMLViewer html={card.description} />
                   : (
                     <span className={styles.placeholder}>
                       Click to add a description...
