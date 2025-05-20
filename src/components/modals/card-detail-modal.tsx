@@ -3,11 +3,7 @@ import styles from './card-detail-modal.module.scss';
 import { Modal } from './modal';
 import { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import { AppButton } from '@/components/button/AppButton';
-import MDEditor from '@uiw/react-md-editor';
-import ReactMarkdown from 'react-markdown';
-import rehypeSanitize from 'rehype-sanitize';
-import rehypeRaw from 'rehype-raw';
-import remarkGfm from 'remark-gfm';
+import { Tiptap } from '../tiptap/tiptap';
 
 interface CardDetailModalProps {
   isOpen: boolean;
@@ -55,7 +51,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
 
   const handleTitleSave = async () => {
     if (!card) return;
-    
+
     try {
       setIsTitleSaving(true);
       await updateCardTitle(card.id.toString(), title);
@@ -86,7 +82,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
 
   const handleSave = async () => {
     if (!card) return;
-    
+
     try {
       setIsSaving(true);
       await updateCardDescription(card.id.toString(), description);
@@ -104,12 +100,16 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
     setIsEditing(false);
   };
 
+  const handleTiptapChange = (newContent: string) => {
+    setDescription(newContent);
+  };
+
   return (
     <Modal open={isOpen} onClose={onClose}>
       <div className={styles.container}>
         <div className={styles.header}>
           {isTitleEditing ? (
-            <input 
+            <input
               ref={titleInputRef}
               type="text"
               className={styles.titleInput}
@@ -121,8 +121,8 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
               aria-label="Edit card title"
             />
           ) : (
-            <h3 
-              className={styles.title} 
+            <h3
+              className={styles.title}
               onClick={handleTitleEditClick}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -146,16 +146,8 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
 
             {isEditing ? (
               <div className={styles.editorContainer}>
-                <MDEditor
-                  value={description}
-                  onChange={(value) => setDescription(value || '')}
-                  preview="edit"
-                  height={200}
-                  textareaProps={{
-                    placeholder: 'Write your description here...',
-                    'aria-label': 'Markdown editor for card description'
-                  }}
-                />
+                <Tiptap content={description}
+                  onUpdate={handleTiptapChange} />
                 <div className={styles.actionButtons}>
                   <AppButton
                     onClick={handleCancel}
@@ -174,8 +166,8 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                 </div>
               </div>
             ) : (
-              <div 
-                className={styles.description} 
+              <div
+                className={styles.description}
                 onClick={handleEditClick}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -187,18 +179,14 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                 tabIndex={0}
                 aria-label="Click to edit description"
               >
-                {card.description ? (
-                  <ReactMarkdown
-                    rehypePlugins={[rehypeSanitize, rehypeRaw]}
-                    remarkPlugins={[remarkGfm]}
-                  >
-                    {card.description}
-                  </ReactMarkdown>
-                ) : (
-                  <p className={styles.emptyDescription}>
-                    No description provided. Click to add one.
-                  </p>
-                )}
+                {card.description ?
+                 <p>{card.description}</p>
+
+                  : (
+                    <span className={styles.placeholder}>
+                      Click to add a description...
+                    </span>
+                  )}
               </div>
             )}
           </div>
