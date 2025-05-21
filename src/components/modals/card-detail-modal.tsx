@@ -13,7 +13,7 @@ interface CardDetailModalProps {
 }
 
 export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps) {
-  const { updateCardDescription, updateCardTitle } = useBoardContext();
+  const { updateCardDescription, updateCardTitle, board } = useBoardContext();
   const [isEditing, setIsEditing] = useState(false);
   const [isTitleEditing, setIsTitleEditing] = useState(false);
   const [description, setDescription] = useState('');
@@ -39,6 +39,9 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
   }, [isTitleEditing]);
 
   if (!card) return null;
+  
+  // Find the column name for the card
+  const columnName = board.columns.find(col => col.id === card.columnId)?.name || '';
 
   const handleEditClick = () => {
     setDescription(card.description || '');
@@ -139,6 +142,14 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
             </h3>
           )}
         </div>
+        
+        <div className={styles.metadata}>
+          <div className={styles.metadataItem}>
+            <span className={styles.metadataLabel}>in list:</span>
+            <span className={styles.pills}>{columnName}</span>
+          </div>
+        </div>
+        
         <div className={styles.content}>
           <div className={styles.section}>
             <div className={styles.sectionHeader}>
