@@ -39,7 +39,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
   }, [isTitleEditing]);
 
   if (!card) return null;
-  
+
   // Find the column name for the card
   const columnName = board.columns.find(col => col.id === card.columnId)?.name || '';
 
@@ -58,11 +58,16 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
 
     try {
       setIsTitleSaving(true);
+      if (title.trim() === "") {
+        setTitle(card.title);
+        return;
+      }
+
       await updateCardTitle(card.id.toString(), title);
     } catch (error) {
       console.error('Failed to save card title:', error);
-      // Implementation could include a toast notification here for error feedback
-      setTitle(card.title); // Revert to original title on error
+
+      setTitle(card.title);
     } finally {
       setIsTitleSaving(false);
       setIsTitleEditing(false);
@@ -142,14 +147,14 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
             </h3>
           )}
         </div>
-        
+
         <div className={styles.metadata}>
           <div className={styles.metadataItem}>
             <span className={styles.metadataLabel}>in list:</span>
             <span className={styles.pills}>{columnName}</span>
           </div>
         </div>
-        
+
         <div className={styles.content}>
           <div className={styles.section}>
             <div className={styles.sectionHeader}>
@@ -192,7 +197,7 @@ export function CardDetailModal({ isOpen, onClose, card }: CardDetailModalProps)
                 aria-label="Click to edit description"
               >
                 {card.description ?
-                 <SafeHTMLViewer html={card.description} />
+                  <SafeHTMLViewer html={card.description} />
                   : (
                     <span className={styles.placeholder}>
                       Click to add a description...
