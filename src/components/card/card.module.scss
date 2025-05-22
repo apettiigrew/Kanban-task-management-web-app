@@ -10,7 +10,7 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease; // Smooth hover effect
     cursor: pointer; // Change cursor to pointer to indicate clickable
     position: relative; // For positioning any potential indicators
-    
+
     // Indicate it's both draggable and clickable
     &:active {
         cursor: grabbing;
@@ -23,8 +23,38 @@
 }
 
 
-.dragging{
+.dragging {
     opacity: 0.5; // Reduced opacity for dragging effect
     transform: translateY(0); // Reset transform to avoid jumpy behavior
     box-shadow: none; // Remove shadow while dragging
+}
+
+
+.shadow {
+    flex-shrink: 0;
+    border-radius: 0.5rem;
+    background-color: #0f172a;
+}
+
+.idle {
+    &:hover {
+        outline: 2px solid red;
+        cursor: grab;
+    }
+}
+
+.opacityChange {
+    opacity: 0.5;
+}
+
+.hidden {
+    visibility: hidden;
+}
+
+.testOuter {
+    border: 1px solid red;
+}
+
+.testInner {
+    border: 1px solid blue;
 }

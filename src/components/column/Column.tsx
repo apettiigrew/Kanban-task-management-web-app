@@ -187,7 +187,7 @@ export function Column(props: ColumnProps) {
                     }]}
                     align="right"
                 />
-                
+
             </div>
             <DeleteListModal
                 isOpen={showDeleteModal}
@@ -255,7 +255,7 @@ function DisplayCard(props: DisplayCardProps) {
     return (
         <>
             {cards.map((card) => (
-                <CardTask card={card} key={card.id} />
+                <CardTask card={card} key={card.id} columnId={columnId} />
             ))}
         </>
     );
