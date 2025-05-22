@@ -251,11 +251,11 @@ interface DisplayCardProps {
 }
 function DisplayCard(props: DisplayCardProps) {
     const { cards, columnId } = props;
-    if (!cards || cards.length === 0) {
-        return (
-            <PlaceholderCard columnId={columnId} />
-        );
-    }
+    // if (!cards || cards.length === 0) {
+    //     return (
+    //         <PlaceholderCard columnId={columnId} />
+    //     );
+    // }
     return (
         <>
             {cards.map((card) => (

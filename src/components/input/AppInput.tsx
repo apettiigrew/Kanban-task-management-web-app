@@ -10,6 +10,7 @@ interface AppInputProps {
   wrapperClassName?: string;
   onBlur?: React.FocusEventHandler<HTMLInputElement>;
   onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
+  icon?: React.ReactNode;
 }
 
 export const AppInput = React.forwardRef<HTMLInputElement, AppInputProps>(
