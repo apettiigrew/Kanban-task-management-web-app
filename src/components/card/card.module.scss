@@ -38,7 +38,7 @@
 
 .idle {
     &:hover {
-        outline: 2px solid red;
+        // outline: 2px solid red;
         cursor: grab;
     }
 }
@@ -48,13 +48,6 @@
 }
 
 .hidden {
-    visibility: hidden;
-}
-
-.testOuter {
-    border: 1px solid red;
-}
-
-.testInner {
-    border: 1px solid blue;
+    display: none;
+    // visibility: hidden; // Use visibility to maintain layout
 }

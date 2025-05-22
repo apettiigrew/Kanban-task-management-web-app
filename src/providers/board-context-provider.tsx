@@ -81,7 +81,8 @@ export const BoardContextProvider = ({ children }: BoardContextProviderProps) =>
         let sourceColumn: ColumnType | undefined;
         let card: Card | undefined;
         let sourceCardIndex: number = -1;
-
+        console.log("targetColumnId", targetColumnId);
+        console.log("cardId", cardId);
         for (const column of newBoard.columns) {
           sourceCardIndex = column.cards.findIndex((c: Card) => c.id === cardId);
           if (sourceCardIndex !== -1) {

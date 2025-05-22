@@ -279,19 +279,16 @@ export function CardDisplay(props: CardDisplayProps) {
             ref={outerRef}
 
             className={cc(
-                // styles.task,
-                styles.testOuter,
                 outerStyles[state.type],
                 classIf(props.state.type === 'dragging', styles.dragging)
-            )}
-        >
+            )}>
+
             <div
                 data-test-id={card.id}
                 ref={innerRef}
                 onClick={handleCardClick}
                 className={cc(
                     styles.task,
-                    styles.testInner,
                     innerStyles[state.type],
                     classIf(state.type === 'dragging', styles.dragging)
                 )}>

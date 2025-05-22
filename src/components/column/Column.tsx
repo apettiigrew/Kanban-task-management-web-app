@@ -86,9 +86,11 @@ export function Column(props: ColumnProps) {
                     return;
                 }
 
-                const sourceData = source.data as Card;
-                const targetData = target.data as Card;
+                const sourceData = source.data.card as Card;
+                const targetData = target.data.card as Card;
 
+                console.log('sourceData', sourceData);
+                console.log('targetData', targetData);
                 if (!sourceData || !targetData) {
                     return;
                 }
@@ -96,6 +98,8 @@ export function Column(props: ColumnProps) {
                 if (targetData.id === 'placeholder') {
                     moveCard(sourceData.id as string, targetData.columnId, 0);
                 } else {
+                    console.log("doing the move");
+                
                     const indexOfTarget = column.cards.findIndex(card => card.id === targetData.id);
 
                     let targetPosition = -1;
