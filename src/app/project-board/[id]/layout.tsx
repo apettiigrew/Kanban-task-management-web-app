@@ -1,4 +1,5 @@
 import { BoardContextProvider } from '@/providers/board-context-provider';
+import { SettingsContextProvider } from '@/providers/settings-context';
 
 export default function RootLayout({
   children,
@@ -7,7 +8,9 @@ export default function RootLayout({
 }) {
   return (
     <BoardContextProvider>
-      {children}
+      <SettingsContextProvider>
+        {children}
+      </SettingsContextProvider>
     </BoardContextProvider>
   );
 }

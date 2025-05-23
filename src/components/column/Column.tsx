@@ -1,26 +1,54 @@
 import { cc, classIf } from '@/utils/style-utils';
 import {
-    monitorForElements,
     dropTargetForElements
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { useEffect, useRef, useState } from 'react';
-import { Card, ColumnType, useBoardContext } from '../../providers/board-context-provider';
-import { CardTask } from '../card/card';
 import styles from './Column.module.scss';
-import { PlaceholderCard } from '../card/PlaceholderCard';
+import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { AddCardButton, AppButtonWithIconSquared, CloseButton } from '../button/AppButton';
 import { AddIcon, CloseIcon } from '../icons/icons';
 import { AppInput } from '../input/AppInput';
 import { ColumnWrapper } from './ColumnWrapper';
 import { DropdownMenu } from '../dropdown-menu/DropdownMenu';
 import { DeleteListModal } from '../modals/delete-list-modal';
+import { DragLocationHistory } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types';
+import { useBoardContext } from '@/providers/board-context-provider';
+import { getColumnData, TCardData, isCardDropTargetData, isShallowEqual, isDraggingACard, isCardData, TCard, TColumn } from '@/utils/data';
+import { CardTask } from '../card/card';
+
+type TColumnState =
+    | {
+        type: 'is-card-over';
+        isOverChildCard: boolean;
+        dragging: DOMRect;
+    }
+    | {
+        type: 'is-column-over';
+    }
+    | {
+        type: 'idle';
+    }
+    | {
+        type: 'is-dragging';
+    };
+
+
+const idle = { type: 'idle' } satisfies TColumnState;
+
+const stateStyles: { [Key in TColumnState['type']]: string } = {
+    idle: styles.idle,
+    'is-card-over': styles.cardOver,
+    'is-dragging': styles.dragging,
+    'is-column-over': styles.columnOver,
+};
+
 
 interface ColumnProps {
     name: string;
-    column: ColumnType
+    column: TColumn
 }
-
 export function Column(props: ColumnProps) {
+
     const { name, column } = props;
     const { moveCard, addCard, deleteList } = useBoardContext();
     const [isAboutToDrop, setIsAboutToDrop] = useState(false);
@@ -30,10 +58,11 @@ export function Column(props: ColumnProps) {
     const [newCardTitle, setNewCardTitle] = useState(''); // Track new card title
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showToast, setShowToast] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
+    const outerFullHeightRef = useRef<HTMLDivElement>(null);
     const titleInputRef = useRef<HTMLInputElement>(null);
     const newCardInputRef = useRef<HTMLInputElement>(null); // Ref for new card input
     const tasksToRender = column.cards.length > 0 ? column.cards : column.cards.map(card => card);
+    const [state, setState] = useState<TColumnState>(idle);
 
     useEffect(() => {
         if (isEditingTitle && titleInputRef.current) {
@@ -49,73 +78,70 @@ export function Column(props: ColumnProps) {
     }, [isAddingCard]);
 
     useEffect(() => {
-        const element = ref.current;
-
-        if (!element) {
+        const outer = outerFullHeightRef.current;
+        if (!outer) {
             return;
         }
 
-        return dropTargetForElements({
-            element,
-            onDrop: () => {
-                setIsAboutToDrop(false);
-                // console.log('Dropped');
-            },
-            onDragEnter: () => {
-                setIsAboutToDrop(true);
-                // console.log('Drag enter');
-            },
-            onDragStart: () => {
-                setIsAboutToDrop(true);
-                // console.log('Drag start');
-            },
-            onDragLeave: () => {
-                setIsAboutToDrop(false);
-                // console.log('Drag leave');
-            },
+        const data = getColumnData({ column });
+        function setIsCardOver({ data, location }: { data: TCardData; location: DragLocationHistory }) {
+            const innerMost = location.current.dropTargets[0];
+            const isOverChildCard = Boolean(innerMost && isCardDropTargetData(innerMost.data));
 
-        });
-    }, [column.id])
-
-    useEffect(() => {
-        monitorForElements({
-            onDrop({ source, location }) {
-                const target = location.current.dropTargets[0];
-
-                if (!source || !target) {
-                    return;
+            const proposed: TColumnState = {
+                type: 'is-card-over',
+                dragging: data.rect,
+                isOverChildCard,
+            };
+            // optimization - don't update state if we don't need to.
+            setState((current) => {
+                if (isShallowEqual(proposed, current)) {
+                    return current;
                 }
+                return proposed;
+            });
+        }
 
-                const sourceData = source.data.card as Card;
-                const targetData = target.data.card as Card;
-
-                console.log('sourceData', sourceData);
-                console.log('targetData', targetData);
-                if (!sourceData || !targetData) {
-                    return;
-                }
-
-                if (targetData.id === 'placeholder') {
-                    moveCard(sourceData.id as string, targetData.columnId, 0);
-                } else {
-                    console.log("doing the move");
-                
-                    const indexOfTarget = column.cards.findIndex(card => card.id === targetData.id);
-
-                    let targetPosition = -1;
-                    if (indexOfTarget === 0) {
-                        targetPosition = 0;
-                    } else if (indexOfTarget === column.cards.length - 1) {
-                        targetPosition = -1;
-                    } else {
-                        targetPosition = targetData.position;
+        return combine(
+            dropTargetForElements({
+                element: outer,
+                getData: () => data,
+                canDrop({ source }) {
+                    setIsAboutToDrop(false);
+                    return isDraggingACard({ source });
+                },
+                getIsSticky: () => true,
+                onDragStart({ source, location }) {
+                    if (isCardData(source.data)) {
+                        setIsCardOver({ data: source.data, location });
+                    }
+                },
+                onDragEnter({ source, location }) {
+                    setIsAboutToDrop(true);
+                    if (isCardData(source.data)) {
+                        setIsCardOver({ data: source.data, location });
+                        return;
                     }
 
-                    moveCard(sourceData.id as string, targetData.columnId, targetPosition);
-                }
-            }
-        })
-    }, [column.cards, moveCard]);
+                },
+                onDropTargetChange({ source, location }) {
+                    if (isCardData(source.data)) {
+                        setIsCardOver({ data: source.data, location });
+                        return;
+                    }
+                },
+                onDragLeave() {
+                    setIsAboutToDrop(false);
+                    setState(idle);
+                },
+                onDrop() {
+                    setIsAboutToDrop(false);
+                    setState(idle);
+                },
+            }),
+        );
+
+    }, [column, column.cards, moveCard]);
 
     const handleTitleClick = () => {
         setIsEditingTitle(true);
@@ -169,7 +195,14 @@ export function Column(props: ColumnProps) {
     };
 
     return (
-        <ColumnWrapper className={cc(classIf(isAboutToDrop, styles.dropping))} ref={ref}>
+        <ColumnWrapper
+            className={
+                cc(
+                    stateStyles[state.type],
+                    classIf(isAboutToDrop, styles.dropping)
+                )}
+            ref={outerFullHeightRef}>
+
             <div className={styles.columnHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 {isEditingTitle ? (
                     <AppInput
@@ -246,7 +279,7 @@ export function Column(props: ColumnProps) {
 };
 
 interface DisplayCardProps {
-    cards: Card[];
+    cards: TCard[];
     columnId: string;
 }
 function DisplayCard(props: DisplayCardProps) {

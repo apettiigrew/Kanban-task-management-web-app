@@ -10,7 +10,7 @@ interface AddListProps {
   onCancel?: () => void;
 }
 
-const AddList: React.FC<AddListProps> = ({ onAdd, onCancel }) => {
+export const AddList: React.FC<AddListProps> = ({ onAdd, onCancel }) => {
   const [listName, setListName] = useState('');
 
   const handleAdd = () => {
@@ -47,5 +47,3 @@ const AddList: React.FC<AddListProps> = ({ onAdd, onCancel }) => {
     </ColumnWrapper>
   );
 };
-
-export default AddList;

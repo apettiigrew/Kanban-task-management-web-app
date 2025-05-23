@@ -47,3 +47,20 @@
     flex-direction: column;
     gap: 0.5rem;
 }
+
+/* State-specific styles */
+.idle {
+    cursor: grab;
+}
+
+.cardOver {
+    outline: 2px solid rgba(250, 250, 250, 0.8);
+}
+
+.dragging {
+    opacity: 0.4;
+}
+
+.columnOver {
+    background-color: #0f172a; /* slate-900 equivalent */
+}

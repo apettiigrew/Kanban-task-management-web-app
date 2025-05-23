@@ -1,4 +1,4 @@
-import { Card } from '@/providers/board-context-provider';
+
 import { cc, classIf } from '@/utils/style-utils';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import {
@@ -13,9 +13,11 @@ import {
     attachClosestEdge,
     type Edge,
 } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
+import { TCard, getCardData, isDraggingACard, getCardDropTargetData, isCardData, isShallowEqual } from '@/utils/data';
+
 
 interface CardProps {
-    card: Card;
+    card: TCard;
     columnId: string;
 }
 
@@ -44,77 +46,8 @@ type CardState =
 
 const draggingState: CardState = { type: 'idle' };
 
-export function isShallowEqual(
-    obj1: Record<string, unknown>,
-    obj2: Record<string, unknown>,
-): boolean {
-    const keys1 = Object.keys(obj1);
-    const keys2 = Object.keys(obj2);
-
-    if (keys1.length !== keys2.length) {
-        return false;
-    }
-    return keys1.every((key1) => Object.is(obj1[key1], obj2[key1]));
-}
-
-
-export function isCardData(value: Record<string | symbol, unknown>): value is TCardData {
-    return Boolean(value[cardKey]);
-}
-
-const cardKey = Symbol('card');
-export type TCardData = {
-    [cardKey]: true;
-    card: Card;
-    columnId: string;
-    rect: DOMRect;
-};
-
-export function getCardData({
-    card,
-    rect,
-    columnId,
-}: Omit<TCardData, typeof cardKey> & { columnId: string }): TCardData {
-    return {
-        [cardKey]: true,
-        rect,
-        card,
-        columnId,
-    };
-}
-
-const cardDropTargetKey = Symbol('card-drop-target');
-export type TCardDropTargetData = {
-    [cardDropTargetKey]: true;
-    card: Card;
-    columnId: string;
-};
-
-export function getCardDropTargetData({
-    card,
-    columnId,
-}: Omit<TCardDropTargetData, typeof cardDropTargetKey> & {
-    columnId: string;
-}): TCardDropTargetData {
-    return {
-        [cardDropTargetKey]: true,
-        card,
-        columnId,
-    };
-}
-
-export function isDraggingACard({
-    source,
-}: {
-    source: { data: Record<string | symbol, unknown> };
-}): boolean {
-    return isCardData(source.data);
-}
-
 
 export function CardTask(props: CardProps) {
-    // const { moveCard } = useBoardContext();
-    // const ref = useRef<HTMLDivElement | null>(null);
     const [cardState, setCardState] = React.useState<CardState>(draggingState);
     const { card, columnId } = props;
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -211,7 +144,6 @@ export function CardTask(props: CardProps) {
         );
     }, [card, columnId]);
 
-    console.log('cardState', cardState.type);
     return (
         <>
             {/* Put a shadow after the item if closer to the bottom edge */}
@@ -241,7 +173,6 @@ export function CardTask(props: CardProps) {
 
 
 function CardShadow({ dragging }: { dragging: DOMRect }) {
-    console.log('dragging', dragging);
     return (
         <div className={styles.shadow}
             style={{ height: dragging.height }}>
@@ -266,7 +197,7 @@ const outerStyles: { [Key in CardState['type']]?: string } = {
 };
 
 interface CardDisplayProps {
-    card: Card;
+    card: TCard;
     state: CardState;
     outerRef?: MutableRefObject<HTMLDivElement | null>;
     innerRef?: MutableRefObject<HTMLDivElement | null>;
