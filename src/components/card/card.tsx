@@ -172,7 +172,7 @@ export function CardTask(props: CardProps) {
 };
 
 
-function CardShadow({ dragging }: { dragging: DOMRect }) {
+export function CardShadow({ dragging }: { dragging: DOMRect }) {
     return (
         <div className={styles.shadow}
             style={{ height: dragging.height }}>

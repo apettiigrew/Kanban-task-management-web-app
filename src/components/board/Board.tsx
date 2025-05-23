@@ -58,16 +58,20 @@ export function Board() {
             monitorForElements({
                 canMonitor: isDraggingACard,
                 onDrop({ source, location }) {
+                    console.log("location ", location);
                     console.log('monitor triggered');
                 
                     const dragging = source.data;
+                    console.log('dragging', dragging);
                     if (!isCardData(dragging)) {
+                        console.log('not a card data');
                         return;
                     }
 
                     const innerMost = location.current.dropTargets[0];
 
                     if (!innerMost) {
+                        console.log('no inner most');
                         return;
                     }
                     const dropTargetData = innerMost.data;
@@ -77,6 +81,7 @@ export function Board() {
                     const home: TColumn | undefined = board.columns[homeColumnIndex];
 
                     if (!home) {
+                        console.log('home column not found');
                         return;
                     }
                     const cardIndexInHome = home.cards.findIndex((card) => card.id === dragging.card.id);
@@ -87,6 +92,9 @@ export function Board() {
                             (column) => column.id === dropTargetData.columnId,
                         );
                         const destination = board.columns[destinationColumnIndex];
+
+                        console.log('destination', destination);
+                        console.log('home', home);
                         // reordering in home column
                         if (home === destination) {
                             const cardFinishIndex = home.cards.findIndex(
@@ -95,11 +103,13 @@ export function Board() {
 
                             // could not find cards needed
                             if (cardIndexInHome === -1 || cardFinishIndex === -1) {
+                                console.log('could not find cards needed');
                                 return;
                             }
 
                             // no change needed
                             if (cardIndexInHome === cardFinishIndex) {
+                                console.log('no change needed');
                                 return;
                             }
 
@@ -120,6 +130,7 @@ export function Board() {
                             const columns = Array.from(board.columns);
                             columns[homeColumnIndex] = updated;
                             setBoard({ ...board, columns });
+
                             return;
                         }
 
@@ -127,6 +138,7 @@ export function Board() {
 
                         // unable to find destination
                         if (!destination) {
+                            console.log('unable to find destination');
                             return;
                         }
 
@@ -158,6 +170,7 @@ export function Board() {
                         return;
                     }
 
+                    console.log('dropping on column', dropTargetData);
                     // dropping onto a column, but not onto a card
                     if (isColumnData(dropTargetData)) {
                         const destinationColumnIndex = board.columns.findIndex(
@@ -165,6 +178,7 @@ export function Board() {
                         );
                         const destination = board.columns[destinationColumnIndex];
 
+                        console.log('destination', destination);
                         if (!destination) {
                             return;
                         }
