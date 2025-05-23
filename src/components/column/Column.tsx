@@ -1,4 +1,4 @@
-import { cc, classIf } from '@/utils/style-utils';
+import { cc } from '@/utils/style-utils';
 import {
     dropTargetForElements
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
@@ -55,7 +55,7 @@ export function Column(props: ColumnProps) {
 
     const { name, column } = props;
     const { moveCard, addCard, deleteList } = useBoardContext();
-    const [isAboutToDrop, setIsAboutToDrop] = useState(false);
+    // const [isAboutToDrop, setIsAboutToDrop] = useState(false);
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [columnTitle, setColumnTitle] = useState(name);
     const [isAddingCard, setIsAddingCard] = useState(false); // Track add card input
@@ -114,10 +114,9 @@ export function Column(props: ColumnProps) {
                 element: outer,
                 getData: () => data,
                 canDrop({ source }) {
-                    setIsAboutToDrop(false);
                     return isDraggingACard({ source }) || isDraggingAColumn({ source });
                 },
-                getIsSticky: () => false,
+                getIsSticky: () => true,
                 onDragStart({ source, location }) {
                     if (isCardData(source.data)) {
                         setIsCardOver({ data: source.data, location });
@@ -242,7 +241,7 @@ export function Column(props: ColumnProps) {
             className={
                 cc(
                     stateStyles[state.type],
-                    classIf(isAboutToDrop, styles.dropping),
+                    // classIf(isAboutToDrop, styles.dropping),
                     styles.testing
                 )}
             ref={outerFullHeightRef}>
@@ -281,7 +280,7 @@ export function Column(props: ColumnProps) {
                     List deleted
                 </div>
             )}
-            <div className={styles.tasks}>
+            <div className={styles.tasks} ref={scrollableRef}>
                 <DisplayCard
                     columnId={column.id}
                     cards={tasksToRender}
