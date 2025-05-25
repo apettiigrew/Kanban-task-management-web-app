@@ -246,11 +246,16 @@ export function Board() {
                         return;
                     }
 
-                    const reordered = reorder({
+                    const closestEdge = extractClosestEdge(dropTargetData);
+
+                    const reordered = reorderWithEdge({
+                        axis: 'horizontal',
                         list: board.columns,
                         startIndex: homeIndex,
-                        finishIndex: destinationIndex,
+                        indexOfTarget: destinationIndex,
+                        closestEdgeOfTarget: closestEdge,
                     });
+
                     setBoard({ ...board, columns: reordered });
                 },
             }),

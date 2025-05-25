@@ -1,12 +1,13 @@
 import { cc } from '@/utils/style-utils';
 import {
-    dropTargetForElements
+    dropTargetForElements,
+    draggable
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { useContext, useEffect, useRef, useState } from 'react';
 import styles from './Column.module.scss';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { AddCardButton, AppButtonWithIconSquared, CloseButton } from '../button/AppButton';
-import { AddIcon, CloseIcon } from '../icons/icons';
+import { AddIcon, CloseIcon, DragHandleIcon } from '../icons/icons';
 import { AppInput } from '../input/AppInput';
 import { ColumnWrapper } from './ColumnWrapper';
 import { DropdownMenu } from '../dropdown-menu/DropdownMenu';
@@ -17,6 +18,9 @@ import { getColumnData, TCardData, isCardDropTargetData, isShallowEqual, isDragg
 import { CardShadow, CardTask } from '../card/card';
 import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element';
 import { unsafeOverflowAutoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/unsafe-overflow/element';
+import {
+    attachClosestEdge,
+} from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
 import { SettingsContext } from '@/providers/settings-context';
 
 
@@ -110,9 +114,22 @@ export function Column(props: ColumnProps) {
         }
 
         return combine(
+            draggable({
+                element: outer,
+                getInitialData: () => data,
+                onDragStart: () => {
+                    setState({ type: 'is-dragging' });
+                },
+                onDrop: () => {
+                    setState(idle);
+                },
+            }),
             dropTargetForElements({
                 element: outer,
-                getData: () => data,
+                getData: ({ input, element }) => {
+                    const data = getColumnData({ column });
+                    return attachClosestEdge(data, { element, input, allowedEdges: ['left', 'right'] });
+                },
                 canDrop({ source }) {
                     return isDraggingACard({ source }) || isDraggingAColumn({ source });
                 },
@@ -241,24 +258,26 @@ export function Column(props: ColumnProps) {
             className={
                 cc(
                     stateStyles[state.type],
-                    // classIf(isAboutToDrop, styles.dropping),
                     styles.testing
                 )}
             ref={outerFullHeightRef}>
 
             <div className={styles.columnHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                {isEditingTitle ? (
-                    <AppInput
-                        ref={titleInputRef}
-                        className={styles.titleInput}
-                        value={columnTitle}
-                        onChange={handleTitleChange}
-                        onBlur={handleTitleBlur}
-                        onKeyDown={handleTitleKeyDown}
-                    />
-                ) : (
-                    <h2 onClick={handleTitleClick}>{columnTitle}</h2>
-                )}
+                <div className={styles.titleSection}>
+                    <DragHandleIcon className={styles.dragHandle} />
+                    {isEditingTitle ? (
+                        <AppInput
+                            ref={titleInputRef}
+                            className={styles.titleInput}
+                            value={columnTitle}
+                            onChange={handleTitleChange}
+                            onBlur={handleTitleBlur}
+                            onKeyDown={handleTitleKeyDown}
+                        />
+                    ) : (
+                        <h2 onClick={handleTitleClick}>{columnTitle}</h2>
+                    )}
+                </div>
                 <DropdownMenu
                     label=""
                     items={[{
@@ -267,7 +286,6 @@ export function Column(props: ColumnProps) {
                     }]}
                     align="right"
                 />
-
             </div>
             <DeleteListModal
                 isOpen={showDeleteModal}
