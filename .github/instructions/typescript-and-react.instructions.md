@@ -1,5 +1,5 @@
 ---
-applyTo: '**'
+applyTo: "**/*.tsx, **/*.ts"
 ---
 ## TypeScript Guidelines
 - Use TypeScript for all new code
