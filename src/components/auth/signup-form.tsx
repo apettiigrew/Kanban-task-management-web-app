@@ -1,206 +1,105 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { z } from "zod"
-import { signUpSchema } from "@/lib/auth"
-import styles from "./signup-form.module.scss"
+import { useSignUp } from "@/hooks/use-signup";
+import { authSchemas } from "@/utils/validation-schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import styles from "./signup-form.module.scss";
 
-type FormData = z.infer<typeof signUpSchema> & {
-  confirmPassword: string
-}
+// Define the form schema including confirmPassword for client-side validation
+const formSchema = authSchemas.signUp.extend({
+  confirmPassword: z.string().min(1, "Please confirm your password."),
+}).refine(
+  (data: z.infer<typeof authSchemas.signUp> & { confirmPassword?: string }) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 interface SignupFormProps {
-  onSuccess?: () => void
+  onSuccess?: () => void;
 }
 
 export default function SignupForm({ onSuccess }: SignupFormProps) {
-  const router = useRouter()
-  
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  })
-  const [errors, setErrors] = useState<Partial<FormData>>({})
-  const [isLoading, setIsLoading] = useState(false)
-  const [submitError, setSubmitError] = useState("")
+  const router = useRouter();
+  const { mutate: signUp, isPending: isLoading, error: submitError } = useSignUp();
+  const { register, handleSubmit, formState: { errors }, } = useForm<FormData>({ resolver: zodResolver(formSchema) });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-    
-    // Clear field error when user starts typing
-    if (errors[name as keyof FormData]) {
-      setErrors(prev => ({ ...prev, [name]: "" }))
-    }
-  }
-
-  const validateForm = (): boolean => {
-    try {
-      // Validate basic schema
-      signUpSchema.parse({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-      })
-
-      // Check password confirmation
-      if (formData.password !== formData.confirmPassword) {
-        setErrors({ confirmPassword: "Passwords do not match" })
-        return false
+  const onSubmit = (data: FormData) => {
+    const { ...signUpData } = data;
+    signUp(signUpData, {
+      onSuccess: () => {
+        onSuccess?.();
+        router.push("/login?message=Account created successfully. Please sign in.");
+      },
+      onError: (_error) => {
+        // The error is already set in submitError by useSignUp
+        console.error("Signup failed:", _error);
       }
-
-      setErrors({})
-      return true
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const fieldErrors: Partial<FormData> = {}
-        error.errors.forEach(err => {
-          if (err.path[0]) {
-            fieldErrors[err.path[0] as keyof FormData] = err.message
-          }
-        })
-        setErrors(fieldErrors)
-      }
-      return false
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitError("")
-
-    if (!validateForm()) {
-      return
-    }
-
-    setIsLoading(true)
-
-    try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-        }),
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        setSubmitError(result.error || "Failed to create account")
-        return
-      }
-
-      onSuccess?.()
-      router.push("/login?message=Account created successfully. Please sign in.")
-    } catch (error) {
-      console.error("Signup error:", error)
-      setSubmitError("An unexpected error occurred. Please try again.")
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    });
+  };
 
   return (
-    <form onSubmit={handleSubmit} className={styles.signupForm}>
+    <form onSubmit={handleSubmit(onSubmit)} className={styles.signupForm}>
       <div className={styles.formGroup}>
-        <label htmlFor="name" className={styles.label}>
-          Full Name
-        </label>
         <input
           type="text"
           id="name"
-          name="name"
-          value={formData.name}
-          onChange={handleInputChange}
+          {...register("name")}
           className={`${styles.input} ${errors.name ? styles.inputError : ""}`}
           placeholder="Enter your full name"
-          required
           disabled={isLoading}
         />
-        {errors.name && (
-          <span className={styles.errorMessage}>{errors.name}</span>
-        )}
+        {errors.name && <p className={styles.errorMessage}>{errors.name.message}</p>}
       </div>
 
       <div className={styles.formGroup}>
-        <label htmlFor="email" className={styles.label}>
-          Email
-        </label>
         <input
           type="email"
           id="email"
-          name="email"
-          value={formData.email}
-          onChange={handleInputChange}
+          {...register("email")}
           className={`${styles.input} ${errors.email ? styles.inputError : ""}`}
           placeholder="Enter your email"
-          required
           disabled={isLoading}
         />
-        {errors.email && (
-          <span className={styles.errorMessage}>{errors.email}</span>
-        )}
+        {errors.email && <p className={styles.errorMessage}>{errors.email.message}</p>}
       </div>
 
       <div className={styles.formGroup}>
-        <label htmlFor="password" className={styles.label}>
-          Password
-        </label>
         <input
           type="password"
           id="password"
-          name="password"
-          value={formData.password}
-          onChange={handleInputChange}
+          {...register("password")}
           className={`${styles.input} ${errors.password ? styles.inputError : ""}`}
-          placeholder="Create a password (min. 6 characters)"
-          required
+          placeholder="Enter your password"
           disabled={isLoading}
         />
-        {errors.password && (
-          <span className={styles.errorMessage}>{errors.password}</span>
-        )}
+        {errors.password && <p className={styles.errorMessage}>{errors.password.message}</p>}
       </div>
 
       <div className={styles.formGroup}>
-        <label htmlFor="confirmPassword" className={styles.label}>
-          Confirm Password
-        </label>
         <input
           type="password"
           id="confirmPassword"
-          name="confirmPassword"
-          value={formData.confirmPassword}
-          onChange={handleInputChange}
+          {...register("confirmPassword")}
           className={`${styles.input} ${errors.confirmPassword ? styles.inputError : ""}`}
           placeholder="Confirm your password"
-          required
           disabled={isLoading}
         />
-        {errors.confirmPassword && (
-          <span className={styles.errorMessage}>{errors.confirmPassword}</span>
-        )}
+        {errors.confirmPassword && <p className={styles.errorMessage}>{errors.confirmPassword.message}</p>}
       </div>
 
       {submitError && (
-        <div className={styles.submitError}>{submitError}</div>
+        <div className={styles.submitError}>
+          {(submitError instanceof Error) ? submitError.message : "An unexpected error occurred. Please try again."}
+        </div>
       )}
-
-      <button
-        type="submit"
-        disabled={isLoading}
-        className={styles.submitButton}
-      >
-        {isLoading ? "Creating Account..." : "Create Account"}
+      <button type="submit" className={styles.submitButton} disabled={isLoading}>
+        {isLoading ? "Signing up..." : "Sign Up"}
       </button>
     </form>
-  )
+  );
 }

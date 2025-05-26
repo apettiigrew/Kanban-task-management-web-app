@@ -1,39 +1,45 @@
-import { NextRequest } from "next/server"
-import { createUser } from "@/lib/auth"
-import { handleApiError, validateSchema, parseRequestBody, createSuccessResponse } from '@/utils/api-error-handler'
-import { validationSchemas } from '@/utils/validation-schemas'
+import { NextRequest, NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
+import { authSchemas } from '@/utils/validation-schemas'
 
-export async function POST(request: NextRequest) {
+const prisma = new PrismaClient()
+
+export async function POST(req: NextRequest) {
   try {
-    const body = await parseRequestBody(request)
-    const userData = validateSchema(validationSchemas.auth.signUp, body) as {
-      email: string;
-      password: string;
-      name: string;
+    const body = await req.json()
+    const validation = authSchemas.signUp.safeParse(body)
+
+    if (!validation.success) {
+      return NextResponse.json({ message: 'Invalid input', errors: validation.error.flatten().fieldErrors }, { status: 400 })
     }
 
-    const { user, error } = await createUser(userData)
+    const { name, email, password } = validation.data
 
-    if (error) {
-      return createSuccessResponse(
-        { error },
-        400,
-        'User creation failed'
-      )
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    })
+
+    if (existingUser) {
+      return NextResponse.json({ message: 'User already exists' }, { status: 409 })
     }
 
-    return createSuccessResponse(
-      { 
-        user: {
-          id: user?.id,
-          email: user?.email,
-          name: user?.name,
-        }
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    const newUser = await prisma.user.create({
+      data: {
+        name,
+        email,
+        hashedPassword,
       },
-      201,
-      'User created successfully'
-    )
+    })
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { hashedPassword: _, ...userWithoutPassword } = newUser
+    return NextResponse.json(userWithoutPassword, { status: 201 })
+
   } catch (error) {
-    return handleApiError(error)
+    console.error('Signup error:', error)
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
   }
 }

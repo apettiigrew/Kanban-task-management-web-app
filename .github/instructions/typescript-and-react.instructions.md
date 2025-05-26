@@ -1,6 +1,7 @@
 ---
 applyTo: "**/*.tsx, **/*.ts"
 ---
+
 ## TypeScript Guidelines
 - Use TypeScript for all new code
 - Follow functional programming principles where possible
@@ -35,3 +36,5 @@ export function ComponentName(props: Prop) {
         </div>
     );
 }
+
+- Any action that requires a side effect (like API calls) should be handled using tanstack query
