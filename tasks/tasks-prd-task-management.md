@@ -91,10 +91,19 @@ Based on the Product Requirements Document for the Task Management App, this doc
   - [ ] 4.6 Update existing column editing functionality to persist changes to database
   - [ ] 4.7 Update existing column deletion functionality with task confirmation dialog
   - [ ] 4.8 Enhance existing column drag-and-drop to persist position changes via API
-  - [ ] 4.9 Implement automatic saving for all task and column operations
-  - [ ] 4.10 Add optimistic updates for better user experience during drag operations
-  - [ ] 4.11 Add error handling and rollback functionality for failed operations
-  - [ ] 4.12 Write unit tests for enhanced task and column management functionality
+  - [ ] 4.9 Add ability to leverage shadows for drop placement (like Trello) for column drag-and-drop
+  - [ ] 4.10 Implement column input auto-unfocus when creating a new column
+  - [ ] 4.11 Add card deletion functionality with confirmation
+  - [ ] 4.12 Reposition card modal to appear close to the top of the page
+  - [ ] 4.13 Add description indicator icon on cards to show when a description exists
+  - [ ] 4.14 Implement card preview functionality (like Trello)
+  - [ ] 4.15 Add description icon to card modal interface
+  - [ ] 4.16 Implement formatting tools for card description area
+  - [ ] 4.17 Add auto-close functionality for empty cards when user clicks outside
+  - [ ] 4.18 Implement automatic saving for all task and column operations
+  - [ ] 4.19 Add optimistic updates for better user experience during drag operations
+  - [ ] 4.20 Add error handling and rollback functionality for failed operations
+  - [ ] 4.21 Write unit tests for enhanced task and column management functionality
 
 - [ ] 5.0 Integrate User Interface and Security
   - [ ] 5.1 Update main application layout to include authentication state and navigation
