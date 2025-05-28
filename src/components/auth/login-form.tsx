@@ -3,6 +3,8 @@
 import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { signInSchema } from "@/lib/auth"
 import styles from "./login-form.module.scss"
@@ -17,57 +19,34 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
-  
-  const [formData, setFormData] = useState<FormData>({
-    email: "",
-    password: "",
-  })
-  const [errors, setErrors] = useState<Partial<FormData>>({})
+
   const [isLoading, setIsLoading] = useState(false)
   const [submitError, setSubmitError] = useState("")
 
+  const { register, handleSubmit, formState: { errors }, clearErrors } = useForm<FormData>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    }
+  })
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-    
+    const { name } = e.target
+
     if (errors[name as keyof FormData]) {
-      setErrors(prev => ({ ...prev, [name]: "" }))
+      clearErrors(name as keyof FormData)
     }
   }
 
-  const validateForm = (): boolean => {
-    try {
-      signInSchema.parse(formData)
-      setErrors({})
-      return true
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const fieldErrors: Partial<FormData> = {}
-        error.errors.forEach(err => {
-          if (err.path[0]) {
-            fieldErrors[err.path[0] as keyof FormData] = err.message
-          }
-        })
-        setErrors(fieldErrors)
-      }
-      return false
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const onSubmit = async (data: FormData) => {
     setSubmitError("")
-
-    if (!validateForm()) {
-      return
-    }
-
     setIsLoading(true)
 
     try {
       const result = await signIn("credentials", {
-        email: formData.email,
-        password: formData.password,
+        email: data.email,
+        password: data.password,
         redirect: false,
       })
 
@@ -87,7 +66,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className={styles.loginForm}>
+    <form onSubmit={handleSubmit(onSubmit)} className={styles.loginForm}>
       <div className={styles.formGroup}>
         <label htmlFor="email" className={styles.label}>
           Email
@@ -95,8 +74,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         <input
           type="email"
           id="email"
-          name="email"
-          value={formData.email}
+          {...register("email")}
           onChange={handleInputChange}
           className={`${styles.input} ${errors.email ? styles.inputError : ""}`}
           placeholder="Enter your email"
@@ -104,7 +82,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           disabled={isLoading}
         />
         {errors.email && (
-          <span className={styles.errorMessage}>{errors.email}</span>
+          <span className={styles.errorMessage}>{errors.email.message}</span>
         )}
       </div>
 
@@ -115,8 +93,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
         <input
           type="password"
           id="password"
-          name="password"
-          value={formData.password}
+          {...register("password")}
           onChange={handleInputChange}
           className={`${styles.input} ${errors.password ? styles.inputError : ""}`}
           placeholder="Enter your password"
@@ -124,7 +101,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           disabled={isLoading}
         />
         {errors.password && (
-          <span className={styles.errorMessage}>{errors.password}</span>
+          <span className={styles.errorMessage}>{errors.password.message}</span>
         )}
       </div>
 

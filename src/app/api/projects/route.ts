@@ -1,13 +1,13 @@
 import { NextRequest } from 'next/server'
-import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/database'
 import { handleApiError, requireAuth, validateSchema, parseRequestBody, createSuccessResponse } from '@/utils/api-error-handler'
 import { validationSchemas } from '@/utils/validation-schemas'
+import { useSession } from 'next-auth/react'
 
 // GET /api/projects - Get all projects for the authenticated user
 export async function GET() {
   try {
-    const session = await auth()
+    const session = await useSession()    
     requireAuth(session)
 
     const projects = await prisma.project.findMany({

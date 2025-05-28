@@ -9,7 +9,7 @@ interface Credentials {
   password: string;
 }
 
-export default NextAuth({
+const handler = NextAuth({
   session: {
     strategy: "jwt",
   },
@@ -25,6 +25,7 @@ export default NextAuth({
       },
       async authorize(credentials: Credentials | undefined) {
         try {
+          console.log("Authorizing user with credentials:", credentials);
           if (!credentials) {
             throw new Error("No credentials provided")
           }
@@ -77,3 +78,5 @@ export default NextAuth({
   },
   secret: process.env.NEXTAUTH_SECRET,
 })
+
+export { handler as GET, handler as POST }
