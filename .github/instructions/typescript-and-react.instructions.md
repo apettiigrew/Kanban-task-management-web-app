@@ -16,6 +16,10 @@ applyTo: "**/*.tsx, **/*.ts"
 - Keep components small and focused
 - Use CSS modules for component styling
 - Never use tailwindCSS
+# From State and Async Actions
+- Use react-hook-form for form state and error handling
+- Use zod for schema validation
+- Use tanstack query for data fetching and caching
 
 # React Component Structure
 - Use the following as eg how to define react component

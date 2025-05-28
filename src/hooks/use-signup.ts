@@ -1,15 +1,13 @@
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
-import { signUpSchema } from "@/utils/validation-schemas";
+import { authSchemas } from "../utils/validation-schemas";
 
-export type SignUpData = z.infer<typeof signUpSchema>;
+export type SignUpData = z.infer<typeof authSchemas.signUp>;
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export function useSignUp() {
-  const queryClient = useQueryClient();
-
   return useMutation<unknown, Error, SignUpData>({
     mutationFn: async (newUserData: SignUpData) => {
       const response = await fetch(`${API_URL}/api/auth/signup`, {

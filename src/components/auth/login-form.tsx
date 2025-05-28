@@ -30,7 +30,6 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
     
-    // Clear field error when user starts typing
     if (errors[name as keyof FormData]) {
       setErrors(prev => ({ ...prev, [name]: "" }))
     }

@@ -1,79 +1,79 @@
-import NextAuth, { AuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
 
+import { verifyPassword } from '@/lib/auth';
+import { prisma } from '@/lib/database';
+import NextAuth from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
 
-export const authOptions: AuthOptions = {
+interface Credentials {
+  email: string;
+  password: string;
+}
+
+export default NextAuth({
+  session: {
+    strategy: "jwt",
+  },
+  pages: {
+    signIn: "/login",
+  },
   providers: [
-    CredentialsProvider({
-      name: 'Credentials',
+    Credentials({
+      name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Please enter an email and password');
+      async authorize(credentials: Credentials | undefined) {
+        try {
+          if (!credentials) {
+            throw new Error("No credentials provided")
+          }
+
+          if (!credentials.email || !credentials.password) {
+            throw new Error("All credentials must be provided")
+          }
+
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              hashedPassword: true,
+            },
+          })
+
+          if (!user) {
+            throw new Error("Credentials are invalid")
+          }
+
+          // Verify password
+          const isValidPassword = await verifyPassword(credentials.password, user.hashedPassword!)
+
+          if (!isValidPassword) {
+            throw new Error("Credentials are invalid")
+          }
+
+          // Return user object without password
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          }
+        } catch (error) {
+          console.error("Authentication error:", error)
+          return null
         }
-
-        // Create a user if does exist using prisma
-        const user = await UserService.findUserByEmail(credentials.email);
-        
-        if (!user) {
-          throw new Error('No user found with this email');
-        }
-
-        const passwordMatch = await UserService.verifyPassword(
-          credentials.email,
-          credentials.password
-        );
-
-        if (!passwordMatch) {
-          throw new Error('Invalid password');
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: `${user.firstName} ${user.lastName}`,
-          firstName: user.firstName,
-          lastName: user.lastName,
-        };
-      }
-    })
+      },
+    }),
   ],
-  pages: {
-    signIn: '/login',
-  },
-  session: {
-    strategy: 'jwt',
-    maxAge: 60 * 60, // 1 hour
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.email = user.email;
-        token.name = user.name;
-        token.firstName = user.firstName;
-        token.lastName = user.lastName;
+        token.id = user.id
       }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string;
-        session.user.email = token.email ?? null;
-        session.user.name = token.name ?? null;
-        session.user.firstName = token.firstName as string ?? null;
-        session.user.lastName = token.lastName as string ?? null;
-      }
-      return session;
-    },
+      return token
+    }
   },
-};
-
-const handler = NextAuth(authOptions);
-
-export { handler as GET, handler as POST }; 
+  secret: process.env.NEXTAUTH_SECRET,
+})
