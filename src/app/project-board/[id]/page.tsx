@@ -1,9 +1,14 @@
+"use client";
+
+import AuthGuard from '@/components/auth/auth-guard';
 import { Board } from '@/components/board/Board';
 
 export default function ProjectBoardPage() {
     return (
-        <div>
-            <Board />
-        </div>
+        <AuthGuard>
+            <div>
+                <Board />
+            </div>
+        </AuthGuard>
     );
 }

@@ -4,6 +4,7 @@ import { DeviceInfoProvider } from "./device-info-provider";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import { MarkdownEditorProvider } from './markdown-editor-provider';
+import AuthProvider from './auth-provider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   // Create a client for each request in client components
@@ -19,11 +20,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <DeviceInfoProvider>
-        <MarkdownEditorProvider>
-          {children}
-        </MarkdownEditorProvider>
-      </DeviceInfoProvider>
+      <AuthProvider>
+        <DeviceInfoProvider>
+          <MarkdownEditorProvider>
+            {children}
+          </MarkdownEditorProvider>
+        </DeviceInfoProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 } 

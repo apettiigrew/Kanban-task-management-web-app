@@ -1,6 +1,7 @@
 ---
 applyTo: "**/*.tsx, **/*.ts"
 ---
+
 ## TypeScript Guidelines
 - Use TypeScript for all new code
 - Follow functional programming principles where possible
@@ -15,6 +16,10 @@ applyTo: "**/*.tsx, **/*.ts"
 - Keep components small and focused
 - Use CSS modules for component styling
 - Never use tailwindCSS
+# From State and Async Actions
+- Use react-hook-form for form state and error handling
+- Use zod for schema validation
+- Use tanstack query for data fetching and caching
 
 # React Component Structure
 - Use the following as eg how to define react component
@@ -35,3 +40,5 @@ export function ComponentName(props: Prop) {
         </div>
     );
 }
+
+- Any action that requires a side effect (like API calls) should be handled using tanstack query
