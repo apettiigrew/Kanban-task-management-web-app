@@ -1,26 +1,100 @@
 import { prisma } from "@/lib/database"
 import bcrypt from "bcryptjs"
+import NextAuth from "next-auth"
+import Credentials from "next-auth/providers/credentials"
 import { z } from "zod"
 
-// Validation schemas
-const signInSchema = z.object({
+export const signInSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 })
 
-const signUpSchema = z.object({
+export const signUpSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   name: z.string().min(1, "Name is required"),
 })
 
+// Auth.js configuration
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  session: {
+    strategy: "jwt",
+  },
+  pages: {
+    signIn: "/login",
+  },
+  providers: [
+    Credentials({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      authorize: async (credentials) => {
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            throw new Error("Email and password are required")
+          }
+
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email as string },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              hashedPassword: true,
+            },
+          })
+
+          if (!user || !user.hashedPassword) {
+            throw new Error("Invalid credentials")
+          }
+
+          const isValidPassword = await verifyPassword(
+            credentials.password as string,
+            user.hashedPassword
+          )
+
+          if (!isValidPassword) {
+            throw new Error("Invalid credentials")
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name ?? undefined,
+          }
+        } catch (error) {
+          console.error("Authentication error:", error)
+          return null
+        }
+      },
+    }),
+  ],
+  callbacks: {
+    authorized: async ({ auth }) => {
+      return !!auth
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (token.id) {
+        session.user.id = token.id as string
+      }
+      return session
+    },
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+})
+
 // Helper functions for authentication actions
 export async function createUser(userData: z.infer<typeof signUpSchema>) {
   try {
-    // Validate input
     const { email, password, name } = signUpSchema.parse(userData)
-
-    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
     })
@@ -97,12 +171,8 @@ export async function updateUserPassword(email: string, newPassword: string) {
   }
 }
 
-function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 12)
-}
-
 // Function to verify password
-async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
+export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
   try {
     return await bcrypt.compare(password, hashedPassword)
   } catch (error) {
@@ -111,6 +181,8 @@ async function verifyPassword(password: string, hashedPassword: string): Promise
   }
 }
 
-// Export validation schemas for use in components
-export { hashPassword, signInSchema, signUpSchema, verifyPassword }
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 12)
+}
+
 

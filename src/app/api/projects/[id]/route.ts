@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
-import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/database'
-import { handleApiError, requireAuth, validateSchema, parseRequestBody, createSuccessResponse, NotFoundError } from '@/utils/api-error-handler'
+import { handleApiError, validateSchema, parseRequestBody, createSuccessResponse, NotFoundError } from '@/utils/api-error-handler'
 import { validationSchemas } from '@/utils/validation-schemas'
+import { requireAuth } from '@/lib/auth-utils'
 
 // Helper function to verify project ownership
 async function verifyProjectOwnership(projectId: string, userId: string) {
@@ -26,15 +26,14 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth()
-    requireAuth(session)
+    const user = await requireAuth()
 
     const { id: projectId } = validateSchema(validationSchemas.project.params, params) as { id: string }
 
     const project = await prisma.project.findFirst({
       where: {
         id: projectId,
-        userId: session.user.id,
+        userId: user.id,
       },
       include: {
         columns: {
@@ -69,13 +68,12 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth()
-    requireAuth(session)
+    const user = await requireAuth()
 
     const { id: projectId } = validateSchema(validationSchemas.project.params, params) as { id: string }
     
     // Verify project ownership
-    await verifyProjectOwnership(projectId, session.user.id)
+    await verifyProjectOwnership(projectId, user.id)
 
     const body = await parseRequestBody(request)
     const validatedData = validateSchema(validationSchemas.project.update, body) as { name?: string; description?: string }
@@ -116,13 +114,12 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await auth()
-    requireAuth(session)
+    const user = await requireAuth()
 
     const { id: projectId } = validateSchema(validationSchemas.project.params, params) as { id: string }
     
     // Verify project ownership
-    await verifyProjectOwnership(projectId, session.user.id)
+    await verifyProjectOwnership(projectId, user.id)
 
     // Delete the project (cascade delete will handle columns and tasks)
     await prisma.project.delete({

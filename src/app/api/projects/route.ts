@@ -1,18 +1,17 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/database'
-import { handleApiError, requireAuth, validateSchema, parseRequestBody, createSuccessResponse } from '@/utils/api-error-handler'
+import { handleApiError, validateSchema, parseRequestBody, createSuccessResponse } from '@/utils/api-error-handler'
 import { validationSchemas } from '@/utils/validation-schemas'
-import { useSession } from 'next-auth/react'
+import { requireAuth } from '@/lib/auth-utils'
 
 // GET /api/projects - Get all projects for the authenticated user
 export async function GET() {
   try {
-    const session = await useSession()    
-    requireAuth(session)
+    const user = await requireAuth()
 
     const projects = await prisma.project.findMany({
       where: {
-        userId: session.user.id,
+        userId: user.id,
       },
       include: {
         columns: {
@@ -41,8 +40,7 @@ export async function GET() {
 // POST /api/projects - Create a new project
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-    requireAuth(session)
+    const user = await requireAuth()
 
     const body = await parseRequestBody(request)
     const validatedData = validateSchema(validationSchemas.project.create, body)
@@ -53,8 +51,8 @@ export async function POST(request: NextRequest) {
     const project = await prisma.project.create({
       data: {
         name,
-        description,
-        userId: session.user.id,
+        description: description || null,
+        userId: user.id,
         columns: {
           create: [
             { name: 'To Do', position: 0 },
