@@ -6,9 +6,10 @@ import { requireAuth } from '@/lib/auth-utils'
 
 // GET /api/projects - Get all projects for the authenticated user
 export async function GET() {
+
   try {
     const user = await requireAuth()
-
+    
     const projects = await prisma.project.findMany({
       where: {
         userId: user.id,

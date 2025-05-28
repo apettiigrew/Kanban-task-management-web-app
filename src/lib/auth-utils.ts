@@ -56,7 +56,6 @@ export async function requireAuth() {
   
   if (!user?.id) {
     throw new Error("Authentication required")
-    
   }
   
   return user as { id: string; email: string; name?: string }
