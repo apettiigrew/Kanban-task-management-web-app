@@ -7,18 +7,14 @@ import { DashboardSidebar } from "@/components/dashboard-sidebar"
 import { MainContentHeader } from "@/components/main-content-header"
 import { ProjectsGrid } from "@/components/projects-grid"
 import { AddProjectModal } from "@/components/add-project-modal"
-import { ProjectDetailsModal } from "@/components/project-details-modal"
 import { LoadingState } from "@/components/loading-spinner"
 import { ProjectProvider, useProjects } from "@/contexts/project-context"
-import { Project } from "@/types/project"
 
 function DashboardContent() {
-  const { projects, addProject, deleteProject, getProject, loading, error } = useProjects()
+  const { projects, addProject, loading, error } = useProjects()
   const [showAllProjects, setShowAllProjects] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [showAddModal, setShowAddModal] = useState(false)
-  const [showDetailsModal, setShowDetailsModal] = useState(false)
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
   // Filter projects based on search query
   const filteredProjects = projects.filter((project) =>
@@ -40,14 +36,6 @@ function DashboardContent() {
 
   const handleNewProject = () => {
     setShowAddModal(true)
-  }
-
-  const handleViewProject = (projectId: number) => {
-    const project = getProject(projectId)
-    if (project) {
-      setSelectedProject(project)
-      setShowDetailsModal(true)
-    }
   }
 
   const handleHelp = () => {
@@ -87,7 +75,6 @@ function DashboardContent() {
               ) : (
                 <ProjectsGrid 
                   projects={filteredProjects}
-                  onViewProject={handleViewProject}
                 />
               )}
             </main>
@@ -100,13 +87,6 @@ function DashboardContent() {
         onOpenChange={setShowAddModal}
         onAddProject={addProject}
         loading={loading}
-      />
-
-      <ProjectDetailsModal
-        project={selectedProject}
-        open={showDetailsModal}
-        onOpenChange={setShowDetailsModal}
-        onDeleteProject={deleteProject}
       />
     </SidebarProvider>
   )
