@@ -1,26 +1,26 @@
 "use client"
 
 import { useParams } from "next/navigation"
+import { Board } from "@/components/board"
+import { ErrorBoundary } from "@/components/error-boundary"
 
 export default function BoardPage() {
   const params = useParams()
   const projectId = params.id
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto p-8">
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center space-y-4">
-            <h1 className="text-3xl font-bold">Project Board</h1>
-            <p className="text-muted-foreground">
-              Project ID: {projectId}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Board view implementation coming soon...
-            </p>
-          </div>
+    <ErrorBoundary fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center p-4">
+          <h2 className="text-xl font-medium mb-2">Something went wrong</h2>
+          <p className="text-muted-foreground mb-4">
+            We encountered an error loading this board
+          </p>
+          <a href="/dashboard" className="underline">Return to dashboard</a>
         </div>
       </div>
-    </div>
+    }>
+      <Board boardId={projectId} />
+    </ErrorBoundary>
   )
 }
