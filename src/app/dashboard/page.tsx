@@ -62,7 +62,7 @@ export default function Dashboard() {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen w-full">
         <Sidebar>
           <SidebarHeader className="border-b p-4">
             <DropdownMenu>
@@ -162,9 +162,9 @@ export default function Dashboard() {
           <SidebarRail />
         </Sidebar>
 
-        <SidebarInset>
-          <div className="flex flex-col h-full">
-            <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-6">
+        <SidebarInset className="flex-1 w-full">
+          <div className="flex flex-col h-full w-full">
+            <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-6 w-full">
               <SidebarTrigger />
               <h1 className="text-xl font-semibold">Projects Dashboard</h1>
               <div className="ml-auto flex items-center gap-4">
@@ -175,8 +175,8 @@ export default function Dashboard() {
               </div>
             </header>
 
-            <main className="flex-1 overflow-auto p-6">
-              <div className="flex items-center justify-between mb-6">
+            <main className="flex-1 overflow-auto p-6 w-full">
+              <div className="flex items-center justify-between mb-6 w-full">
                 <div>
                   <h2 className="text-2xl font-bold">All Projects</h2>
                   <p className="text-muted-foreground">Manage and track your projects</p>
@@ -187,7 +187,7 @@ export default function Dashboard() {
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 w-full">
                 {filteredProjects.map((project) => (
                   <Card key={project.id} className="overflow-hidden">
                     <CardHeader className="pb-2">
