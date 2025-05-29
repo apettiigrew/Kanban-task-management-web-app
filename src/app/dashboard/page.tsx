@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Bell, ChevronDown, ChevronRight, Grid, Hash, Plus, Search, User } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -51,6 +51,9 @@ const allProjects = [
 export default function Dashboard() {
   const [showAllProjects, setShowAllProjects] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const [isProjectsCollapsed, setIsProjectsCollapsed] = useState(false)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const [contentHeight, setContentHeight] = useState<number>(0)
 
   // Filter projects based on search query
   const filteredProjects = allProjects.filter((project) =>
@@ -59,6 +62,13 @@ export default function Dashboard() {
 
   // Limit displayed projects in sidebar
   const displayedSidebarProjects = showAllProjects ? filteredProjects : filteredProjects.slice(0, 10)
+
+  // Measure content height for smooth animation
+  useEffect(() => {
+    if (contentRef.current) {
+      setContentHeight(contentRef.current.scrollHeight)
+    }
+  }, [displayedSidebarProjects, showAllProjects])
 
   return (
     <SidebarProvider>
@@ -111,44 +121,74 @@ export default function Dashboard() {
             </div>
 
             <div className="mt-2">
-              <div className="px-4 py-2 text-sm font-medium bg-muted/50">My Projects</div>
+              <button
+                onClick={() => setIsProjectsCollapsed(!isProjectsCollapsed)}
+                className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium bg-muted/50 hover:bg-muted/70 transition-colors"
+              >
+                <span>My Projects</span>
+                <ChevronRight 
+                  className={`h-4 w-4 transition-all duration-300 ease-out ${
+                    isProjectsCollapsed ? 'rotate-0' : 'rotate-90'
+                  }`} 
+                />
+              </button>
+              
+              <div 
+                className="transition-all duration-400 ease-out overflow-hidden"
+                style={{
+                  maxHeight: isProjectsCollapsed ? '0px' : `${contentHeight}px`,
+                  opacity: isProjectsCollapsed ? 0 : 1,
+                  transform: isProjectsCollapsed ? 'translateY(-8px)' : 'translateY(0px)'
+                }}
+              >
+                <div ref={contentRef} className="transition-all duration-200 ease-in-out">
+                  <SidebarMenu>
+                    {displayedSidebarProjects.map((project, index) => (
+                      <SidebarMenuItem 
+                        key={project.id}
+                        className={`transition-all duration-200 ease-in-out ${
+                          isProjectsCollapsed ? 'opacity-0' : 'opacity-100'
+                        }`}
+                        style={{
+                          animationDelay: isProjectsCollapsed ? '0ms' : `${index * 50}ms`,
+                          animation: isProjectsCollapsed ? 'none' : 'fadeInUp 0.3s ease-out forwards'
+                        }}
+                      >
+                        <SidebarMenuButton className="justify-between">
+                          <div className="flex items-center gap-2">
+                            <Hash className="h-4 w-4 text-muted-foreground" />
+                            <span>{project.name}</span>
+                          </div>
+                          <span className="text-muted-foreground">{project.tasks}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
 
-              <SidebarMenu>
-                {displayedSidebarProjects.map((project) => (
-                  <SidebarMenuItem key={project.id}>
-                    <SidebarMenuButton className="justify-between">
-                      <div className="flex items-center gap-2">
-                        <Hash className="h-4 w-4 text-muted-foreground" />
-                        <span>{project.name}</span>
-                      </div>
-                      <span className="text-muted-foreground">{project.tasks}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-
-                {filteredProjects.length > 10 && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      onClick={() => setShowAllProjects(!showAllProjects)}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <div className="flex items-center gap-2">
-                        {showAllProjects ? (
-                          <>
-                            <ChevronDown className="h-4 w-4" />
-                            <span>Show less</span>
-                          </>
-                        ) : (
-                          <>
-                            <ChevronRight className="h-4 w-4" />
-                            <span>Show {filteredProjects.length - 10} more</span>
-                          </>
-                        )}
-                      </div>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )}
-              </SidebarMenu>
+                    {filteredProjects.length > 10 && (
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          onClick={() => setShowAllProjects(!showAllProjects)}
+                          className="text-muted-foreground hover:text-foreground"
+                        >
+                          <div className="flex items-center gap-2">
+                            {showAllProjects ? (
+                              <>
+                                <ChevronDown className="h-4 w-4" />
+                                <span>Show less</span>
+                              </>
+                            ) : (
+                              <>
+                                <ChevronRight className="h-4 w-4" />
+                                <span>Show {filteredProjects.length - 10} more</span>
+                              </>
+                            )}
+                          </div>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    )}
+                  </SidebarMenu>
+                </div>
+              </div>
             </div>
           </SidebarContent>
 
