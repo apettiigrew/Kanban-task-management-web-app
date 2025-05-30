@@ -79,12 +79,10 @@ This task list implements a multi-project Kanban task management system with dra
 - [ ] 2.0 Implement TanStack Query hooks and multi-project dashboard
   - [x] 2.1 Create TanStack Query hooks in `src/hooks/queries/use-projects.ts` for fetching projects
     - **Git commit:** `feat: implement tanstack query hooks for projects with creation mutations`
-  - [ ] 2.2 Create TanStack Query mutation hooks in `src/hooks/mutations/use-project-mutations.ts`
-  - [ ] 2.3 Build project dashboard component using TanStack Query and Shadcn UI components
-  - [ ] 2.4 Design project card component using Shadcn Card and Lucide icons
-  - [ ] 2.5 Implement project navigation and routing structure with loading states
-  - [ ] 2.6 Add responsive design using Tailwind CSS for tablet and desktop viewports
-  - [ ] 2.7 Write unit tests for dashboard components and TanStack Query hooks
+  - [X] 2.2 Create TanStack Query mutation hooks in `src/hooks/mutations/use-project-mutations.ts`
+  - [ ] 2.3 Allow project dashboard component using TanStack Query and Shadcn UI components
+  - [ ] 2.4 Implement project navigation and routing structure with loading states
+  - [ ] 2.5 Add responsive design using Tailwind CSS for mobile, tablet and desktop viewports
 
 - [ ] 3.0 Create project CRUD operations with forms and validation
   - [ ] 3.1 Build project creation form using React Hook Form and Zod validation
