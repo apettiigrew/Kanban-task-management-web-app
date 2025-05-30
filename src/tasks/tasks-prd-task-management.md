@@ -12,6 +12,17 @@ This task list implements a multi-project Kanban task management system with dra
 
 **ALWAYS ask for PERMISSION before starting any new task. NEVER start a new task without explicit user approval.**
 
+## 📋 TASK COMPLETION WORKFLOW
+
+**When completing tasks, follow this workflow:**
+1. Complete the implementation work for the task
+2. **WAIT** for the user to confirm the task is completed to their satisfaction
+3. **ONLY AFTER** user confirmation, mark the task as completed with `[x]` in this document
+4. **ONLY AFTER** marking as completed, create the git commit with an appropriate commit message
+5. **NEVER** mark tasks as completed or create git commits without explicit user confirmation
+
+This ensures quality control and allows the user to review and test implementations before they are considered "done".
+
 ## Relevant Files
 
 - `prisma/schema.prisma` - Prisma database schema for Project, Task, and Column models
@@ -80,7 +91,8 @@ This task list implements a multi-project Kanban task management system with dra
   - [x] 2.1 Create TanStack Query hooks in `src/hooks/queries/use-projects.ts` for fetching projects
     - **Git commit:** `feat: implement tanstack query hooks for projects with creation mutations`
   - [X] 2.2 Create TanStack Query mutation hooks in `src/hooks/mutations/use-project-mutations.ts`
-  - [ ] 2.3 Allow project dashboard component using TanStack Query and Shadcn UI components
+  - [x] 2.3 Build project dashboard component using TanStack Query and Shadcn UI components
+    - **Git commit:** `feat: implement project dashboard with tanstack query integration`
   - [ ] 2.4 Implement project navigation and routing structure with loading states
   - [ ] 2.5 Add responsive design using Tailwind CSS for mobile, tablet and desktop viewports
 

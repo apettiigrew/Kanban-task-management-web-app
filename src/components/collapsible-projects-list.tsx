@@ -74,9 +74,11 @@ export function CollapsibleProjectsList({
                 <SidebarMenuButton className="justify-between">
                   <div className="flex items-center gap-2">
                     <Hash className="h-4 w-4 text-muted-foreground" />
-                    <span>{project.name}</span>
+                    <span>{project.title}</span>
                   </div>
-                  <span className="text-muted-foreground">{project.tasks}</span>
+                  <span className="text-muted-foreground">
+                    {project.tasks?.length || 0}
+                  </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}

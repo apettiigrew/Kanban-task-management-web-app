@@ -1,25 +1,37 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { DashboardHeader } from "@/components/dashboard-header"
 import { DashboardSidebar } from "@/components/dashboard-sidebar"
-import { MainContentHeader } from "@/components/main-content-header"
 import { ProjectsGrid } from "@/components/projects-grid"
 import { AddProjectModal } from "@/components/add-project-modal"
 import { LoadingState } from "@/components/loading-spinner"
-import { ProjectProvider, useProjects } from "@/contexts/project-context"
+import { useProjects, useCreateProject } from "@/hooks/queries/use-projects"
 
 function DashboardContent() {
-  const { projects, addProject, loading, error } = useProjects()
+  const { 
+    data: projects = [], 
+    isLoading: loading, 
+    error
+  } = useProjects({
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: true,
+  })
+
+  const createProjectMutation = useCreateProject()
+  
   const [showAllProjects, setShowAllProjects] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [showAddModal, setShowAddModal] = useState(false)
 
-  // Filter projects based on search query
-  const filteredProjects = projects.filter((project) =>
-    project.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  // Filter projects based on search query with memoization for performance
+  const filteredProjects = useMemo(() => {
+    if (!searchQuery.trim()) return projects
+    
+    return projects.filter((project) =>
+      project.title.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  }, [projects, searchQuery])
 
   // Event handlers
   const handleSearchChange = (query: string) => {
@@ -30,18 +42,23 @@ function DashboardContent() {
     setShowAllProjects(!showAllProjects)
   }
 
-  const handleAddProject = () => {
-    setShowAddModal(true)
-  }
-
-  const handleNewProject = () => {
-    setShowAddModal(true)
-  }
-
   const handleHelp = () => {
     // TODO: Implement help functionality
     console.log("Help clicked")
   }
+
+  // Handle project creation with TanStack Query mutation
+  const handleCreateProject = async (projectData: { title: string; description?: string | null; emoji?: string | null }) => {
+    try {
+      await createProjectMutation.mutateAsync(projectData)
+    } catch (error) {
+      console.error('Failed to create project:', error)
+      // Error is handled by the mutation's onError callback
+    }
+  }
+
+  // Format error message for display
+  const errorMessage = error instanceof Error ? error.message : error ? String(error) : null
 
   return (
     <SidebarProvider>
@@ -52,7 +69,6 @@ function DashboardContent() {
           onSearchChange={handleSearchChange}
           showAllProjects={showAllProjects}
           onToggleShowAll={handleToggleShowAll}
-          onAddProject={handleAddProject}
           onHelp={handleHelp}
         />
 
@@ -61,12 +77,21 @@ function DashboardContent() {
             <DashboardHeader />
 
             <main className="flex-1 overflow-auto p-6 w-full">
-              <MainContentHeader onNewProject={handleNewProject} />
+              <div className="flex items-center justify-between mb-6 w-full">
+                <div>
+                  <h2 className="text-2xl font-bold">All Projects</h2>
+                  <p className="text-muted-foreground">Manage and track your projects</p>
+                </div>
+                <AddProjectModal
+                  onCreateProject={handleCreateProject}
+                  loading={createProjectMutation.isPending}
+                />
+              </div>
               
-              {error && (
+              {errorMessage && (
                 <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
                   <p className="font-medium">Error</p>
-                  <p className="text-sm">{error}</p>
+                  <p className="text-sm">{errorMessage}</p>
                 </div>
               )}
               
@@ -81,21 +106,10 @@ function DashboardContent() {
           </div>
         </SidebarInset>
       </div>
-
-      <AddProjectModal
-        open={showAddModal}
-        onOpenChange={setShowAddModal}
-        onAddProject={addProject}
-        loading={loading}
-      />
     </SidebarProvider>
   )
 }
 
 export default function Dashboard() {
-  return (
-    <ProjectProvider>
-      <DashboardContent />
-    </ProjectProvider>
-  )
+  return <DashboardContent />
 }

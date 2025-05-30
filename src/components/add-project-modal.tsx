@@ -1,177 +1,118 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from 'react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Project } from "@/types/project"
+import { Plus, Loader2 } from "lucide-react"
 
 interface AddProjectModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onAddProject: (project: Omit<Project, "id">) => Promise<void>
+  onCreateProject: (project: { title: string; description?: string; emoji?: string }) => void
   loading?: boolean
 }
 
-const statusOptions = ["Not Started", "Planning", "In Progress", "Completed"]
-const emojiOptions = ["🚀", "💻", "📣", "🎯", "🔬", "🤝", "🏝️", "💰", "📱", "📝", "🧪", "📊", "🏗️", "✨", "🔥", "⭐", "🎨", "🔧", "📈", "🎪"]
-
-export function AddProjectModal({ open, onOpenChange, onAddProject, loading = false }: AddProjectModalProps) {
-  const [formData, setFormData] = useState({
-    name: "",
-    emoji: "🚀",
-    tasks: 0,
-    status: "Not Started" as Project["status"],
-    dueDate: "",
-  })
+export function AddProjectModal({ onCreateProject, loading = false }: AddProjectModalProps) {
+  const [open, setOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    emoji: '📋'
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.name.trim() || isSubmitting) {
+    if (!formData.title.trim()) {
       return
     }
 
     setIsSubmitting(true)
     
     try {
-      await onAddProject({
-        name: formData.name.trim(),
-        emoji: formData.emoji,
-        tasks: formData.tasks,
-        status: formData.status,
-        dueDate: formData.dueDate,
+      await onCreateProject({
+        title: formData.title.trim(),
+        description: formData.description.trim() || undefined,
+        emoji: formData.emoji || '📋'
       })
-
-      // Reset form
-      setFormData({
-        name: "",
-        emoji: "🚀",
-        tasks: 0,
-        status: "Not Started",
-        dueDate: "",
-      })
-
-      onOpenChange(false)
+      
+      // Reset form and close modal on success
+      setFormData({ title: '', description: '', emoji: '📋' })
+      setOpen(false)
     } catch (error) {
-      // Error handling is done in the context
-      console.error("Failed to add project:", error)
+      console.error('Error creating project:', error)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleInputChange = (field: keyof typeof formData, value: string | number) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }))
+  const handleInputChange = (field: keyof typeof formData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
+  const isLoading = loading || isSubmitting
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="h-9 px-3">
+          <Plus className="h-4 w-4 mr-2" />
+          Add Project
+        </Button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Project</DialogTitle>
+          <DialogTitle>Create New Project</DialogTitle>
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Project Name</Label>
+            <Label htmlFor="title">Project Title</Label>
             <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => handleInputChange("name", e.target.value)}
-              placeholder="Enter project name"
+              id="title"
+              value={formData.title}
+              onChange={(e) => handleInputChange('title', e.target.value)}
+              placeholder="Enter project title"
+              disabled={isLoading}
               required
             />
           </div>
-
+          
           <div className="space-y-2">
             <Label htmlFor="emoji">Emoji</Label>
-            <Select 
-              value={formData.emoji} 
-              onValueChange={(value) => handleInputChange("emoji", value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {emojiOptions.map((emoji) => (
-                  <SelectItem key={emoji} value={emoji}>
-                    <span className="text-lg">{emoji}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select 
-              value={formData.status} 
-              onValueChange={(value) => handleInputChange("status", value as Project["status"])}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {statusOptions.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    {status}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="tasks">Initial Tasks Count</Label>
             <Input
-              id="tasks"
-              type="number"
-              min="0"
-              value={formData.tasks}
-              onChange={(e) => handleInputChange("tasks", parseInt(e.target.value) || 0)}
-              placeholder="0"
+              id="emoji"
+              value={formData.emoji}
+              onChange={(e) => handleInputChange('emoji', e.target.value)}
+              placeholder="📋"
+              disabled={isLoading}
+              maxLength={2}
             />
           </div>
-
+          
           <div className="space-y-2">
-            <Label htmlFor="dueDate">Due Date</Label>
+            <Label htmlFor="description">Description (Optional)</Label>
             <Input
-              id="dueDate"
-              type="date"
-              value={formData.dueDate}
-              onChange={(e) => handleInputChange("dueDate", e.target.value)}
+              id="description"
+              value={formData.description}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('description', e.target.value)}
+              placeholder="Enter project description"
+              disabled={isLoading}
             />
           </div>
-
+          
           <div className="flex justify-end space-x-2 pt-4">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+              disabled={isLoading}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Adding..." : "Add Project"}
+            <Button type="submit" disabled={isLoading || !formData.title.trim()}>
+              {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Create Project
             </Button>
           </div>
         </form>

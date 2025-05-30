@@ -16,7 +16,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
       <div className="flex items-center w-full">
         <span className="text-muted-foreground text-xl mr-4">#</span>
         <span className="text-lg font-medium">
-          {project.name} {project.emoji && <span>{project.emoji}</span>}
+          {project.title} {project.emoji && <span>{project.emoji}</span>}
         </span>
       </div>
     </Link>

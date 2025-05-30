@@ -8,7 +8,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { UserProfileHeader } from "@/components/user-profile-header"
-import { AddProjectButton } from "@/components/add-project-button"
 import { ProjectSearch } from "@/components/project-search"
 import { CollapsibleProjectsList } from "@/components/collapsible-projects-list"
 import { SidebarHelpButton } from "@/components/sidebar-help-button"
@@ -20,7 +19,6 @@ interface DashboardSidebarProps {
   onSearchChange: (query: string) => void
   showAllProjects: boolean
   onToggleShowAll: () => void
-  onAddProject?: () => void
   onHelp?: () => void
   username?: string
   avatarUrl?: string
@@ -33,7 +31,6 @@ export function DashboardSidebar({
   onSearchChange,
   showAllProjects,
   onToggleShowAll,
-  onAddProject,
   onHelp,
   username,
   avatarUrl,
@@ -50,8 +47,6 @@ export function DashboardSidebar({
       </SidebarHeader>
 
       <SidebarContent>
-        <AddProjectButton onClick={onAddProject} />
-        
         <ProjectSearch 
           searchQuery={searchQuery}
           onSearchChange={onSearchChange}
