@@ -1,8 +1,31 @@
 export interface Project {
-  id: number
-  name: string
-  emoji: string
-  tasks: number
-  status: "In Progress" | "Not Started" | "Planning" | "Completed"
-  dueDate: string
+  id: string
+  title: string
+  description: string | null
+  emoji: string | null
+  createdAt: Date
+  updatedAt: Date
+  
+  // Relations (optional for API responses)
+  columns?: Array<{
+    id: string
+    title: string
+    order: number
+    createdAt: Date
+    updatedAt: Date
+  }>
+  tasks?: Array<{
+    id: string
+    title: string
+    description: string | null
+    order: number
+    labels: string[]
+    dueDate: Date | null
+  }>
+}
+
+export interface ProjectWithStats extends Project {
+  taskCount: number
+  completedTaskCount: number
+  columnCount: number
 }
