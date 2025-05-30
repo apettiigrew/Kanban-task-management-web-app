@@ -1,74 +1,66 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { createColumnSchema, reorderColumnsSchema } from '@/lib/validations/column'
+import { createTaskSchema, reorderTasksSchema } from '@/lib/validations/task'
 import { z } from 'zod'
 
-// GET /api/columns - Get all columns (optionally filtered by project)
+// GET /api/tasks - Get all tasks (optionally filtered by project or column)
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const projectId = searchParams.get('projectId')
-    const includeTasks = searchParams.get('includeTasks') === 'true'
+    const columnId = searchParams.get('columnId')
+    const includeRelations = searchParams.get('includeRelations') === 'true'
 
-    const whereClause = projectId ? { projectId } : {}
+    const whereClause: Record<string, string> = {}
+    if (projectId) whereClause.projectId = projectId
+    if (columnId) whereClause.columnId = columnId
 
-    const columns = await prisma.column.findMany({
+    const tasks = await prisma.task.findMany({
       where: whereClause,
       include: {
-        tasks: includeTasks ? {
-          orderBy: { order: 'asc' }
-        } : false,
-        project: {
+        project: includeRelations ? {
           select: {
             id: true,
             title: true,
             emoji: true,
           }
-        },
-        _count: {
+        } : false,
+        column: includeRelations ? {
           select: {
-            tasks: true,
+            id: true,
+            title: true,
           }
-        }
+        } : false,
       },
       orderBy: [
-        { projectId: 'asc' },
+        { columnId: 'asc' },
         { order: 'asc' }
       ],
     })
 
-    // Transform data to include task count
-    const transformedColumns = columns.map(column => {
-      const { _count, ...columnData } = column
-      return {
-        ...columnData,
-        taskCount: _count.tasks,
-      }
-    })
-
     return NextResponse.json({
       success: true,
-      data: transformedColumns,
+      data: tasks,
     })
   } catch (error) {
-    console.error('Error fetching columns:', error)
+    console.error('Error fetching tasks:', error)
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to fetch columns',
+        error: 'Failed to fetch tasks',
       },
       { status: 500 }
     )
   }
 }
 
-// POST /api/columns - Create a new column
+// POST /api/tasks - Create a new task
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     
     // Validate the request body using Zod
-    const validatedData = createColumnSchema.parse(body)
+    const validatedData = createTaskSchema.parse(body)
 
     // Check if project exists
     const project = await prisma.project.findUnique({
@@ -85,15 +77,33 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Get the next order number for this project
-    const maxOrder = await prisma.column.aggregate({
-      where: { projectId: validatedData.projectId },
+    // Check if column exists and belongs to the project
+    const column = await prisma.column.findUnique({
+      where: { 
+        id: validatedData.columnId,
+        projectId: validatedData.projectId,
+      },
+    })
+
+    if (!column) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Column not found or does not belong to the specified project',
+        },
+        { status: 404 }
+      )
+    }
+
+    // Get the next order number for this column
+    const maxOrder = await prisma.task.aggregate({
+      where: { columnId: validatedData.columnId },
       _max: { order: true },
     })
 
     const nextOrder = (maxOrder._max.order ?? 0) + 1
 
-    const column = await prisma.column.create({
+    const task = await prisma.task.create({
       data: {
         ...validatedData,
         order: nextOrder,
@@ -106,31 +116,25 @@ export async function POST(request: NextRequest) {
             emoji: true,
           }
         },
-        _count: {
+        column: {
           select: {
-            tasks: true,
+            id: true,
+            title: true,
           }
         }
       }
     })
 
-    // Transform to include task count
-    const { _count, ...columnData } = column
-    const transformedColumn = {
-      ...columnData,
-      taskCount: _count.tasks,
-    }
-
     return NextResponse.json(
       {
         success: true,
-        data: transformedColumn,
-        message: 'Column created successfully',
+        data: task,
+        message: 'Task created successfully',
       },
       { status: 201 }
     )
   } catch (error) {
-    console.error('Error creating column:', error)
+    console.error('Error creating task:', error)
     
     // Handle Zod validation errors
     if (error instanceof z.ZodError) {
@@ -147,25 +151,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to create column',
+        error: 'Failed to create task',
       },
       { status: 500 }
     )
   }
 }
 
-// PUT /api/columns - Reorder columns
+// PUT /api/tasks - Reorder tasks within a column
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
     
     // Validate the request body using Zod
-    const validatedData = reorderColumnsSchema.parse(body)
+    const validatedData = reorderTasksSchema.parse(body)
 
-    // Use a transaction to update all column orders atomically
+    // Use a transaction to update all task orders atomically
     await prisma.$transaction(
-      validatedData.columnOrders.map(({ id, order }) =>
-        prisma.column.update({
+      validatedData.taskOrders.map(({ id, order }) =>
+        prisma.task.update({
           where: { id },
           data: { order },
         })
@@ -174,10 +178,10 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Columns reordered successfully',
+      message: 'Tasks reordered successfully',
     })
   } catch (error) {
-    console.error('Error reordering columns:', error)
+    console.error('Error reordering tasks:', error)
     
     // Handle Zod validation errors
     if (error instanceof z.ZodError) {
@@ -194,7 +198,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to reorder columns',
+        error: 'Failed to reorder tasks',
       },
       { status: 500 }
     )

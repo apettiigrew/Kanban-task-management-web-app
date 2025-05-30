@@ -8,6 +8,10 @@
 
 This task list implements a multi-project Kanban task management system with drag-and-drop functionality, built on Next.js with local storage persistence.
 
+## ⚠️ IMPORTANT: PERMISSION REQUIRED
+
+**ALWAYS ask for PERMISSION before starting any new task. NEVER start a new task without explicit user approval.**
+
 ## Relevant Files
 
 - `prisma/schema.prisma` - Prisma database schema for Project, Task, and Column models
@@ -62,7 +66,7 @@ This task list implements a multi-project Kanban task management system with dra
   - [x] 1.3 Create Zod validation schemas for all data models in `src/lib/validations/`
   - [x] 1.4 Update TypeScript interfaces in `src/types/` to match Prisma models
   - [x] 1.5 Run initial database migration
-  - [ ] 1.6 Create API routes for CRUD operations on all models
+  - [x] 1.6 Create API routes for CRUD operations on all models
   - [ ] 1.7 Implement error handling and data validation in API routes using Zod
 
 - [ ] 2.0 Implement TanStack Query hooks and multi-project dashboard
