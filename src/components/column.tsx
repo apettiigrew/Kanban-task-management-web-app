@@ -37,13 +37,13 @@ const stateStyles: { [Key in TColumnState['type']]: string } = {
 };
 
 interface ColumnProps {
-    name: string;
+    title: string;
     column: TColumn;
 }
-export function Column({ name, column }: ColumnProps) {
+export function Column({ title, column }: ColumnProps) {
     const { moveCard, addCard } = useBoardContext();
     const [isEditingTitle, setIsEditingTitle] = useState(false);
-    const [columnTitle, setColumnTitle] = useState(name);
+    const [columnTitle, setColumnTitle] = useState(title);
     const [isAddingCard, setIsAddingCard] = useState(false);
     const [newCardTitle, setNewCardTitle] = useState('');
     const outerFullHeightRef = useRef<HTMLDivElement>(null);
