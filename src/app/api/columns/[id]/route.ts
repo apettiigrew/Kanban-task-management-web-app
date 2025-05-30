@@ -1,7 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { updateColumnSchema } from '@/lib/validations/column'
-import { z } from 'zod'
+import { 
+  handleAPIError, 
+  createSuccessResponse, 
+  validateRequestBody,
+  checkRateLimit,
+  NotFoundError 
+} from '@/lib/api-error-handler'
 
 // GET /api/columns/[id] - Get a specific column
 export async function GET(
@@ -9,6 +15,11 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Basic rate limiting
+    if (!checkRateLimit(`column-get-${params.id}`, 100)) {
+      throw new Error('Rate limit exceeded')
+    }
+
     const { searchParams } = new URL(request.url)
     const includeTasks = searchParams.get('includeTasks') === 'true'
 
@@ -34,13 +45,7 @@ export async function GET(
     })
 
     if (!column) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Column not found',
-        },
-        { status: 404 }
-      )
+      throw new NotFoundError('Column')
     }
 
     // Transform data to include task count
@@ -50,19 +55,9 @@ export async function GET(
       taskCount: _count.tasks,
     }
 
-    return NextResponse.json({
-      success: true,
-      data: transformedColumn,
-    })
+    return createSuccessResponse(transformedColumn, 'Column fetched successfully')
   } catch (error) {
-    console.error('Error fetching column:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to fetch column',
-      },
-      { status: 500 }
-    )
+    return handleAPIError(error, `/api/columns/${params.id}`)
   }
 }
 
@@ -72,10 +67,15 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Basic rate limiting
+    if (!checkRateLimit(`column-put-${params.id}`, 20)) {
+      throw new Error('Rate limit exceeded')
+    }
+
     const body = await request.json()
     
-    // Validate the request body using Zod
-    const validatedData = updateColumnSchema.parse(body)
+    // Validate the request body using our validation helper
+    const validatedData = validateRequestBody(updateColumnSchema, body)
 
     // Check if column exists
     const existingColumn = await prisma.column.findUnique({
@@ -83,13 +83,7 @@ export async function PUT(
     })
 
     if (!existingColumn) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Column not found',
-        },
-        { status: 404 }
-      )
+      throw new NotFoundError('Column')
     }
 
     const column = await prisma.column.update({
@@ -118,33 +112,9 @@ export async function PUT(
       taskCount: _count.tasks,
     }
 
-    return NextResponse.json({
-      success: true,
-      data: transformedColumn,
-      message: 'Column updated successfully',
-    })
+    return createSuccessResponse(transformedColumn, 'Column updated successfully')
   } catch (error) {
-    console.error('Error updating column:', error)
-    
-    // Handle Zod validation errors
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Validation failed',
-          details: error.errors,
-        },
-        { status: 400 }
-      )
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to update column',
-      },
-      { status: 500 }
-    )
+    return handleAPIError(error, `/api/columns/${params.id}`)
   }
 }
 
@@ -154,6 +124,11 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Basic rate limiting
+    if (!checkRateLimit(`column-delete-${params.id}`, 10)) {
+      throw new Error('Rate limit exceeded')
+    }
+
     // Check if column exists
     const existingColumn = await prisma.column.findUnique({
       where: { id: params.id },
@@ -167,24 +142,12 @@ export async function DELETE(
     })
 
     if (!existingColumn) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Column not found',
-        },
-        { status: 404 }
-      )
+      throw new NotFoundError('Column')
     }
 
     // Check if column has tasks
     if (existingColumn._count.tasks > 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Cannot delete column with tasks. Please move or delete all tasks first.',
-        },
-        { status: 400 }
-      )
+      throw new Error('Cannot delete column with tasks. Please move or delete all tasks first.')
     }
 
     // Delete the column
@@ -192,18 +155,8 @@ export async function DELETE(
       where: { id: params.id },
     })
 
-    return NextResponse.json({
-      success: true,
-      message: 'Column deleted successfully',
-    })
+    return createSuccessResponse(undefined, 'Column deleted successfully')
   } catch (error) {
-    console.error('Error deleting column:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to delete column',
-      },
-      { status: 500 }
-    )
+    return handleAPIError(error, `/api/columns/${params.id}`)
   }
 }

@@ -1,11 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createColumnSchema, reorderColumnsSchema } from '@/lib/validations/column'
-import { z } from 'zod'
+import { 
+  handleAPIError, 
+  createSuccessResponse, 
+  validateRequestBody,
+  checkRateLimit 
+} from '@/lib/api-error-handler'
 
 // GET /api/columns - Get all columns (optionally filtered by project)
 export async function GET(request: NextRequest) {
   try {
+    // Basic rate limiting
+    if (!checkRateLimit('columns-get', 200)) {
+      throw new Error('Rate limit exceeded')
+    }
+
     const { searchParams } = new URL(request.url)
     const projectId = searchParams.get('projectId')
     const includeTasks = searchParams.get('includeTasks') === 'true'
@@ -46,29 +56,24 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({
-      success: true,
-      data: transformedColumns,
-    })
+    return createSuccessResponse(transformedColumns, 'Columns fetched successfully')
   } catch (error) {
-    console.error('Error fetching columns:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to fetch columns',
-      },
-      { status: 500 }
-    )
+    return handleAPIError(error, '/api/columns')
   }
 }
 
 // POST /api/columns - Create a new column
 export async function POST(request: NextRequest) {
   try {
+    // Basic rate limiting
+    if (!checkRateLimit('columns-post', 50)) {
+      throw new Error('Rate limit exceeded')
+    }
+
     const body = await request.json()
     
-    // Validate the request body using Zod
-    const validatedData = createColumnSchema.parse(body)
+    // Validate the request body using our validation helper
+    const validatedData = validateRequestBody(createColumnSchema, body)
 
     // Check if project exists
     const project = await prisma.project.findUnique({
@@ -76,13 +81,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!project) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Project not found',
-        },
-        { status: 404 }
-      )
+      throw new Error('Project not found')
     }
 
     // Get the next order number for this project
@@ -121,46 +120,24 @@ export async function POST(request: NextRequest) {
       taskCount: _count.tasks,
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: transformedColumn,
-        message: 'Column created successfully',
-      },
-      { status: 201 }
-    )
+    return createSuccessResponse(transformedColumn, 'Column created successfully', 201)
   } catch (error) {
-    console.error('Error creating column:', error)
-    
-    // Handle Zod validation errors
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Validation failed',
-          details: error.errors,
-        },
-        { status: 400 }
-      )
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to create column',
-      },
-      { status: 500 }
-    )
+    return handleAPIError(error, '/api/columns')
   }
 }
 
 // PUT /api/columns - Reorder columns
 export async function PUT(request: NextRequest) {
   try {
+    // Basic rate limiting
+    if (!checkRateLimit('columns-put', 30)) {
+      throw new Error('Rate limit exceeded')
+    }
+
     const body = await request.json()
     
-    // Validate the request body using Zod
-    const validatedData = reorderColumnsSchema.parse(body)
+    // Validate the request body using our validation helper
+    const validatedData = validateRequestBody(reorderColumnsSchema, body)
 
     // Use a transaction to update all column orders atomically
     await prisma.$transaction(
@@ -172,31 +149,8 @@ export async function PUT(request: NextRequest) {
       )
     )
 
-    return NextResponse.json({
-      success: true,
-      message: 'Columns reordered successfully',
-    })
+    return createSuccessResponse(undefined, 'Columns reordered successfully')
   } catch (error) {
-    console.error('Error reordering columns:', error)
-    
-    // Handle Zod validation errors
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Validation failed',
-          details: error.errors,
-        },
-        { status: 400 }
-      )
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to reorder columns',
-      },
-      { status: 500 }
-    )
+    return handleAPIError(error, '/api/columns')
   }
 }

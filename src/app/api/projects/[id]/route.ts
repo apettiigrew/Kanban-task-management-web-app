@@ -1,7 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { updateProjectSchema } from '@/lib/validations/project'
-import { z } from 'zod'
+import { 
+  handleAPIError, 
+  createSuccessResponse, 
+  validateRequestBody,
+  checkRateLimit,
+  NotFoundError 
+} from '@/lib/api-error-handler'
 
 // GET /api/projects/[id] - Get a specific project
 export async function GET(
@@ -9,6 +15,11 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Basic rate limiting
+    if (!checkRateLimit(`project-get-${params.id}`, 100)) {
+      throw new Error('Rate limit exceeded')
+    }
+
     const { searchParams } = new URL(request.url)
     const includeStats = searchParams.get('includeStats') === 'true'
     const includeRelations = searchParams.get('includeRelations') === 'true'
@@ -35,13 +46,7 @@ export async function GET(
     })
 
     if (!project) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Project not found',
-        },
-        { status: 404 }
-      )
+      throw new NotFoundError('Project')
     }
 
     // Transform data to include stats if requested
@@ -54,19 +59,9 @@ export async function GET(
       } : {}),
     }
 
-    return NextResponse.json({
-      success: true,
-      data: transformedProject,
-    })
+    return createSuccessResponse(transformedProject, 'Project fetched successfully')
   } catch (error) {
-    console.error('Error fetching project:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to fetch project',
-      },
-      { status: 500 }
-    )
+    return handleAPIError(error, `/api/projects/${params.id}`)
   }
 }
 
@@ -76,10 +71,15 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Basic rate limiting
+    if (!checkRateLimit(`project-put-${params.id}`, 20)) {
+      throw new Error('Rate limit exceeded')
+    }
+
     const body = await request.json()
     
-    // Validate the request body using Zod
-    const validatedData = updateProjectSchema.parse(body)
+    // Validate the request body using our validation helper
+    const validatedData = validateRequestBody(updateProjectSchema, body)
 
     // Check if project exists
     const existingProject = await prisma.project.findUnique({
@@ -87,13 +87,7 @@ export async function PUT(
     })
 
     if (!existingProject) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Project not found',
-        },
-        { status: 404 }
-      )
+      throw new NotFoundError('Project')
     }
 
     const project = await prisma.project.update({
@@ -117,33 +111,9 @@ export async function PUT(
       columnCount: _count.columns,
     }
 
-    return NextResponse.json({
-      success: true,
-      data: transformedProject,
-      message: 'Project updated successfully',
-    })
+    return createSuccessResponse(transformedProject, 'Project updated successfully')
   } catch (error) {
-    console.error('Error updating project:', error)
-    
-    // Handle Zod validation errors
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Validation failed',
-          details: error.errors,
-        },
-        { status: 400 }
-      )
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to update project',
-      },
-      { status: 500 }
-    )
+    return handleAPIError(error, `/api/projects/${params.id}`)
   }
 }
 
@@ -153,19 +123,18 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Basic rate limiting
+    if (!checkRateLimit(`project-delete-${params.id}`, 10)) {
+      throw new Error('Rate limit exceeded')
+    }
+
     // Check if project exists
     const existingProject = await prisma.project.findUnique({
       where: { id: params.id },
     })
 
     if (!existingProject) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Project not found',
-        },
-        { status: 404 }
-      )
+      throw new NotFoundError('Project')
     }
 
     // Delete the project (cascade deletion will handle related columns and tasks)
@@ -173,18 +142,8 @@ export async function DELETE(
       where: { id: params.id },
     })
 
-    return NextResponse.json({
-      success: true,
-      message: 'Project deleted successfully',
-    })
+    return createSuccessResponse(undefined, 'Project deleted successfully')
   } catch (error) {
-    console.error('Error deleting project:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to delete project',
-      },
-      { status: 500 }
-    )
+    return handleAPIError(error, `/api/projects/${params.id}`)
   }
 }

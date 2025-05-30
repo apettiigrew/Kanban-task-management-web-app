@@ -62,12 +62,19 @@ This task list implements a multi-project Kanban task management system with dra
 
 - [x] 1.0 Set up database schema and data persistence infrastructure
   - [x] 1.1 Create Prisma schema in `prisma/schema.prisma` for Project, Task, and Column models
+    - **Git commit:** `feat: add prisma schema with project, column, and task models`
   - [x] 1.2 Set up Prisma client configuration in `src/lib/prisma.ts`
+    - **Git commit:** `feat: configure prisma client with global singleton pattern`
   - [x] 1.3 Create Zod validation schemas for all data models in `src/lib/validations/`
+    - **Git commit:** `feat: add comprehensive zod validation schemas for all models`
   - [x] 1.4 Update TypeScript interfaces in `src/types/` to match Prisma models
+    - **Git commit:** `refactor: update typescript interfaces to match prisma schema`
   - [x] 1.5 Run initial database migration
+    - **Git commit:** `feat: run initial database migration`
   - [x] 1.6 Create API routes for CRUD operations on all models
-  - [ ] 1.7 Implement error handling and data validation in API routes using Zod
+    - **Git commit:** `feat: implement comprehensive crud api routes with validation`
+  - [x] 1.7 Implement error handling and data validation in API routes using Zod
+    - **Git commit:** `feat: implement centralized error handling and validation across all api routes`
 
 - [ ] 2.0 Implement TanStack Query hooks and multi-project dashboard
   - [ ] 2.1 Create TanStack Query hooks in `src/hooks/queries/use-projects.ts` for fetching projects

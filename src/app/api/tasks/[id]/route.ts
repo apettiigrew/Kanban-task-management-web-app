@@ -1,7 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { updateTaskSchema } from '@/lib/validations/task'
-import { z } from 'zod'
+import { 
+  handleAPIError, 
+  createSuccessResponse, 
+  validateRequestBody,
+  checkRateLimit,
+  NotFoundError 
+} from '@/lib/api-error-handler'
 
 // GET /api/tasks/[id] - Get a specific task
 export async function GET(
@@ -9,6 +15,11 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Basic rate limiting
+    if (!checkRateLimit(`task-get-${params.id}`, 100)) {
+      throw new Error('Rate limit exceeded')
+    }
+
     const { searchParams } = new URL(request.url)
     const includeRelations = searchParams.get('includeRelations') === 'true'
 
@@ -32,28 +43,12 @@ export async function GET(
     })
 
     if (!task) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Task not found',
-        },
-        { status: 404 }
-      )
+      throw new NotFoundError('Task')
     }
 
-    return NextResponse.json({
-      success: true,
-      data: task,
-    })
+    return createSuccessResponse(task, 'Task fetched successfully')
   } catch (error) {
-    console.error('Error fetching task:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to fetch task',
-      },
-      { status: 500 }
-    )
+    return handleAPIError(error, `/api/tasks/${params.id}`)
   }
 }
 
@@ -63,10 +58,15 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Basic rate limiting
+    if (!checkRateLimit(`task-put-${params.id}`, 20)) {
+      throw new Error('Rate limit exceeded')
+    }
+
     const body = await request.json()
     
-    // Validate the request body using Zod
-    const validatedData = updateTaskSchema.parse(body)
+    // Validate the request body using centralized validation
+    const validatedData = validateRequestBody(updateTaskSchema, body)
 
     // Check if task exists
     const existingTask = await prisma.task.findUnique({
@@ -74,13 +74,7 @@ export async function PUT(
     })
 
     if (!existingTask) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Task not found',
-        },
-        { status: 404 }
-      )
+      throw new NotFoundError('Task')
     }
 
     // If columnId is being updated, verify the new column exists and belongs to the same project
@@ -93,13 +87,7 @@ export async function PUT(
       })
 
       if (!newColumn) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Column not found or does not belong to the same project',
-          },
-          { status: 404 }
-        )
+        throw new NotFoundError('Column or column does not belong to the same project')
       }
     }
 
@@ -123,33 +111,9 @@ export async function PUT(
       }
     })
 
-    return NextResponse.json({
-      success: true,
-      data: task,
-      message: 'Task updated successfully',
-    })
+    return createSuccessResponse(task, 'Task updated successfully')
   } catch (error) {
-    console.error('Error updating task:', error)
-    
-    // Handle Zod validation errors
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Validation failed',
-          details: error.errors,
-        },
-        { status: 400 }
-      )
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to update task',
-      },
-      { status: 500 }
-    )
+    return handleAPIError(error, `/api/tasks/${params.id}`)
   }
 }
 
@@ -159,19 +123,18 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Basic rate limiting
+    if (!checkRateLimit(`task-delete-${params.id}`, 10)) {
+      throw new Error('Rate limit exceeded')
+    }
+
     // Check if task exists
     const existingTask = await prisma.task.findUnique({
       where: { id: params.id },
     })
 
     if (!existingTask) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Task not found',
-        },
-        { status: 404 }
-      )
+      throw new NotFoundError('Task')
     }
 
     // Delete the task
@@ -179,18 +142,8 @@ export async function DELETE(
       where: { id: params.id },
     })
 
-    return NextResponse.json({
-      success: true,
-      message: 'Task deleted successfully',
-    })
+    return createSuccessResponse(null, 'Task deleted successfully')
   } catch (error) {
-    console.error('Error deleting task:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to delete task',
-      },
-      { status: 500 }
-    )
+    return handleAPIError(error, `/api/tasks/${params.id}`)
   }
 }

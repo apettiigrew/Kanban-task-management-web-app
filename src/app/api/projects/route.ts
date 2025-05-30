@@ -1,11 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createProjectSchema } from '@/lib/validations/project'
-import { z } from 'zod'
+import { 
+  handleAPIError, 
+  createSuccessResponse, 
+  validateRequestBody,
+  checkRateLimit 
+} from '@/lib/api-error-handler'
 
 // GET /api/projects - Get all projects
 export async function GET(request: NextRequest) {
   try {
+    // Basic rate limiting
+    if (!checkRateLimit('projects-get', 200)) {
+      throw new Error('Rate limit exceeded')
+    }
+
     const { searchParams } = new URL(request.url)
     const includeStats = searchParams.get('includeStats') === 'true'
     const includeRelations = searchParams.get('includeRelations') === 'true'
@@ -46,29 +56,24 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({
-      success: true,
-      data: transformedProjects,
-    })
+    return createSuccessResponse(transformedProjects, 'Projects fetched successfully')
   } catch (error) {
-    console.error('Error fetching projects:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to fetch projects',
-      },
-      { status: 500 }
-    )
+    return handleAPIError(error, '/api/projects')
   }
 }
 
 // POST /api/projects - Create a new project
 export async function POST(request: NextRequest) {
   try {
+    // Basic rate limiting
+    if (!checkRateLimit('projects-post', 50)) {
+      throw new Error('Rate limit exceeded')
+    }
+
     const body = await request.json()
     
-    // Validate the request body using Zod
-    const validatedData = createProjectSchema.parse(body)
+    // Validate the request body using our validation helper
+    const validatedData = validateRequestBody(createProjectSchema, body)
 
     const project = await prisma.project.create({
       data: validatedData,
@@ -90,35 +95,12 @@ export async function POST(request: NextRequest) {
       columnCount: _count.columns,
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: transformedProject,
-        message: 'Project created successfully',
-      },
-      { status: 201 }
+    return createSuccessResponse(
+      transformedProject,
+      'Project created successfully',
+      201
     )
   } catch (error) {
-    console.error('Error creating project:', error)
-    
-    // Handle Zod validation errors
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Validation failed',
-          details: error.errors,
-        },
-        { status: 400 }
-      )
-    }
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to create project',
-      },
-      { status: 500 }
-    )
+    return handleAPIError(error, '/api/projects')
   }
 }
