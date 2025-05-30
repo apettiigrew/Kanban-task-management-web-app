@@ -57,7 +57,7 @@ This task list implements a multi-project Kanban task management system with dra
 ## Tasks
 
 - [ ] 1.0 Set up database schema and data persistence infrastructure
-  - [ ] 1.1 Create Prisma schema in `prisma/schema.prisma` for Project, Task, and Column models
+  - [x] 1.1 Create Prisma schema in `prisma/schema.prisma` for Project, Task, and Column models
   - [ ] 1.2 Set up Prisma client configuration in `src/lib/prisma.ts`
   - [ ] 1.3 Create Zod validation schemas for all data models in `src/lib/validations/`
   - [ ] 1.4 Update TypeScript interfaces in `src/types/` to match Prisma models

@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  emoji       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  columns     Column[]
+  tasks       Task[]
+
+  @@map("projects")
+}
+
+model Column {
+  id        String   @id @default(cuid())
+  title     String
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+
+  @@map("columns")
+  @@index([projectId])
+  @@index([projectId, order])
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  order       Int
+  labels      String[]
+  dueDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  columnId  String
+  column    Column  @relation(fields: [columnId], references: [id], onDelete: Cascade)
+
+  @@map("tasks")
+  @@index([projectId])
+  @@index([columnId])
+  @@index([columnId, order])
+}
