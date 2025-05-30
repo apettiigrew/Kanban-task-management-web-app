@@ -10,13 +10,11 @@ import { Column } from './column';
 
 export function Board() {
     const { board, setBoard, addList } = useBoardContext();
-
-
     const [isAddingList, setIsAddingList] = useState(false);
     const [newListTitle, setNewListTitle] = useState('');
 
     const boardRef = useRef<HTMLDivElement>(null);
-
+    
 
     return (
         <div

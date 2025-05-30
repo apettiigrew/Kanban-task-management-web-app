@@ -26,6 +26,7 @@ applyTo: "**/*.tsx, **/*.ts"
 - Keep components small and focused
 - Use TailwindCSS, Shadcdn UI, radix UI for component styling
 - Implement responsive design using TailwindCSS and mobile first approach
+- All Icons should use lucid icons
 
 # From State and Async Actions
 - Use react-hook-form for form state and error handling

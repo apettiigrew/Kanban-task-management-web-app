@@ -15,6 +15,7 @@ import {
     draggable,
     dropTargetForElements
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
+import { X } from 'lucide-react';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Input } from './ui/input';
 import { ColumnWrapper } from './column-wrapper';
@@ -172,7 +173,14 @@ export function Column({ title, column }: ColumnProps) {
                             <Button onClick={() => addCard(column.id, newCardTitle.trim())}>
                                 Add card
                             </Button>
-                            <Button onClick={() => setIsAddingCard(false)} />
+                            <Button 
+                                onClick={() => setIsAddingCard(false)} 
+                                variant="ghost" 
+                                size="sm"
+                                aria-label="Cancel adding card"
+                            >
+                                <X />
+                            </Button>
                         </div>
                     </div>
                 ) : (
