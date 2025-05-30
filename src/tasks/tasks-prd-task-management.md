@@ -77,7 +77,8 @@ This task list implements a multi-project Kanban task management system with dra
     - **Git commit:** `feat: implement centralized error handling and validation across all api routes`
 
 - [ ] 2.0 Implement TanStack Query hooks and multi-project dashboard
-  - [ ] 2.1 Create TanStack Query hooks in `src/hooks/queries/use-projects.ts` for fetching projects
+  - [x] 2.1 Create TanStack Query hooks in `src/hooks/queries/use-projects.ts` for fetching projects
+    - **Git commit:** `feat: implement tanstack query hooks for projects with creation mutations`
   - [ ] 2.2 Create TanStack Query mutation hooks in `src/hooks/mutations/use-project-mutations.ts`
   - [ ] 2.3 Build project dashboard component using TanStack Query and Shadcn UI components
   - [ ] 2.4 Design project card component using Shadcn Card and Lucide icons
