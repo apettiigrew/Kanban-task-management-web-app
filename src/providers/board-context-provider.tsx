@@ -3,8 +3,10 @@
 
 import { TBoard, TColumn, TCard } from '@/utils/data';
 import { noop } from '@tanstack/react-query';
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
+import { useProject } from '@/hooks/queries/use-projects';
 import initBoardData from "@/models/board.json";
+
 export type BoardContextType = {
   board: TBoard;
   setBoard: React.Dispatch<React.SetStateAction<TBoard>>;
@@ -14,6 +16,7 @@ export type BoardContextType = {
   deleteList: (columnId: string) => void;
   updateCardDescription: (cardId: string, description: string) => void;
   updateCardTitle: (cardId: string, title: string) => Promise<void>;
+  isLoading?: boolean;
 };
 
 const initialContextData: BoardContextType = {
@@ -25,6 +28,7 @@ const initialContextData: BoardContextType = {
   deleteList: noop,
   updateCardDescription: noop,
   updateCardTitle: async () => { },
+  isLoading: false,
 }
 
 // Create the context with default values
@@ -42,82 +46,110 @@ export const useBoardContext = () => {
 // Props for the BoardContextProvider
 type BoardContextProviderProps = {
   children: ReactNode;
+  projectId?: string;
 };
 
 // create the BoardContextProvider component
-export const BoardContextProvider = ({ children }: BoardContextProviderProps) => {
+export const BoardContextProvider = ({ children, projectId }: BoardContextProviderProps) => {
   const [board, setBoard] = useState<TBoard>(initBoardData);
+
+  // Fetch project data if projectId is provided
+  const { 
+    data: project, 
+    isLoading: projectLoading 
+  } = useProject({ 
+    id: projectId || '', 
+    enabled: !!projectId 
+  });
+
+  // Transform project data to board format when project loads
+  useEffect(() => {
+    if (project && !projectLoading) {
+      // Create a map of tasks by column ID for efficient lookup
+      const tasksByColumn = new Map<string, typeof project.tasks>();
+      
+      if (project.tasks) {
+        project.tasks.forEach(task => {
+          const columnTasks = tasksByColumn.get(task.columnId) || [];
+          columnTasks.push(task);
+          tasksByColumn.set(task.columnId, columnTasks);
+        });
+      }
+
+      const boardData: TBoard = {
+        id: project.id,
+        title: project.title,
+        columns: project.columns?.map(col => ({
+          id: col.id,
+          title: col.title,
+          cards: (tasksByColumn.get(col.id) || [])
+            .sort((a, b) => a.order - b.order)
+            .map(task => ({
+              id: task.id,
+              title: task.title,
+              description: task.description || '',
+            }))
+        })) || []
+      };
+      setBoard(boardData);
+    }
+  }, [project, projectLoading]);
 
   const moveCard = useCallback((cardId: string, targetColumnId: string, targetPosition: number) => {
     setBoard((prevBoard: TBoard) => {
-      // const newBoard = JSON.parse(JSON.stringify(prevBoard));
+      const newBoard = JSON.parse(JSON.stringify(prevBoard));
 
-      // // Find the card and its current column
-      // let sourceColumn: ColumnType | undefined;
-      // let card: Card | undefined;
-      // let sourceCardIndex: number = -1;
-      // console.log("targetColumnId", targetColumnId);
-      // console.log("cardId", cardId);
-      // for (const column of newBoard.columns) {
-      //   sourceCardIndex = column.cards.findIndex((c: Card) => c.id === cardId);
-      //   if (sourceCardIndex !== -1) {
-      //     sourceColumn = column;
-      //     card = column.cards[sourceCardIndex];
-      //     break;
-      //   }
-      // }
+      // Find the card and its current column
+      let sourceColumn: TColumn | undefined;
+      let card: TCard | undefined;
+      let sourceCardIndex: number = -1;
+      
+      for (const column of newBoard.columns) {
+        sourceCardIndex = column.cards.findIndex((c: TCard) => c.id === cardId);
+        if (sourceCardIndex !== -1) {
+          sourceColumn = column;
+          card = column.cards[sourceCardIndex];
+          break;
+        }
+      }
 
-      // if (!sourceColumn || !card) {
-      //   console.error("Card not found");
-      //   return prevBoard;
-      // }
+      if (!sourceColumn || !card) {
+        console.error("Card not found");
+        return prevBoard;
+      }
 
-      // // Find the target column
+      // Find the target column
+      const targetColumn = newBoard.columns.find(
+        (col: TColumn) => col.id === targetColumnId
+      );
 
-      // const targetColumn = newBoard.columns.find(
-      //   (col: ColumnType) => col.id === targetColumnId
-      // );
+      if (!targetColumn) {
+        console.error("Target column not found");
+        return prevBoard;
+      }
 
-      // if (!targetColumn) {
-      //   console.error("Target column not found");
-      //   return prevBoard;
-      // }
+      // Remove the card from its current column
+      sourceColumn.cards.splice(sourceCardIndex, 1);
 
-      // // Remove the card from its current column
-      // sourceColumn.cards.splice(sourceCardIndex, 1);
+      // Determine the insertion index
+      let insertIndex: number;
+      if (
+        targetPosition === -1 ||
+        targetPosition >= targetColumn.cards.length
+      ) {
+        insertIndex = targetColumn.cards.length;
+      } else if (targetPosition === 0) {
+        insertIndex = 0;
+      } else {
+        insertIndex = targetPosition;
+      }
 
-      // // Determine the insertion index
-      // let insertIndex: number;
-      // if (
-      //   targetPosition === -1 ||
-      //   targetPosition >= targetColumn.cards.length
-      // ) {
-      //   insertIndex = targetColumn.cards.length;
-      // } else if (targetPosition === 0) {
-      //   insertIndex = 0;
-      // } else {
-      //   insertIndex = targetPosition;
-      // }
+      // Insert the card at the target position
+      targetColumn.cards.splice(insertIndex, 0, {
+        ...card,
+      });
 
-      // // Insert the card at the target position
-      // targetColumn.cards.splice(insertIndex, 0, {
-      //   ...card,
-      //   columnId: targetColumnId,
-      // });
-
-      // // Update positions of all cards in the affected columns
-      // const updatePositions = (column: ColumnType) => {
-      //   column.cards.forEach((c, index) => {
-      //     c.position = index;
-      //   });
-      // };
-
-      // updatePositions(targetColumn);
-      // if (sourceColumn !== targetColumn) {
-      //   updatePositions(sourceColumn);
-      // }
-
-      return null;
+      return newBoard;
     });
   },
     [setBoard]
@@ -225,7 +257,7 @@ export const BoardContextProvider = ({ children }: BoardContextProviderProps) =>
   }, [setBoard]);
 
   return (
-    <BoardContext.Provider value={{ board, setBoard, moveCard, addList, addCard, deleteList, updateCardDescription, updateCardTitle }}>
+    <BoardContext.Provider value={{ board, setBoard, moveCard, addList, addCard, deleteList, updateCardDescription, updateCardTitle, isLoading: projectLoading }}>
       {children}
     </BoardContext.Provider>
   );

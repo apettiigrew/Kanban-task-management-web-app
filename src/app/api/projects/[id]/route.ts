@@ -12,11 +12,13 @@ import {
 // GET /api/projects/[id] - Get a specific project
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     // Basic rate limiting
-    if (!checkRateLimit(`project-get-${params.id}`, 100)) {
+    if (!checkRateLimit(`project-get-${id}`, 100)) {
       throw new Error('Rate limit exceeded')
     }
 
@@ -25,7 +27,7 @@ export async function GET(
     const includeRelations = searchParams.get('includeRelations') === 'true'
 
     const project = await prisma.project.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         columns: includeRelations ? {
           orderBy: { order: 'asc' },
@@ -61,18 +63,21 @@ export async function GET(
 
     return createSuccessResponse(transformedProject, 'Project fetched successfully')
   } catch (error) {
-    return handleAPIError(error, `/api/projects/${params.id}`)
+    const { id } = await params;
+    return handleAPIError(error, `/api/projects/${id}`)
   }
 }
 
 // PUT /api/projects/[id] - Update a specific project
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     // Basic rate limiting
-    if (!checkRateLimit(`project-put-${params.id}`, 20)) {
+    if (!checkRateLimit(`project-put-${id}`, 20)) {
       throw new Error('Rate limit exceeded')
     }
 
@@ -83,7 +88,7 @@ export async function PUT(
 
     // Check if project exists
     const existingProject = await prisma.project.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existingProject) {
@@ -91,7 +96,7 @@ export async function PUT(
     }
 
     const project = await prisma.project.update({
-      where: { id: params.id },
+      where: { id },
       data: validatedData,
       include: {
         _count: {
@@ -113,24 +118,27 @@ export async function PUT(
 
     return createSuccessResponse(transformedProject, 'Project updated successfully')
   } catch (error) {
-    return handleAPIError(error, `/api/projects/${params.id}`)
+    const { id } = await params;
+    return handleAPIError(error, `/api/projects/${id}`)
   }
 }
 
 // DELETE /api/projects/[id] - Delete a specific project
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+    
     // Basic rate limiting
-    if (!checkRateLimit(`project-delete-${params.id}`, 10)) {
+    if (!checkRateLimit(`project-delete-${id}`, 10)) {
       throw new Error('Rate limit exceeded')
     }
 
     // Check if project exists
     const existingProject = await prisma.project.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!existingProject) {
@@ -139,11 +147,12 @@ export async function DELETE(
 
     // Delete the project (cascade deletion will handle related columns and tasks)
     await prisma.project.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return createSuccessResponse(undefined, 'Project deleted successfully')
   } catch (error) {
-    return handleAPIError(error, `/api/projects/${params.id}`)
+    const { id } = await params;
+    return handleAPIError(error, `/api/projects/${id}`)
   }
 }

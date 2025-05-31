@@ -1,12 +1,67 @@
 "use client"
 
 import { useParams } from "next/navigation"
+import { Suspense } from "react"
 import { Board } from "@/components/board"
 import { ErrorBoundary } from "@/components/error-boundary"
+import { ProjectHeader } from "@/components/project-header"
+import { RouteLoading } from "@/components/route-loading"
+import { useProject } from "@/hooks/queries/use-projects"
+
+function BoardContent({ projectId }: { projectId: string }) {
+  const { 
+    data: project, 
+    isLoading: projectLoading, 
+    error: projectError 
+  } = useProject({ id: projectId })
+
+  if (projectError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center p-4">
+          <h2 className="text-xl font-medium mb-2">Project not found</h2>
+          <p className="text-muted-foreground mb-4">
+            The project you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.
+          </p>
+          <a href="/dashboard" className="underline">Return to dashboard</a>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <ProjectHeader 
+        project={project} 
+        isLoading={projectLoading} 
+      />
+      
+      <main className="flex-1">
+        <Suspense fallback={<RouteLoading message="Loading board..." />}>
+          <Board />
+        </Suspense>
+      </main>
+    </div>
+  )
+}
 
 export default function BoardPage() {
   const params = useParams()
-  const projectId = params.id
+  const projectId = params.id as string
+
+  if (!projectId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center p-4">
+          <h2 className="text-xl font-medium mb-2">Invalid project</h2>
+          <p className="text-muted-foreground mb-4">
+            No project ID provided
+          </p>
+          <a href="/dashboard" className="underline">Return to dashboard</a>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <ErrorBoundary fallback={
@@ -20,7 +75,7 @@ export default function BoardPage() {
         </div>
       </div>
     }>
-      <Board boardId={projectId} />
+      <BoardContent projectId={projectId} />
     </ErrorBoundary>
   )
 }

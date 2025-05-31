@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { ChevronRight, ChevronDown, Hash } from "lucide-react"
+import Link from "next/link"
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -71,14 +72,16 @@ export function CollapsibleProjectsList({
                   animation: isProjectsCollapsed ? 'none' : 'fadeInUp 0.3s ease-out forwards'
                 }}
               >
-                <SidebarMenuButton className="justify-between">
-                  <div className="flex items-center gap-2">
-                    <Hash className="h-4 w-4 text-muted-foreground" />
-                    <span>{project.title}</span>
-                  </div>
-                  <span className="text-muted-foreground">
-                    {project.tasks?.length || 0}
-                  </span>
+                <SidebarMenuButton asChild className="justify-between">
+                  <Link href={`/board/${project.id}`}>
+                    <div className="flex items-center gap-2">
+                      <Hash className="h-4 w-4 text-muted-foreground" />
+                      <span>{project.title}</span>
+                    </div>
+                    <span className="text-muted-foreground">
+                      {project.tasks?.length || 0}
+                    </span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
