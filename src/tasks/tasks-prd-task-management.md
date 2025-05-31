@@ -93,8 +93,8 @@ This ensures quality control and allows the user to review and test implementati
   - [X] 2.2 Create TanStack Query mutation hooks in `src/hooks/mutations/use-project-mutations.ts`
   - [x] 2.3 Build project dashboard component using TanStack Query and Shadcn UI components
     - **Git commit:** `feat: implement project dashboard with tanstack query integration`
-  - [ ] 2.4 Implement project navigation and routing structure with loading states
-  - [ ] 2.5 Add responsive design using Tailwind CSS for mobile, tablet and desktop viewports
+  - [x] 2.4 Implement project navigation and routing structure with loading states
+    - **Git commit:** `feat: implement project navigation and routing structure with sidebar`
 
 - [ ] 3.0 Create project CRUD operations with forms and validation
   - [ ] 3.1 Build project creation form using React Hook Form and Zod validation
