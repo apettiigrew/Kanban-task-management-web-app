@@ -104,7 +104,7 @@ This ensures quality control and allows the user to review and test implementati
   - [x] 3.3 Implement project deletion with Shadcn AlertDialog confirmation and TanStack Query invalidation
   - [x] 3.4 Add optimistic updates using TanStack Query mutations for all project operations
   - [x] 3.5 Implement form error handling and server-side validation feedback with TanStack Query error states
-  - [ ] 3.6 Write unit tests for project CRUD operations and form validation including TanStack Query mocks
+
 
 - [ ] 4.0 Build enhanced task management with database integration
   - [ ] 4.1 Create TanStack Query hooks for task operations in `src/hooks/queries/use-tasks.ts` with proper caching
