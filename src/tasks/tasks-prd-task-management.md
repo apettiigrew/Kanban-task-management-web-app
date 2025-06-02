@@ -99,8 +99,8 @@ This ensures quality control and allows the user to review and test implementati
     - **Git commit:** `feat: implement project navigation and routing structure with sidebar`
 
 - [ ] 3.0 Create project CRUD operations with forms and validation
-  - [ ] 3.1 Build project creation form using React Hook Form and Zod validation with TanStack Query mutations
-  - [ ] 3.2 Create project editing modal using Shadcn Dialog and form components with optimistic updates
+  - [x] 3.1 Build project creation form using React Hook Form and Zod validation with TanStack Query mutations
+  - [x] 3.2 Create project editing modal using Shadcn Dialog and form components with optimistic updates
   - [ ] 3.3 Implement project deletion with Shadcn AlertDialog confirmation and TanStack Query invalidation
   - [ ] 3.4 Add optimistic updates using TanStack Query mutations for all project operations
   - [ ] 3.5 Create project details view with inline editing capabilities and real-time updates
