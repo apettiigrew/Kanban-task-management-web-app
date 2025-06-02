@@ -4,7 +4,8 @@ import { DashboardHeader } from "@/components/dashboard-header"
 import { ProjectsGrid } from "@/components/projects-grid"
 import { AddProjectModal } from "@/components/add-project-modal"
 import { LoadingState } from "@/components/loading-spinner"
-import { useProjects, useCreateProject } from "@/hooks/queries/use-projects"
+import { useProjects } from "@/hooks/queries/use-projects"
+import { Toaster } from "sonner"
 
 function DashboardContent() {
   const { 
@@ -15,18 +16,6 @@ function DashboardContent() {
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: true,
   })
-
-  const createProjectMutation = useCreateProject()
-
-  // Handle project creation with TanStack Query mutation
-  const handleCreateProject = async (projectData: { title: string; description?: string | null; emoji?: string | null }) => {
-    try {
-      await createProjectMutation.mutateAsync(projectData)
-    } catch (error) {
-      console.error('Failed to create project:', error)
-      // Error is handled by the mutation's onError callback
-    }
-  }
 
   // Format error message for display
   const errorMessage = error instanceof Error ? error.message : error ? String(error) : null
@@ -41,10 +30,7 @@ function DashboardContent() {
             <h2 className="text-2xl font-bold">All Projects</h2>
             <p className="text-muted-foreground">Manage and track your projects</p>
           </div>
-          <AddProjectModal
-            onCreateProject={handleCreateProject}
-            loading={createProjectMutation.isPending}
-          />
+          <AddProjectModal />
         </div>
         
         {errorMessage && (
@@ -62,10 +48,9 @@ function DashboardContent() {
           />
         )}
       </main>
+      <Toaster />
     </div>
   )
 }
 
-export default function Dashboard() {
-  return <DashboardContent />
-}
+export default DashboardContent
