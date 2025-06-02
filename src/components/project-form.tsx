@@ -2,8 +2,8 @@
 
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useCreateProject } from "@/hooks/queries/use-projects"
-import { createProjectSchema, type CreateProject } from "@/lib/validations/project"
+import { useCreateProject, useUpdateProject } from "@/hooks/queries/use-projects"
+import { createProjectSchema, updateProjectSchema, type CreateProject, type UpdateProject } from "@/lib/validations/project"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,16 +15,24 @@ interface ProjectFormProps {
   onSuccess?: () => void
   onCancel?: () => void
   defaultValues?: Partial<CreateProject>
+  mode?: 'create' | 'update'
+  projectId?: string
 }
 
-export function ProjectForm({ onSuccess, onCancel, defaultValues }: ProjectFormProps) {
+export function ProjectForm({ 
+  onSuccess, 
+  onCancel, 
+  defaultValues,
+  mode = 'create',
+  projectId
+}: ProjectFormProps) {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset
-  } = useForm<CreateProject>({
-    resolver: zodResolver(createProjectSchema),
+  } = useForm<CreateProject | UpdateProject>({
+    resolver: zodResolver(mode === 'create' ? createProjectSchema : updateProjectSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -44,16 +52,34 @@ export function ProjectForm({ onSuccess, onCancel, defaultValues }: ProjectFormP
     }
   })
 
-  const onSubmit = async (data: CreateProject) => {
+  const updateProjectMutation = useUpdateProject({
+    onSuccess: (data) => {
+      toast.success("Project updated successfully")
+      reset()
+      onSuccess?.()
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update project")
+    }
+  })
+
+  const onSubmit = async (data: CreateProject | UpdateProject) => {
     try {
-      await createProjectMutation.mutateAsync(data)
+      if (mode === 'create') {
+        await createProjectMutation.mutateAsync(data as CreateProject)
+      } else if (mode === 'update' && projectId) {
+        await updateProjectMutation.mutateAsync({
+          id: projectId,
+          data: data as UpdateProject
+        })
+      }
     } catch (error) {
       // Error is handled by the mutation's onError callback
-      console.error("Failed to create project:", error)
+      console.error(`Failed to ${mode} project:`, error)
     }
   }
 
-  const isLoading = isSubmitting || createProjectMutation.isPending
+  const isLoading = isSubmitting || createProjectMutation.isPending || updateProjectMutation.isPending
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -113,7 +139,7 @@ export function ProjectForm({ onSuccess, onCancel, defaultValues }: ProjectFormP
         )}
         <Button type="submit" disabled={isLoading}>
           {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-          Create Project
+          {mode === 'create' ? 'Create Project' : 'Update Project'}
         </Button>
       </div>
     </form>

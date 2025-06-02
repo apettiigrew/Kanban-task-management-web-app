@@ -99,6 +99,12 @@ interface CreateProjectData {
   emoji?: string | null
 }
 
+interface UpdateProjectData {
+  title?: string
+  description?: string | null
+  emoji?: string | null
+}
+
 const createProject = async (data: CreateProjectData): Promise<Project> => {
   try {
     const response = await fetch('/api/projects', {
@@ -122,6 +128,33 @@ const createProject = async (data: CreateProjectData): Promise<Project> => {
     return result.data
   } catch (error) {
     console.error('Error creating project:', error)
+    throw error
+  }
+}
+
+const updateProject = async ({ id, data }: { id: string; data: UpdateProjectData }): Promise<Project> => {
+  try {
+    const response = await fetch(`/api/projects/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to update project: ${response.status} ${response.statusText}`)
+    }
+
+    const result = await response.json()
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to update project')
+    }
+
+    return result.data
+  } catch (error) {
+    console.error('Error updating project:', error)
     throw error
   }
 }
@@ -194,6 +227,11 @@ interface UseCreateProjectOptions {
   onError?: (error: Error) => void
 }
 
+interface UseUpdateProjectOptions {
+  onSuccess?: (data: Project) => void
+  onError?: (error: Error) => void
+}
+
 export const useCreateProject = (options: UseCreateProjectOptions = {}) => {
   const queryClient = useQueryClient()
   
@@ -220,6 +258,66 @@ export const useCreateProject = (options: UseCreateProjectOptions = {}) => {
       
       // Call custom onError callback if provided
       options.onError?.(error)
+    },
+    retry: (failureCount, error) => {
+      // Don't retry on 4xx errors (client errors)
+      if (error instanceof Error && error.message.includes('4')) {
+        return false
+      }
+      return failureCount < 2
+    },
+  })
+}
+
+export const useUpdateProject = (options: UseUpdateProjectOptions = {}) => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: updateProject,
+    onMutate: async ({ id, data }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: projectKeys.detail(id) })
+      await queryClient.cancelQueries({ queryKey: projectKeys.lists() })
+
+      // Snapshot the previous value
+      const previousProject = queryClient.getQueryData(projectKeys.detail(id))
+      const previousProjects = queryClient.getQueryData(projectKeys.lists())
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(projectKeys.detail(id), (old: Project | undefined) => {
+        if (!old) return old
+        return { ...old, ...data }
+      })
+
+      queryClient.setQueryData(projectKeys.lists(), (old: Project[] | undefined) => {
+        if (!old) return old
+        return old.map(project => 
+          project.id === id ? { ...project, ...data } : project
+        )
+      })
+
+      // Return a context object with the snapshotted value
+      return { previousProject, previousProjects }
+    },
+    onError: (error, { id }, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousProject) {
+        queryClient.setQueryData(projectKeys.detail(id), context.previousProject)
+      }
+      if (context?.previousProjects) {
+        queryClient.setQueryData(projectKeys.lists(), context.previousProjects)
+      }
+      
+      console.error('Error in useUpdateProject:', error)
+      options.onError?.(error)
+    },
+    onSuccess: (data, { id }) => {
+      // Invalidate and refetch
+      queryClient.invalidateQueries({ queryKey: projectKeys.detail(id) })
+      queryClient.invalidateQueries({ queryKey: projectKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: projectKeys.stats() })
+      
+      options.onSuccess?.(data)
     },
     retry: (failureCount, error) => {
       // Don't retry on 4xx errors (client errors)
