@@ -159,6 +159,30 @@ const updateProject = async ({ id, data }: { id: string; data: UpdateProjectData
   }
 }
 
+const deleteProject = async (id: string): Promise<void> => {
+  try {
+    const response = await fetch(`/api/projects/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete project: ${response.status} ${response.statusText}`)
+    }
+
+    const result = await response.json()
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to delete project')
+    }
+  } catch (error) {
+    console.error('Error deleting project:', error)
+    throw error
+  }
+}
+
 // Hooks
 interface UseProjectsOptions {
   enabled?: boolean
@@ -229,6 +253,11 @@ interface UseCreateProjectOptions {
 
 interface UseUpdateProjectOptions {
   onSuccess?: (data: Project) => void
+  onError?: (error: Error) => void
+}
+
+interface UseDeleteProjectOptions {
+  onSuccess?: () => void
   onError?: (error: Error) => void
 }
 
@@ -318,6 +347,61 @@ export const useUpdateProject = (options: UseUpdateProjectOptions = {}) => {
       queryClient.invalidateQueries({ queryKey: projectKeys.stats() })
       
       options.onSuccess?.(data)
+    },
+    retry: (failureCount, error) => {
+      // Don't retry on 4xx errors (client errors)
+      if (error instanceof Error && error.message.includes('4')) {
+        return false
+      }
+      return failureCount < 2
+    },
+  })
+}
+
+export const useDeleteProject = (options: UseDeleteProjectOptions = {}) => {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: deleteProject,
+    onMutate: async (id) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: projectKeys.detail(id) })
+      await queryClient.cancelQueries({ queryKey: projectKeys.lists() })
+
+      // Snapshot the previous value
+      const previousProject = queryClient.getQueryData(projectKeys.detail(id))
+      const previousProjects = queryClient.getQueryData(projectKeys.lists())
+
+      // Optimistically remove the project from the list
+      queryClient.setQueryData(projectKeys.lists(), (old: Project[] | undefined) => {
+        if (!old) return old
+        return old.filter(project => project.id !== id)
+      })
+
+      // Remove the individual project from cache
+      queryClient.removeQueries({ queryKey: projectKeys.detail(id) })
+
+      // Return a context object with the snapshotted value
+      return { previousProject, previousProjects, deletedId: id }
+    },
+    onError: (error, id, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousProjects) {
+        queryClient.setQueryData(projectKeys.lists(), context.previousProjects)
+      }
+      if (context?.previousProject) {
+        queryClient.setQueryData(projectKeys.detail(id), context.previousProject)
+      }
+      
+      console.error('Error in useDeleteProject:', error)
+      options.onError?.(error)
+    },
+    onSuccess: () => {
+      // Invalidate and refetch all project-related queries
+      queryClient.invalidateQueries({ queryKey: projectKeys.lists() })
+      queryClient.invalidateQueries({ queryKey: projectKeys.stats() })
+      
+      options.onSuccess?.()
     },
     retry: (failureCount, error) => {
       // Don't retry on 4xx errors (client errors)

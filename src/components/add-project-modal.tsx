@@ -5,11 +5,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { ProjectForm } from "./project-form"
-import { useCreateProject } from "@/hooks/queries/use-projects"
 
 export function AddProjectModal() {
   const [open, setOpen] = useState(false)
-  const createProjectMutation = useCreateProject()
 
   const handleSuccess = () => {
     setOpen(false)

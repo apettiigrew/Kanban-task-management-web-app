@@ -24,18 +24,6 @@ export function EditProjectModal({ project, open, onOpenChange }: EditProjectMod
     }
   })
 
-  const handleSubmit = async (data: { title: string; description?: string | null; emoji?: string | null }) => {
-    try {
-      await updateProjectMutation.mutateAsync({
-        id: project.id,
-        data
-      })
-    } catch (error) {
-      // Error is handled by the mutation's onError callback
-      console.error("Failed to update project:", error)
-    }
-  }
-
   const handleSuccess = () => {
     onOpenChange(false)
   }

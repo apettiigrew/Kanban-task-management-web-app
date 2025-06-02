@@ -9,7 +9,7 @@ import { useRef, useState } from 'react';
 import { Column } from './column';
 
 export function Board() {
-    const { board, setBoard, addList } = useBoardContext();
+    const { board, addList } = useBoardContext();
     const [isAddingList, setIsAddingList] = useState(false);
     const [newListTitle, setNewListTitle] = useState('');
 

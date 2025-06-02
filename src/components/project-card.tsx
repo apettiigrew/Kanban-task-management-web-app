@@ -2,16 +2,18 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { MoreHorizontal, Edit, ExternalLink } from "lucide-react"
+import { MoreHorizontal, Edit, ExternalLink, Trash2 } from "lucide-react"
 import { Project } from "@/types/project"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { EditProjectModal } from "@/components/edit-project-modal"
+import { DeleteProjectDialog } from "@/components/delete-project-dialog"
 
 interface ProjectCardProps {
   project: Project
@@ -19,6 +21,7 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
   const handleDropdownClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -29,6 +32,12 @@ export function ProjectCard({ project }: ProjectCardProps) {
     e.preventDefault()
     e.stopPropagation()
     setIsEditModalOpen(true)
+  }
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDeleteDialogOpen(true)
   }
 
   return (
@@ -68,6 +77,14 @@ export function ProjectCard({ project }: ProjectCardProps) {
                   Open Board
                 </Link>
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={handleDeleteClick}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Project
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -77,6 +94,12 @@ export function ProjectCard({ project }: ProjectCardProps) {
         project={project}
         open={isEditModalOpen}
         onOpenChange={setIsEditModalOpen}
+      />
+
+      <DeleteProjectDialog
+        project={project}
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
       />
     </>
   )
