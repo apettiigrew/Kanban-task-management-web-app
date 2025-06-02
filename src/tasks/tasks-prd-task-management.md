@@ -6,7 +6,7 @@
 
 ## Overview
 
-This task list implements a multi-project Kanban task management system with drag-and-drop functionality, built on Next.js with local storage persistence.
+This task list implements a multi-project Kanban task management system with drag-and-drop functionality, built on Next.js with local storage persistence. All data operations are handled through TanStack Query for optimal performance, caching, and real-time updates.
 
 ## ⚠️ IMPORTANT: PERMISSION REQUIRED
 
@@ -65,9 +65,11 @@ This ensures quality control and allows the user to review and test implementati
 - Use Lucide React icons for all icon requirements
 - Leverage existing drag-and-drop implementation from @atlaskit/pragmatic-drag-and-drop
 - All data persistence handled through PostgreSQL with Prisma ORM
-- Use TanStack Query for all data fetching and mutations
+- Use TanStack Query for all data fetching and mutations with proper caching and invalidation
 - Form validation with React Hook Form and Zod schemas
 - Server-side validation with Zod in API routes
+- Implement optimistic updates for all mutations using TanStack Query
+- Use TanStack Query's built-in error handling and loading states
 
 ## Tasks
 
@@ -97,32 +99,32 @@ This ensures quality control and allows the user to review and test implementati
     - **Git commit:** `feat: implement project navigation and routing structure with sidebar`
 
 - [ ] 3.0 Create project CRUD operations with forms and validation
-  - [ ] 3.1 Build project creation form using React Hook Form and Zod validation
-  - [ ] 3.2 Create project editing modal using Shadcn Dialog and form components
-  - [ ] 3.3 Implement project deletion with Shadcn AlertDialog confirmation
-  - [ ] 3.4 Add optimistic updates using TanStack Query mutations
-  - [ ] 3.5 Create project details view with inline editing capabilities
-  - [ ] 3.6 Implement form error handling and server-side validation feedback
-  - [ ] 3.7 Write unit tests for project CRUD operations and form validation
+  - [ ] 3.1 Build project creation form using React Hook Form and Zod validation with TanStack Query mutations
+  - [ ] 3.2 Create project editing modal using Shadcn Dialog and form components with optimistic updates
+  - [ ] 3.3 Implement project deletion with Shadcn AlertDialog confirmation and TanStack Query invalidation
+  - [ ] 3.4 Add optimistic updates using TanStack Query mutations for all project operations
+  - [ ] 3.5 Create project details view with inline editing capabilities and real-time updates
+  - [ ] 3.6 Implement form error handling and server-side validation feedback with TanStack Query error states
+  - [ ] 3.7 Write unit tests for project CRUD operations and form validation including TanStack Query mocks
 
 - [ ] 4.0 Build enhanced task management with database integration
-  - [ ] 4.1 Create TanStack Query hooks for task operations in `src/hooks/queries/use-tasks.ts`
-  - [ ] 4.2 Build task mutation hooks in `src/hooks/mutations/use-task-mutations.ts`
-  - [ ] 4.3 Create enhanced task card component using Shadcn Card and Badge components
-  - [ ] 4.4 Build task creation/editing modal using React Hook Form and Shadcn Dialog
-  - [ ] 4.5 Implement task deletion with confirmation using Shadcn AlertDialog
-  - [ ] 4.6 Add task search and filtering with Shadcn Input and Select components
-  - [ ] 4.7 Implement real-time task updates using TanStack Query invalidation
-  - [ ] 4.8 Write unit tests for enhanced task management components
+  - [ ] 4.1 Create TanStack Query hooks for task operations in `src/hooks/queries/use-tasks.ts` with proper caching
+  - [ ] 4.2 Build task mutation hooks in `src/hooks/mutations/use-task-mutations.ts` with optimistic updates
+  - [ ] 4.3 Create enhanced task card component using Shadcn Card and Badge components with TanStack Query data
+  - [ ] 4.4 Build task creation/editing modal using React Hook Form and Shadcn Dialog with mutation handling
+  - [ ] 4.5 Implement task deletion with confirmation using Shadcn AlertDialog and TanStack Query invalidation
+  - [ ] 4.6 Add task search and filtering with Shadcn Input and Select components using TanStack Query selectors
+  - [ ] 4.7 Implement real-time task updates using TanStack Query invalidation and subscription
+  - [ ] 4.8 Write unit tests for enhanced task management components with TanStack Query mocks
 
 - [ ] 5.0 Implement drag-and-drop functionality with database persistence
-  - [ ] 5.1 Create TanStack Query hooks for column operations in `src/hooks/queries/use-columns.ts`
-  - [ ] 5.2 Build column mutation hooks in `src/hooks/mutations/use-column-mutations.ts`
-  - [ ] 5.3 Extend existing drag-and-drop to work with database-backed data
-  - [ ] 5.4 Implement task reordering within columns with optimistic updates
-  - [ ] 5.5 Add drag-and-drop for moving tasks between columns with API calls
-  - [ ] 5.6 Create column management with React Hook Form and Shadcn components
+  - [ ] 5.1 Create TanStack Query hooks for column operations in `src/hooks/queries/use-columns.ts` with proper caching
+  - [ ] 5.2 Build column mutation hooks in `src/hooks/mutations/use-column-mutations.ts` with optimistic updates
+  - [ ] 5.3 Extend existing drag-and-drop to work with database-backed data using TanStack Query
+  - [ ] 5.4 Implement task reordering within columns with optimistic updates and TanStack Query mutations
+  - [ ] 5.5 Add drag-and-drop for moving tasks between columns with TanStack Query mutation handling
+  - [ ] 5.6 Create column management with React Hook Form and Shadcn components using TanStack Query
   - [ ] 5.7 Implement visual feedback using Tailwind CSS animations during drag operations
-  - [ ] 5.8 Add column creation, editing, and deletion with database persistence
-  - [ ] 5.9 Ensure all drag operations persist immediately to database via TanStack Query
-  - [ ] 5.10 Write integration tests for drag-and-drop functionality with API mocking
+  - [ ] 5.8 Add column creation, editing, and deletion with TanStack Query mutations and optimistic updates
+  - [ ] 5.9 Ensure all drag operations persist immediately to database via TanStack Query with proper error handling
+  - [ ] 5.10 Write integration tests for drag-and-drop functionality with TanStack Query and API mocking
