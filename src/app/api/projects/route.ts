@@ -11,10 +11,7 @@ import {
 // GET /api/projects - Get all projects
 export async function GET(request: NextRequest) {
   try {
-    // Basic rate limiting
-    if (!checkRateLimit('projects-get', 200)) {
-      throw new Error('Rate limit exceeded')
-    }
+    
 
     const { searchParams } = new URL(request.url)
     const includeStats = searchParams.get('includeStats') === 'true'
@@ -65,10 +62,7 @@ export async function GET(request: NextRequest) {
 // POST /api/projects - Create a new project
 export async function POST(request: NextRequest) {
   try {
-    // Basic rate limiting
-    if (!checkRateLimit('projects-post', 50)) {
-      throw new Error('Rate limit exceeded')
-    }
+   
 
     const body = await request.json()
     

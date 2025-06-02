@@ -1,12 +1,12 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { updateProjectSchema } from '@/lib/validations/project'
-import { 
-  handleAPIError, 
-  createSuccessResponse, 
+import {
+  handleAPIError,
+  createSuccessResponse,
   validateRequestBody,
   checkRateLimit,
-  NotFoundError 
+  NotFoundError
 } from '@/lib/api-error-handler'
 
 // GET /api/projects/[id] - Get a specific project
@@ -16,11 +16,6 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    
-    // Basic rate limiting
-    if (!checkRateLimit(`project-get-${id}`, 100)) {
-      throw new Error('Rate limit exceeded')
-    }
 
     const { searchParams } = new URL(request.url)
     const includeStats = searchParams.get('includeStats') === 'true'
@@ -75,14 +70,8 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    
-    // Basic rate limiting
-    if (!checkRateLimit(`project-put-${id}`, 20)) {
-      throw new Error('Rate limit exceeded')
-    }
-
     const body = await request.json()
-    
+
     // Validate the request body using our validation helper
     const validatedData = validateRequestBody(updateProjectSchema, body)
 
@@ -130,12 +119,6 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    
-    // Basic rate limiting
-    if (!checkRateLimit(`project-delete-${id}`, 10)) {
-      throw new Error('Rate limit exceeded')
-    }
-
     // Check if project exists
     const existingProject = await prisma.project.findUnique({
       where: { id },

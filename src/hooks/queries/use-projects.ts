@@ -1,7 +1,9 @@
 'use client'
 
+import React from 'react'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import { Project, ProjectWithStats } from '../../types/project'
+import { apiRequest, FormError, parseApiError } from '@/lib/form-error-handler'
 
 // Query key factory for projects
 export const projectKeys = {
@@ -13,86 +15,20 @@ export const projectKeys = {
   stats: () => [...projectKeys.all, 'stats'] as const,
 }
 
-// API client functions
+// API client functions with enhanced error handling
 const fetchProjects = async (): Promise<Project[]> => {
-  try {
-    const response = await fetch('/api/projects', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch projects: ${response.status} ${response.statusText}`)
-    }
-
-    const data = await response.json()
-    
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to fetch projects')
-    }
-
-    return data.data
-  } catch (error) {
-    console.error('Error fetching projects:', error)
-    throw error
-  }
+  return apiRequest<Project[]>('/api/projects')
 }
 
 const fetchProject = async (id: string): Promise<Project> => {
-  try {
-    const response = await fetch(`/api/projects/${id}?includeRelations=true`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch project: ${response.status} ${response.statusText}`)
-    }
-
-    const data = await response.json()
-    
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to fetch project')
-    }
-
-    return data.data
-  } catch (error) {
-    console.error(`Error fetching project ${id}:`, error)
-    throw error
-  }
+  return apiRequest<Project>(`/api/projects/${id}?includeRelations=true`)
 }
 
 const fetchProjectsWithStats = async (): Promise<ProjectWithStats[]> => {
-  try {
-    const response = await fetch('/api/projects?includeStats=true', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch projects with stats: ${response.status} ${response.statusText}`)
-    }
-
-    const data = await response.json()
-    
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to fetch projects with stats')
-    }
-
-    return data.data
-  } catch (error) {
-    console.error('Error fetching projects with stats:', error)
-    throw error
-  }
+  return apiRequest<ProjectWithStats[]>('/api/projects?includeStats=true')
 }
 
-// Mutation API functions
+// Types for mutation data
 interface CreateProjectData {
   title: string
   description?: string | null
@@ -106,81 +42,23 @@ interface UpdateProjectData {
 }
 
 const createProject = async (data: CreateProjectData): Promise<Project> => {
-  try {
-    const response = await fetch('/api/projects', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to create project: ${response.status} ${response.statusText}`)
-    }
-
-    const result = await response.json()
-    
-    if (!result.success) {
-      throw new Error(result.error || 'Failed to create project')
-    }
-
-    return result.data
-  } catch (error) {
-    console.error('Error creating project:', error)
-    throw error
-  }
+  return apiRequest<Project>('/api/projects', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
 }
 
 const updateProject = async ({ id, data }: { id: string; data: UpdateProjectData }): Promise<Project> => {
-  try {
-    const response = await fetch(`/api/projects/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to update project: ${response.status} ${response.statusText}`)
-    }
-
-    const result = await response.json()
-    
-    if (!result.success) {
-      throw new Error(result.error || 'Failed to update project')
-    }
-
-    return result.data
-  } catch (error) {
-    console.error('Error updating project:', error)
-    throw error
-  }
+  return apiRequest<Project>(`/api/projects/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
 }
 
 const deleteProject = async (id: string): Promise<void> => {
-  try {
-    const response = await fetch(`/api/projects/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to delete project: ${response.status} ${response.statusText}`)
-    }
-
-    const result = await response.json()
-    
-    if (!result.success) {
-      throw new Error(result.error || 'Failed to delete project')
-    }
-  } catch (error) {
-    console.error('Error deleting project:', error)
-    throw error
-  }
+  return apiRequest<void>(`/api/projects/${id}`, {
+    method: 'DELETE',
+  })
 }
 
 // Hooks
@@ -199,7 +77,7 @@ export const useProjects = (options: UseProjectsOptions = {}) => {
     staleTime: options.staleTime ?? 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error) => {
       // Don't retry on 4xx errors (client errors)
-      if (error instanceof Error && error.message.includes('4')) {
+      if (error instanceof FormError || (error instanceof Error && error.message.includes('4'))) {
         return false
       }
       return failureCount < 3
@@ -220,7 +98,7 @@ export const useProject = ({ id, ...options }: UseProjectOptions) => {
     staleTime: options.staleTime ?? 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error) => {
       // Don't retry on 4xx errors (client errors)
-      if (error instanceof Error && error.message.includes('4')) {
+      if (error instanceof FormError || (error instanceof Error && error.message.includes('4'))) {
         return false
       }
       return failureCount < 3
@@ -237,7 +115,7 @@ export const useProjectsWithStats = (options: UseProjectsOptions = {}) => {
     staleTime: options.staleTime ?? 2 * 60 * 1000, // 2 minutes (shorter for stats)
     retry: (failureCount, error) => {
       // Don't retry on 4xx errors (client errors)
-      if (error instanceof Error && error.message.includes('4')) {
+      if (error instanceof FormError || (error instanceof Error && error.message.includes('4'))) {
         return false
       }
       return failureCount < 3
@@ -245,20 +123,22 @@ export const useProjectsWithStats = (options: UseProjectsOptions = {}) => {
   })
 }
 
-// Mutation hooks
+// Enhanced mutation hooks with form error handling
 interface UseCreateProjectOptions {
   onSuccess?: (data: Project) => void
-  onError?: (error: Error) => void
+  onError?: (error: FormError) => void
+  onFieldErrors?: (errors: Record<string, string>) => void
 }
 
 interface UseUpdateProjectOptions {
   onSuccess?: (data: Project) => void
-  onError?: (error: Error) => void
+  onError?: (error: FormError) => void
+  onFieldErrors?: (errors: Record<string, string>) => void
 }
 
 interface UseDeleteProjectOptions {
   onSuccess?: () => void
-  onError?: (error: Error) => void
+  onError?: (error: FormError) => void
 }
 
 export const useCreateProject = (options: UseCreateProjectOptions = {}) => {
@@ -310,7 +190,7 @@ export const useCreateProject = (options: UseCreateProjectOptions = {}) => {
       // Return a context object with the snapshotted values
       return { previousProjects, previousProjectsWithStats, optimisticProject }
     },
-    onError: (error, newProject, context) => {
+    onError: (error: FormError, newProject, context) => {
       // If the mutation fails, use the context to roll back
       if (context?.previousProjects) {
         queryClient.setQueryData(projectKeys.lists(), context.previousProjects)
@@ -320,6 +200,12 @@ export const useCreateProject = (options: UseCreateProjectOptions = {}) => {
       }
       
       console.error('Error in useCreateProject:', error)
+      
+      // Handle field errors separately if callback provided
+      if (options.onFieldErrors && error instanceof FormError && Object.keys(error.fieldErrors).length > 0) {
+        options.onFieldErrors(error.fieldErrors)
+      }
+      
       options.onError?.(error)
     },
     onSuccess: (data, newProject, context) => {
@@ -357,8 +243,8 @@ export const useCreateProject = (options: UseCreateProjectOptions = {}) => {
       options.onSuccess?.(data)
     },
     retry: (failureCount, error) => {
-      // Don't retry on 4xx errors (client errors)
-      if (error instanceof Error && error.message.includes('4')) {
+      // Don't retry on form validation errors
+      if (error instanceof FormError) {
         return false
       }
       return failureCount < 2
@@ -406,7 +292,7 @@ export const useUpdateProject = (options: UseUpdateProjectOptions = {}) => {
       // Return a context object with the snapshotted values
       return { previousProject, previousProjects, previousProjectsWithStats }
     },
-    onError: (error, { id }, context) => {
+    onError: (error: FormError, { id }, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousProject) {
         queryClient.setQueryData(projectKeys.detail(id), context.previousProject)
@@ -419,6 +305,12 @@ export const useUpdateProject = (options: UseUpdateProjectOptions = {}) => {
       }
       
       console.error('Error in useUpdateProject:', error)
+      
+      // Handle field errors separately if callback provided
+      if (options.onFieldErrors && error instanceof FormError && Object.keys(error.fieldErrors).length > 0) {
+        options.onFieldErrors(error.fieldErrors)
+      }
+      
       options.onError?.(error)
     },
     onSuccess: (data, { id }) => {
@@ -430,8 +322,8 @@ export const useUpdateProject = (options: UseUpdateProjectOptions = {}) => {
       options.onSuccess?.(data)
     },
     retry: (failureCount, error) => {
-      // Don't retry on 4xx errors (client errors)
-      if (error instanceof Error && error.message.includes('4')) {
+      // Don't retry on form validation errors
+      if (error instanceof FormError) {
         return false
       }
       return failureCount < 2
@@ -473,7 +365,7 @@ export const useDeleteProject = (options: UseDeleteProjectOptions = {}) => {
       // Return a context object with the snapshotted values
       return { previousProject, previousProjects, previousProjectsWithStats, deletedId: id }
     },
-    onError: (error, id, context) => {
+    onError: (error: FormError, id, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousProjects) {
         queryClient.setQueryData(projectKeys.lists(), context.previousProjects)
@@ -496,8 +388,8 @@ export const useDeleteProject = (options: UseDeleteProjectOptions = {}) => {
       options.onSuccess?.()
     },
     retry: (failureCount, error) => {
-      // Don't retry on 4xx errors (client errors)
-      if (error instanceof Error && error.message.includes('4')) {
+      // Don't retry on form validation errors
+      if (error instanceof FormError) {
         return false
       }
       return failureCount < 2
@@ -505,16 +397,13 @@ export const useDeleteProject = (options: UseDeleteProjectOptions = {}) => {
   })
 }
 
-// Utility hook for invalidating all project queries
+// Utility hook for checking if any projects are being modified
 export const useInvalidateProjects = () => {
   const queryClient = useQueryClient()
   
-  return {
-    invalidateAll: () => queryClient.invalidateQueries({ queryKey: projectKeys.all }),
-    invalidateList: () => queryClient.invalidateQueries({ queryKey: projectKeys.lists() }),
-    invalidateProject: (id: string) => queryClient.invalidateQueries({ queryKey: projectKeys.detail(id) }),
-    invalidateStats: () => queryClient.invalidateQueries({ queryKey: projectKeys.stats() }),
-  }
+  return React.useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: projectKeys.all })
+  }, [queryClient])
 }
 
 // Utility hook for centralized mutation state management
@@ -545,3 +434,6 @@ export const useProjectMutationStates = () => {
     }
   }
 }
+
+// Re-export the key types for convenience
+export type { CreateProjectData, UpdateProjectData }

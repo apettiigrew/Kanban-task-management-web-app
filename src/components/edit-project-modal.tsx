@@ -6,6 +6,7 @@ import { ProjectForm } from "@/components/project-form"
 import { useUpdateProject } from "@/hooks/queries/use-projects"
 import { Project } from "@/types/project"
 import { toast } from "sonner"
+import { FormError } from "@/lib/form-error-handler"
 
 interface EditProjectModalProps {
   project: Project
@@ -19,8 +20,10 @@ export function EditProjectModal({ project, open, onOpenChange }: EditProjectMod
       toast.success("Project updated successfully")
       onOpenChange(false)
     },
-    onError: (error) => {
-      toast.error(error.message || "Failed to update project")
+    onError: (error: FormError) => {
+      // Error handling is now managed by the ProjectForm component
+      // This callback is mainly for additional actions if needed
+      console.error("Failed to update project:", error)
     }
   })
 

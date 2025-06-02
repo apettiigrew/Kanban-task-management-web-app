@@ -1,5 +1,6 @@
 "use client"
 
+import React from 'react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,8 +12,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useDeleteProject } from "@/hooks/queries/use-projects"
-import { type Project } from "@/types"
+import { Project } from "@/types/project"
 import { toast } from "sonner"
+import { FormError } from "@/lib/form-error-handler"
 
 interface DeleteProjectDialogProps {
   project: Project
@@ -26,7 +28,8 @@ export function DeleteProjectDialog({ project, open, onOpenChange }: DeleteProje
       toast.success(`Project "${project.title}" deleted successfully`)
       onOpenChange(false)
     },
-    onError: (error) => {
+    onError: (error: FormError) => {
+      console.error("Failed to delete project:", error)
       toast.error(error.message || "Failed to delete project")
     }
   })
