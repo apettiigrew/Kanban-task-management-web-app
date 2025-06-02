@@ -7,9 +7,9 @@ import { createProjectSchema, updateProjectSchema, type CreateProject, type Upda
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { Textarea } from "./ui/textarea"
 
 interface ProjectFormProps {
   onSuccess?: () => void
@@ -66,15 +66,23 @@ export function ProjectForm({
   const onSubmit = async (data: CreateProject | UpdateProject) => {
     try {
       if (mode === 'create') {
+        toast.loading("Creating project...", { id: 'project-create' })
         await createProjectMutation.mutateAsync(data as CreateProject)
+        toast.dismiss('project-create')
       } else if (mode === 'update' && projectId) {
+        toast.loading("Updating project...", { id: 'project-update' })
         await updateProjectMutation.mutateAsync({
           id: projectId,
           data: data as UpdateProject
         })
+        toast.dismiss('project-update')
       }
     } catch (error) {
-      // Error is handled by the mutation's onError callback
+      if (mode === 'create') {
+        toast.dismiss('project-create')
+      } else {
+        toast.dismiss('project-update')
+      }
       console.error(`Failed to ${mode} project:`, error)
     }
   }

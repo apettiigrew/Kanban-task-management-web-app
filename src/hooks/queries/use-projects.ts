@@ -266,27 +266,95 @@ export const useCreateProject = (options: UseCreateProjectOptions = {}) => {
   
   return useMutation({
     mutationFn: createProject,
-    onSuccess: (data) => {
-      // Invalidate and refetch projects list
+    onMutate: async (newProject) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: projectKeys.lists() })
+      await queryClient.cancelQueries({ queryKey: projectKeys.stats() })
+
+      // Snapshot the previous values
+      const previousProjects = queryClient.getQueryData(projectKeys.lists())
+      const previousProjectsWithStats = queryClient.getQueryData(projectKeys.stats())
+
+      // Create optimistic project with temporary ID
+      const optimisticProject: Project = {
+        id: `temp-${Date.now()}`, // Temporary ID for optimistic update
+        title: newProject.title,
+        description: newProject.description || null,
+        emoji: newProject.emoji || null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+
+      // Optimistically add the new project to the list
+      queryClient.setQueryData(projectKeys.lists(), (oldData: Project[] | undefined) => {
+        if (oldData) {
+          return [...oldData, optimisticProject]
+        }
+        return [optimisticProject]
+      })
+
+      // Optimistically add to stats queries if they exist
+      queryClient.setQueryData(projectKeys.stats(), (oldData: ProjectWithStats[] | undefined) => {
+        if (oldData) {
+          const optimisticProjectWithStats: ProjectWithStats = {
+            ...optimisticProject,
+            taskCount: 0,
+            completedTaskCount: 0,
+            columnCount: 0,
+          }
+          return [...oldData, optimisticProjectWithStats]
+        }
+        return undefined // Don't create stats data if it doesn't exist
+      })
+
+      // Return a context object with the snapshotted values
+      return { previousProjects, previousProjectsWithStats, optimisticProject }
+    },
+    onError: (error, newProject, context) => {
+      // If the mutation fails, use the context to roll back
+      if (context?.previousProjects) {
+        queryClient.setQueryData(projectKeys.lists(), context.previousProjects)
+      }
+      if (context?.previousProjectsWithStats) {
+        queryClient.setQueryData(projectKeys.stats(), context.previousProjectsWithStats)
+      }
+      
+      console.error('Error in useCreateProject:', error)
+      options.onError?.(error)
+    },
+    onSuccess: (data, newProject, context) => {
+      // Replace optimistic project with real data
+      queryClient.setQueryData(projectKeys.lists(), (oldData: Project[] | undefined) => {
+        if (oldData && context?.optimisticProject) {
+          return oldData.map(project => 
+            project.id === context.optimisticProject.id ? data : project
+          )
+        }
+        return oldData
+      })
+
+      // Update stats queries with real data
+      queryClient.setQueryData(projectKeys.stats(), (oldData: ProjectWithStats[] | undefined) => {
+        if (oldData && context?.optimisticProject) {
+          const projectWithStats: ProjectWithStats = {
+            ...data,
+            taskCount: 0,
+            completedTaskCount: 0,
+            columnCount: 0,
+          }
+          return oldData.map(project => 
+            project.id === context.optimisticProject.id ? projectWithStats : project
+          )
+        }
+        return oldData
+      })
+
+      // Invalidate and refetch to ensure data consistency
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() })
       queryClient.invalidateQueries({ queryKey: projectKeys.stats() })
       
-      // Optionally update the cache optimistically
-      queryClient.setQueryData(projectKeys.lists(), (oldData: Project[] | undefined) => {
-        if (oldData) {
-          return [...oldData, data]
-        }
-        return [data]
-      })
-      
       // Call custom onSuccess callback if provided
       options.onSuccess?.(data)
-    },
-    onError: (error: Error) => {
-      console.error('Error in useCreateProject:', error)
-      
-      // Call custom onError callback if provided
-      options.onError?.(error)
     },
     retry: (failureCount, error) => {
       // Don't retry on 4xx errors (client errors)
@@ -307,26 +375,36 @@ export const useUpdateProject = (options: UseUpdateProjectOptions = {}) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: projectKeys.detail(id) })
       await queryClient.cancelQueries({ queryKey: projectKeys.lists() })
+      await queryClient.cancelQueries({ queryKey: projectKeys.stats() })
 
-      // Snapshot the previous value
+      // Snapshot the previous values
       const previousProject = queryClient.getQueryData(projectKeys.detail(id))
       const previousProjects = queryClient.getQueryData(projectKeys.lists())
+      const previousProjectsWithStats = queryClient.getQueryData(projectKeys.stats())
 
       // Optimistically update to the new value
       queryClient.setQueryData(projectKeys.detail(id), (old: Project | undefined) => {
         if (!old) return old
-        return { ...old, ...data }
+        return { ...old, ...data, updatedAt: new Date() }
       })
 
       queryClient.setQueryData(projectKeys.lists(), (old: Project[] | undefined) => {
         if (!old) return old
         return old.map(project => 
-          project.id === id ? { ...project, ...data } : project
+          project.id === id ? { ...project, ...data, updatedAt: new Date() } : project
         )
       })
 
-      // Return a context object with the snapshotted value
-      return { previousProject, previousProjects }
+      // Optimistically update stats queries if they exist
+      queryClient.setQueryData(projectKeys.stats(), (old: ProjectWithStats[] | undefined) => {
+        if (!old) return old
+        return old.map(project => 
+          project.id === id ? { ...project, ...data, updatedAt: new Date() } : project
+        )
+      })
+
+      // Return a context object with the snapshotted values
+      return { previousProject, previousProjects, previousProjectsWithStats }
     },
     onError: (error, { id }, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
@@ -336,12 +414,15 @@ export const useUpdateProject = (options: UseUpdateProjectOptions = {}) => {
       if (context?.previousProjects) {
         queryClient.setQueryData(projectKeys.lists(), context.previousProjects)
       }
+      if (context?.previousProjectsWithStats) {
+        queryClient.setQueryData(projectKeys.stats(), context.previousProjectsWithStats)
+      }
       
       console.error('Error in useUpdateProject:', error)
       options.onError?.(error)
     },
     onSuccess: (data, { id }) => {
-      // Invalidate and refetch
+      // Invalidate and refetch to ensure data consistency
       queryClient.invalidateQueries({ queryKey: projectKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() })
       queryClient.invalidateQueries({ queryKey: projectKeys.stats() })
@@ -367,10 +448,12 @@ export const useDeleteProject = (options: UseDeleteProjectOptions = {}) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: projectKeys.detail(id) })
       await queryClient.cancelQueries({ queryKey: projectKeys.lists() })
+      await queryClient.cancelQueries({ queryKey: projectKeys.stats() })
 
-      // Snapshot the previous value
+      // Snapshot the previous values
       const previousProject = queryClient.getQueryData(projectKeys.detail(id))
       const previousProjects = queryClient.getQueryData(projectKeys.lists())
+      const previousProjectsWithStats = queryClient.getQueryData(projectKeys.stats())
 
       // Optimistically remove the project from the list
       queryClient.setQueryData(projectKeys.lists(), (old: Project[] | undefined) => {
@@ -378,16 +461,25 @@ export const useDeleteProject = (options: UseDeleteProjectOptions = {}) => {
         return old.filter(project => project.id !== id)
       })
 
+      // Optimistically remove from stats queries if they exist
+      queryClient.setQueryData(projectKeys.stats(), (old: ProjectWithStats[] | undefined) => {
+        if (!old) return old
+        return old.filter(project => project.id !== id)
+      })
+
       // Remove the individual project from cache
       queryClient.removeQueries({ queryKey: projectKeys.detail(id) })
 
-      // Return a context object with the snapshotted value
-      return { previousProject, previousProjects, deletedId: id }
+      // Return a context object with the snapshotted values
+      return { previousProject, previousProjects, previousProjectsWithStats, deletedId: id }
     },
     onError: (error, id, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousProjects) {
         queryClient.setQueryData(projectKeys.lists(), context.previousProjects)
+      }
+      if (context?.previousProjectsWithStats) {
+        queryClient.setQueryData(projectKeys.stats(), context.previousProjectsWithStats)
       }
       if (context?.previousProject) {
         queryClient.setQueryData(projectKeys.detail(id), context.previousProject)
@@ -397,7 +489,7 @@ export const useDeleteProject = (options: UseDeleteProjectOptions = {}) => {
       options.onError?.(error)
     },
     onSuccess: () => {
-      // Invalidate and refetch all project-related queries
+      // Invalidate and refetch all project-related queries to ensure data consistency
       queryClient.invalidateQueries({ queryKey: projectKeys.lists() })
       queryClient.invalidateQueries({ queryKey: projectKeys.stats() })
       
@@ -422,5 +514,34 @@ export const useInvalidateProjects = () => {
     invalidateList: () => queryClient.invalidateQueries({ queryKey: projectKeys.lists() }),
     invalidateProject: (id: string) => queryClient.invalidateQueries({ queryKey: projectKeys.detail(id) }),
     invalidateStats: () => queryClient.invalidateQueries({ queryKey: projectKeys.stats() }),
+  }
+}
+
+// Utility hook for centralized mutation state management
+export const useProjectMutationStates = () => {
+  const queryClient = useQueryClient()
+  
+  return {
+    // Check if any project mutations are currently pending
+    isAnyMutationPending: () => {
+      const mutations = queryClient.getMutationCache().getAll()
+      return mutations.some(mutation => 
+        mutation.state.status === 'pending' &&
+        (mutation.options.mutationKey?.includes('projects') || 
+         mutation.options.mutationFn === createProject ||
+         mutation.options.mutationFn === updateProject ||
+         mutation.options.mutationFn === deleteProject)
+      )
+    },
+    
+    // Get current mutation states
+    getMutationStates: () => {
+      const mutations = queryClient.getMutationCache().getAll()
+      return {
+        creating: mutations.some(m => m.state.status === 'pending' && m.options.mutationFn === createProject),
+        updating: mutations.some(m => m.state.status === 'pending' && m.options.mutationFn === updateProject),
+        deleting: mutations.some(m => m.state.status === 'pending' && m.options.mutationFn === deleteProject),
+      }
+    }
   }
 }
