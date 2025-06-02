@@ -105,7 +105,6 @@ This ensures quality control and allows the user to review and test implementati
   - [x] 3.4 Add optimistic updates using TanStack Query mutations for all project operations
   - [x] 3.5 Implement form error handling and server-side validation feedback with TanStack Query error states
 
-
 - [ ] 4.0 Build enhanced task management with database integration
   - [ ] 4.1 Create TanStack Query hooks for task operations in `src/hooks/queries/use-tasks.ts` with proper caching
   - [ ] 4.2 Build task mutation hooks in `src/hooks/mutations/use-task-mutations.ts` with optimistic updates
@@ -116,14 +115,25 @@ This ensures quality control and allows the user to review and test implementati
   - [ ] 4.7 Implement real-time task updates using TanStack Query invalidation and subscription
   - [ ] 4.8 Write unit tests for enhanced task management components with TanStack Query mocks
 
-- [ ] 5.0 Implement drag-and-drop functionality with database persistence
+- [ ] 5.0 Build enhanced column management with database integration
   - [ ] 5.1 Create TanStack Query hooks for column operations in `src/hooks/queries/use-columns.ts` with proper caching
   - [ ] 5.2 Build column mutation hooks in `src/hooks/mutations/use-column-mutations.ts` with optimistic updates
-  - [ ] 5.3 Extend existing drag-and-drop to work with database-backed data using TanStack Query
-  - [ ] 5.4 Implement task reordering within columns with optimistic updates and TanStack Query mutations
-  - [ ] 5.5 Add drag-and-drop for moving tasks between columns with TanStack Query mutation handling
-  - [ ] 5.6 Create column management with React Hook Form and Shadcn components using TanStack Query
-  - [ ] 5.7 Implement visual feedback using Tailwind CSS animations during drag operations
-  - [ ] 5.8 Add column creation, editing, and deletion with TanStack Query mutations and optimistic updates
-  - [ ] 5.9 Ensure all drag operations persist immediately to database via TanStack Query with proper error handling
-  - [ ] 5.10 Write integration tests for drag-and-drop functionality with TanStack Query and API mocking
+  - [ ] 5.3 Create enhanced column card component using Shadcn Card and Badge components with TanStack Query data
+  - [ ] 5.4 Build column creation/editing form using React Hook Form and Shadcn Dialog with mutation handling
+  - [ ] 5.5 Implement column deletion with confirmation using Shadcn AlertDialog and TanStack Query invalidation
+  - [ ] 5.6 Add column reordering functionality with optimistic updates using TanStack Query mutations
+  - [ ] 5.7 Implement real-time column updates using TanStack Query invalidation and subscription
+  - [ ] 5.8 Create column management interface with Shadcn components for easy CRUD operations
+  - [ ] 5.9 Add column validation and error handling with proper user feedback using TanStack Query error states
+  - [ ] 5.10 Write unit tests for enhanced column management components with TanStack Query mocks
+
+- [ ] 6.0 Implement drag-and-drop functionality with database persistence
+  - [ ] 6.1 Extend existing drag-and-drop to work with database-backed data using TanStack Query
+  - [ ] 6.2 Implement task reordering within columns with optimistic updates and TanStack Query mutations
+  - [ ] 6.3 Add drag-and-drop for moving tasks between columns with TanStack Query mutation handling
+  - [ ] 6.4 Implement column drag-and-drop reordering with TanStack Query mutations and optimistic updates
+  - [ ] 6.5 Implement visual feedback using Tailwind CSS animations during drag operations
+  - [ ] 6.6 Ensure all drag operations persist immediately to database via TanStack Query with proper error handling
+  - [ ] 6.7 Add conflict resolution for concurrent drag operations using TanStack Query invalidation
+  - [ ] 6.8 Optimize drag performance with proper debouncing and batching of database updates
+  - [ ] 6.9 Write integration tests for drag-and-drop functionality with TanStack Query and API mocking
