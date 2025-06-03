@@ -116,16 +116,14 @@ This ensures quality control and allows the user to review and test implementati
   - [ ] 4.8 Write unit tests for enhanced task management components with TanStack Query mocks
 
 - [ ] 5.0 Build enhanced column management with database integration
-  - [ ] 5.1 Create TanStack Query hooks for column operations in `src/hooks/queries/use-columns.ts` with proper caching
-  - [ ] 5.2 Build column mutation hooks in `src/hooks/mutations/use-column-mutations.ts` with optimistic updates
-  - [ ] 5.3 Create enhanced column card component using Shadcn Card and Badge components with TanStack Query data
-  - [ ] 5.4 Build column creation/editing form using React Hook Form and Shadcn Dialog with mutation handling
+  - [x] 5.1 Create TanStack Query hooks for column operations in `src/hooks/queries/use-columns.ts` with proper caching
+  - [x] 5.2 Build column mutation hooks in `src/hooks/mutations/use-column-mutations.ts` with optimistic updates
+  - [x] 5.3 Update existing column creation form to using React Hook Form and tanstack to create column associated with a board.
+  - [x] 5.4 Update existing column editing form to using React Hook Form and tanstack to update column associated with a board.
   - [ ] 5.5 Implement column deletion with confirmation using Shadcn AlertDialog and TanStack Query invalidation
-  - [ ] 5.6 Add column reordering functionality with optimistic updates using TanStack Query mutations
-  - [ ] 5.7 Implement real-time column updates using TanStack Query invalidation and subscription
-  - [ ] 5.8 Create column management interface with Shadcn components for easy CRUD operations
-  - [ ] 5.9 Add column validation and error handling with proper user feedback using TanStack Query error states
-  - [ ] 5.10 Write unit tests for enhanced column management components with TanStack Query mocks
+  - [ ] 5.6 Implement real-time column updates using TanStack Query invalidation and subscription
+  - [ ] 5.7 Add column validation and error handling with proper user feedback using TanStack Query error states
+  - [ ] 5.8 Write unit tests for enhanced column management components with TanStack Query mocks
 
 - [ ] 6.0 Implement drag-and-drop functionality with database persistence
   - [ ] 6.1 Extend existing drag-and-drop to work with database-backed data using TanStack Query

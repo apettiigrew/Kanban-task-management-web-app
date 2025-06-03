@@ -1,7 +1,7 @@
-
-
 import { useBoardContext } from '@/providers/board-context-provider';
 import { SettingsContext } from '@/providers/settings-context';
+import { useUpdateColumn } from '@/hooks/mutations/use-column-mutations';
+import { useInvalidateColumns } from '@/hooks/mutations/use-column-mutations';
 import { getColumnData, isCardData, isCardDropTargetData, isColumnData, isDraggingACard, isDraggingAColumn, isShallowEqual, TCard, TCardData, TColumn } from '@/utils/data';
 import { cc } from '@/utils/style-utils';
 import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element';
@@ -21,6 +21,8 @@ import { Input } from './ui/input';
 import { ColumnWrapper } from './column-wrapper';
 import { Button } from './ui/button';
 import { CardShadow, CardTask } from './card';
+import { toast } from 'sonner';
+import { FormError } from '@/lib/form-error-handler';
 
 type TColumnState =
     | { type: 'is-card-over'; isOverChildCard: boolean; dragging: DOMRect }
@@ -42,7 +44,7 @@ interface ColumnProps {
     column: TColumn;
 }
 export function Column({ title, column }: ColumnProps) {
-    const { moveCard, addCard } = useBoardContext();
+    const { moveCard, addCard, board } = useBoardContext();
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [columnTitle, setColumnTitle] = useState(title);
     const [isAddingCard, setIsAddingCard] = useState(false);
@@ -54,6 +56,77 @@ export function Column({ title, column }: ColumnProps) {
     const tasksToRender = column.cards.length > 0 ? column.cards : column.cards.map(card => card);
     const [state, setState] = useState<TColumnState>(idle);
     const { settings } = useContext(SettingsContext);
+
+    // Get project ID from board
+    const projectId = board.id;
+
+    // Column invalidation utility
+    const { invalidateByProject } = useInvalidateColumns();
+
+    // Update column mutation with optimistic updates
+    const updateColumnMutation = useUpdateColumn({
+        onSuccess: (data) => {
+            toast.success('Column title updated successfully');
+            // Invalidate columns cache to refresh the board
+            if (projectId) {
+                invalidateByProject(projectId);
+            }
+        },
+        onError: (error: FormError) => {
+            toast.error(error.message || 'Failed to update column title');
+            // Reset title on error (rollback optimistic update)
+            setColumnTitle(title);
+        },
+        onFieldErrors: (errors) => {
+            if (errors.title) {
+                toast.error(errors.title);
+            }
+            // Reset title on validation error (rollback optimistic update)
+            setColumnTitle(title);
+        }
+    });
+
+    // Update column title when prop changes (for real-time sync)
+    useEffect(() => {
+        setColumnTitle(title);
+    }, [title]);
+
+    const handleTitleSave = () => {
+        const trimmedTitle = columnTitle.trim();
+        
+        if (!trimmedTitle) {
+            toast.error('Column title cannot be empty');
+            setColumnTitle(title); // Reset to original title
+            setIsEditingTitle(false);
+            return;
+        }
+
+        if (trimmedTitle === title) {
+            setIsEditingTitle(false);
+            return;
+        }
+
+        if (!projectId) {
+            toast.error('No project selected');
+            setColumnTitle(title); // Reset to original title
+            setIsEditingTitle(false);
+            return;
+        }
+
+        // Optimistic update: keep the new title in local state
+        // It will only rollback if the database update fails
+        updateColumnMutation.mutate({
+            id: column.id,
+            data: { title: trimmedTitle }
+        });
+
+        setIsEditingTitle(false);
+    };
+
+    const handleTitleCancel = () => {
+        setColumnTitle(title); // Reset to original title
+        setIsEditingTitle(false);
+    };
 
     useEffect(() => {
         if (isEditingTitle && titleInputRef.current) {
@@ -141,11 +214,24 @@ export function Column({ title, column }: ColumnProps) {
                             className="text-sm font-semibold text-gray-500"
                             value={columnTitle}
                             onChange={(e) => setColumnTitle(e.target.value)}
-                            onBlur={() => setIsEditingTitle(false)}
-                            onKeyDown={(e) => e.key === 'Enter' && setIsEditingTitle(false)}
+                            onBlur={handleTitleSave}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleTitleSave();
+                                } else if (e.key === 'Escape') {
+                                    e.preventDefault();
+                                    handleTitleCancel();
+                                }
+                            }}
+                            placeholder="Enter column title..."
                         />
                     ) : (
-                        <h2 onClick={() => setIsEditingTitle(true)} className="text-sm font-semibold text-gray-500 cursor-pointer">
+                        <h2 
+                            onClick={() => setIsEditingTitle(true)} 
+                            className="text-sm font-semibold text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
+                            title="Click to edit title"
+                        >
                             {columnTitle}
                         </h2>
                     )}
