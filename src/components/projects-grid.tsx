@@ -8,10 +8,7 @@ interface ProjectsGridProps {
   className?: string
 }
 
-export function ProjectsGrid({ 
-  projects, 
-  className = "" 
-}: ProjectsGridProps) {
+export function ProjectsGrid({ projects, className = "" }: ProjectsGridProps) {
   return (
     <div className={`flex flex-col gap-4 w-full ${className}`}>
       {projects.map((project) => (

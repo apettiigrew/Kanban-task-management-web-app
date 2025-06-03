@@ -8,12 +8,8 @@ import { useProjects } from "@/hooks/queries/use-projects"
 import { Toaster } from "sonner"
 
 function DashboardContent() {
-  const { 
-    data: projects = [], 
-    isLoading: loading, 
-    error
-  } = useProjects({
-    staleTime: 5 * 60 * 1000, // 5 minutes
+  const {  data: projects = [],  isLoading: loading, error} = useProjects({
+    staleTime: 5 * 60 * 1000, // 5 mins
     refetchOnWindowFocus: true,
   })
 
