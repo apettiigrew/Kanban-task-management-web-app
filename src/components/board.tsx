@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useBoardContext } from '@/providers/board-context-provider';
 import { useCreateColumn } from '@/hooks/mutations/use-column-mutations';
 import { useInvalidateColumns } from '@/hooks/mutations/use-column-mutations';
+import { useInvalidateProjects } from '@/hooks/queries/use-projects';
 import { PlusCircle } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Column } from './column';
@@ -24,15 +25,19 @@ export function Board() {
     // Column invalidation utility
     const { invalidateByProject } = useInvalidateColumns();
 
+    // Project invalidation utility
+    const invalidateProjects = useInvalidateProjects();
+
     // Create column mutation with database persistence
     const createColumnMutation = useCreateColumn({
         onSuccess: (data) => {
             toast.success(`Column "${data.title}" created successfully`);
             setNewListTitle('');
             setIsAddingList(false);
-            // Invalidate columns cache to refresh the board
+            // Invalidate both columns and project cache to refresh the board
             if (projectId) {
                 invalidateByProject(projectId);
+                invalidateProjects(); // This will refresh the board context
             }
         },
         onError: (error: FormError) => {
@@ -72,9 +77,7 @@ export function Board() {
     };
 
     return (
-        <div
-            ref={boardRef}
-            className="min-h-screen bg-background pt-6 pb-16 transition-colors">
+        <div ref={boardRef} className="min-h-screen bg-background pt-6 pb-16 transition-colors">
             <div className="px-6">
                 <div className="flex items-center justify-between mb-6">
                     <h1 className="text-3xl font-bold">{board.title}</h1>

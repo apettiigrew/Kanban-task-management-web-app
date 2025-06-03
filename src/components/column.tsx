@@ -1,7 +1,8 @@
 import { useBoardContext } from '@/providers/board-context-provider';
 import { SettingsContext } from '@/providers/settings-context';
-import { useUpdateColumn } from '@/hooks/mutations/use-column-mutations';
+import { useUpdateColumn, useDeleteColumn } from '@/hooks/mutations/use-column-mutations';
 import { useInvalidateColumns } from '@/hooks/mutations/use-column-mutations';
+import { useInvalidateProjects } from '@/hooks/queries/use-projects';
 import { getColumnData, isCardData, isCardDropTargetData, isColumnData, isDraggingACard, isDraggingAColumn, isShallowEqual, TCard, TCardData, TColumn } from '@/utils/data';
 import { cc } from '@/utils/style-utils';
 import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element';
@@ -15,7 +16,7 @@ import {
     draggable,
     dropTargetForElements
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
-import { X } from 'lucide-react';
+import { X, MoreHorizontal, Trash2 } from 'lucide-react';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Input } from './ui/input';
 import { ColumnWrapper } from './column-wrapper';
@@ -23,6 +24,24 @@ import { Button } from './ui/button';
 import { CardShadow, CardTask } from './card';
 import { toast } from 'sonner';
 import { FormError } from '@/lib/form-error-handler';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger
+} from '@/components/ui/alert-dialog';
 
 type TColumnState =
     | { type: 'is-card-over'; isOverChildCard: boolean; dragging: DOMRect }
@@ -49,6 +68,7 @@ export function Column({ title, column }: ColumnProps) {
     const [columnTitle, setColumnTitle] = useState(title);
     const [isAddingCard, setIsAddingCard] = useState(false);
     const [newCardTitle, setNewCardTitle] = useState('');
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const outerFullHeightRef = useRef<HTMLDivElement>(null);
     const titleInputRef = useRef<HTMLInputElement>(null);
     const newCardInputRef = useRef<HTMLInputElement>(null);
@@ -63,13 +83,17 @@ export function Column({ title, column }: ColumnProps) {
     // Column invalidation utility
     const { invalidateByProject } = useInvalidateColumns();
 
+    // Project invalidation utility
+    const invalidateProjects = useInvalidateProjects();
+
     // Update column mutation with optimistic updates
     const updateColumnMutation = useUpdateColumn({
         onSuccess: (data) => {
             toast.success('Column title updated successfully');
-            // Invalidate columns cache to refresh the board
+            // Invalidate both columns and project cache to refresh the board
             if (projectId) {
                 invalidateByProject(projectId);
+                invalidateProjects(); // This will refresh the board context
             }
         },
         onError: (error: FormError) => {
@@ -86,6 +110,22 @@ export function Column({ title, column }: ColumnProps) {
         }
     });
 
+    // Delete column mutation
+    const deleteColumnMutation = useDeleteColumn({
+        onSuccess: () => {
+            toast.success(`Column "${title}" deleted successfully`);
+            setShowDeleteDialog(false);
+            // Invalidate both columns and project cache to refresh the board
+            if (projectId) {
+                invalidateByProject(projectId);
+                invalidateProjects(); // This will refresh the board context
+            }
+        },
+        onError: (error: FormError) => {
+            toast.error(error.message || 'Failed to delete column');
+        }
+    });
+
     // Update column title when prop changes (for real-time sync)
     useEffect(() => {
         setColumnTitle(title);
@@ -93,7 +133,7 @@ export function Column({ title, column }: ColumnProps) {
 
     const handleTitleSave = () => {
         const trimmedTitle = columnTitle.trim();
-        
+
         if (!trimmedTitle) {
             toast.error('Column title cannot be empty');
             setColumnTitle(title); // Reset to original title
@@ -126,6 +166,15 @@ export function Column({ title, column }: ColumnProps) {
     const handleTitleCancel = () => {
         setColumnTitle(title); // Reset to original title
         setIsEditingTitle(false);
+    };
+
+    const handleDelete = () => {
+        if (column.cards && column.cards.length > 0) {
+            toast.error('Cannot delete column with tasks. Please move or delete all tasks first.');
+            return;
+        }
+
+        deleteColumnMutation.mutate(column.id);
     };
 
     useEffect(() => {
@@ -227,15 +276,71 @@ export function Column({ title, column }: ColumnProps) {
                             placeholder="Enter column title..."
                         />
                     ) : (
-                        <h2 
-                            onClick={() => setIsEditingTitle(true)} 
-                            className="text-sm font-semibold text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
+                        <h2
+                            onClick={() => setIsEditingTitle(true)}
+                            className="text-sm font-semibold text-gray-500 cursor-pointer hover:text-gray-700 transition-colors flex-1"
                             title="Click to edit title"
                         >
                             {columnTitle}
                         </h2>
                     )}
                 </div>
+
+                {!isEditingTitle && (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Open column menu</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem className="center">
+                                List actions
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                                <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem
+                                        className="text-red-600 focus:text-red-600"
+                                        onSelect={(e) => e.preventDefault()}
+                                    >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Delete column
+                                    </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Delete Column</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            Are you sure you want to delete "{columnTitle}"?
+                                            {column.cards && column.cards.length > 0 ? (
+                                                <span className="block mt-2 text-red-600 font-medium">
+                                                    This column contains {column.cards.length} task{column.cards.length !== 1 ? 's' : ''}.
+                                                    Please move or delete all tasks before deleting the column.
+                                                </span>
+                                            ) : (
+                                                <span className="block mt-2">
+                                                    This action cannot be undone.
+                                                </span>
+                                            )}
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction
+                                            onClick={handleDelete}
+                                            disabled={column.cards && column.cards.length > 0 || deleteColumnMutation.isPending}
+                                            className="bg-red-600 hover:bg-red-700"
+                                        >
+                                            {deleteColumnMutation.isPending ? 'Deleting...' : 'Delete'}
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
             </div>
 
             <div className="flex flex-col gap-3 overflow-y-auto flex-grow max-h-screen min-h-0" ref={scrollableRef}>
@@ -259,9 +364,9 @@ export function Column({ title, column }: ColumnProps) {
                             <Button onClick={() => addCard(column.id, newCardTitle.trim())}>
                                 Add card
                             </Button>
-                            <Button 
-                                onClick={() => setIsAddingCard(false)} 
-                                variant="ghost" 
+                            <Button
+                                onClick={() => setIsAddingCard(false)}
+                                variant="ghost"
                                 size="sm"
                                 aria-label="Cancel adding card"
                             >
