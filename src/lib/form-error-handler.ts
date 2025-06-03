@@ -109,10 +109,7 @@ export function parseApiError(error: unknown): FormErrorState {
 }
 
 // Enhanced API client function that properly handles and parses errors
-export async function apiRequest<T>(
-  url: string,
-  options: RequestInit = {}
-): Promise<T> {
+export async function apiRequest<T>( url: string, options: RequestInit = {}): Promise<T> {
   try {
     const response = await fetch(url, {
       headers: {
