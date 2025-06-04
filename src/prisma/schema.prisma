@@ -20,7 +20,7 @@ model Project {
 
   // Relations
   columns     Column[]
-  tasks       Task[]
+  cards       Card[]
 
   @@map("projects")
 }
@@ -35,14 +35,14 @@ model Column {
   // Relations
   projectId String
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  tasks     Task[]
+  cards     Card[]
 
   @@map("columns")
   @@index([projectId])
   @@index([projectId, order])
 }
 
-model Task {
+model Card {
   id          String   @id @default(cuid())
   title       String
   description String?
@@ -58,7 +58,7 @@ model Task {
   columnId  String
   column    Column  @relation(fields: [columnId], references: [id], onDelete: Cascade)
 
-  @@map("tasks")
+  @@map("cards")
   @@index([projectId])
   @@index([columnId])
   @@index([columnId, order])

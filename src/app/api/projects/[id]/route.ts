@@ -10,35 +10,18 @@ import {
 } from '@/lib/api-error-handler'
 
 // GET /api/projects/[id] - Get a specific project
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }>}) {
   try {
     const { id } = await params;
-
-    const { searchParams } = new URL(request.url)
-    const includeStats = searchParams.get('includeStats') === 'true'
-    const includeRelations = searchParams.get('includeRelations') === 'true'
 
     const project = await prisma.project.findUnique({
       where: { id },
       include: {
-        columns: includeRelations ? {
-          orderBy: { order: 'asc' },
+        columns: {
           include: {
-            tasks: {
-              orderBy: { order: 'asc' }
-            }
+            tasks: true
           }
-        } : false,
-        tasks: includeRelations,
-        _count: includeStats ? {
-          select: {
-            tasks: true,
-            columns: true,
-          }
-        } : false,
+        }
       },
     })
 
@@ -46,17 +29,7 @@ export async function GET(
       throw new NotFoundError('Project')
     }
 
-    // Transform data to include stats if requested
-    const { _count, ...projectData } = project
-    const transformedProject = {
-      ...projectData,
-      ...(includeStats && _count ? {
-        taskCount: _count.tasks,
-        columnCount: _count.columns,
-      } : {}),
-    }
-
-    return createSuccessResponse(transformedProject, 'Project fetched successfully')
+    return createSuccessResponse(project, 'Project fetched successfully')
   } catch (error) {
     const { id } = await params;
     return handleAPIError(error, `/api/projects/${id}`)

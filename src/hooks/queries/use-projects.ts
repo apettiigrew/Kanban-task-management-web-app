@@ -4,6 +4,7 @@ import React from 'react'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import { Project, ProjectWithStats } from '../../types/project'
 import { apiRequest, FormError, parseApiError } from '@/lib/form-error-handler'
+import { ProjectWithColumnsAndTasks } from '@/utils/data'
 
 // Query key factory for projects
 export const projectKeys = {
@@ -21,7 +22,7 @@ const fetchProjects = async (): Promise<Project[]> => {
 }
 
 const fetchProject = async (id: string): Promise<Project> => {
-  return apiRequest<Project>(`/api/projects/${id}?includeRelations=true`)
+  return apiRequest<ProjectWithColumnsAndTasks>(`/api/projects/${id}?includeRelations=true`)
 }
 
 const fetchProjectsWithStats = async (): Promise<ProjectWithStats[]> => {

@@ -3,24 +3,25 @@
 import '@/app/board.css';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useBoardContext } from '@/providers/board-context-provider';
-import { useCreateColumn } from '@/hooks/mutations/use-column-mutations';
-import { useInvalidateColumns } from '@/hooks/mutations/use-column-mutations';
+import { useCreateColumn, useInvalidateColumns } from '@/hooks/mutations/use-column-mutations';
 import { useInvalidateProjects } from '@/hooks/queries/use-projects';
+import { FormError } from '@/lib/form-error-handler';
+import { Project } from '@prisma/client';
 import { PlusCircle } from 'lucide-react';
 import { useRef, useState } from 'react';
-import { Column } from './column';
 import { toast } from 'sonner';
-import { FormError } from '@/lib/form-error-handler';
+import { Column } from './column';
+import { ProjectWithColumnsAndTasks } from '@/utils/data';
 
-export function Board() {
-    const { board } = useBoardContext();
+interface BoardProps {
+    project: ProjectWithColumnsAndTasks 
+}
+
+export function Board({ project }: BoardProps) {
+    console.log(project);
     const [isAddingList, setIsAddingList] = useState(false);
     const [newListTitle, setNewListTitle] = useState('');
     const boardRef = useRef<HTMLDivElement>(null);
-
-    // Get project ID from board
-    const projectId = board.id;
 
     // Column invalidation utility
     const { invalidateByProject } = useInvalidateColumns();
@@ -35,8 +36,8 @@ export function Board() {
             setNewListTitle('');
             setIsAddingList(false);
             // Invalidate both columns and project cache to refresh the board
-            if (projectId) {
-                invalidateByProject(projectId);
+            if (project.id) {
+                invalidateByProject(project.id);
                 invalidateProjects(); // This will refresh the board context
             }
         },
@@ -58,20 +59,20 @@ export function Board() {
             return;
         }
 
-        if (!projectId) {
+        if (!project.id) {
             toast.error('No project selected');
             return;
         }
 
         // Get the next order number based on existing columns
-        const maxOrder = board.columns.length > 0 
-            ? Math.max(...board.columns.map((_, index) => index)) 
+        const maxOrder = project.columns.length > 0 
+            ? Math.max(...project.columns.map((_, index) => index)) 
             : 0;
 
         // Create column in database with TanStack Query
         createColumnMutation.mutate({
             title: trimmedTitle,
-            projectId,
+            projectId: project.id,
             order: maxOrder + 1
         });
     };
@@ -80,7 +81,7 @@ export function Board() {
         <div ref={boardRef} className="min-h-screen bg-background pt-6 pb-16 transition-colors">
             <div className="px-6">
                 <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-3xl font-bold">{board.title}</h1>
+                    <h1 className="text-3xl font-bold">{project.title}</h1>
                     {createColumnMutation.isPending && (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
@@ -90,7 +91,7 @@ export function Board() {
                 </div>
 
                 <div className="flex items-start gap-4 overflow-x-auto pb-8 min-h-[calc(100vh-200px)] snap-x snap-mandatory">
-                    {board.columns.map((column) => (
+                    {project.columns.map((column) => (
                         <Column
                             key={column.id}
                             title={column.title}

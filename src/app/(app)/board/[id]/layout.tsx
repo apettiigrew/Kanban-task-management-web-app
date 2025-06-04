@@ -1,4 +1,3 @@
-import { BoardContextProvider } from '@/providers/board-context-provider';
 import { SettingsContextProvider } from '@/providers/settings-context';
 
 interface RootLayoutProps {
@@ -6,14 +5,10 @@ interface RootLayoutProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function RootLayout({ children, params}: RootLayoutProps) {
-  const { id } = await params;
-  
+export default async function RootLayout({ children, params }: RootLayoutProps) {
   return (
-    <BoardContextProvider projectId={id}>
-      <SettingsContextProvider>
-        {children}
-      </SettingsContextProvider>
-    </BoardContextProvider>
+    <SettingsContextProvider>
+      {children}
+    </SettingsContextProvider>
   );
 }

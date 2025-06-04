@@ -1,4 +1,3 @@
-import { useBoardContext } from '@/providers/board-context-provider';
 import { SettingsContext } from '@/providers/settings-context';
 import { useUpdateColumn, useDeleteColumn } from '@/hooks/mutations/use-column-mutations';
 import { useInvalidateColumns } from '@/hooks/mutations/use-column-mutations';
@@ -63,7 +62,7 @@ interface ColumnProps {
     column: TColumn;
 }
 export function Column({ title, column }: ColumnProps) {
-    const { moveCard, addCard, board } = useBoardContext();
+
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [columnTitle, setColumnTitle] = useState(title);
     const [isAddingCard, setIsAddingCard] = useState(false);
@@ -78,7 +77,7 @@ export function Column({ title, column }: ColumnProps) {
     const { settings } = useContext(SettingsContext);
 
     // Get project ID from board
-    const projectId = board.id;
+    const projectId = column.projectId;
 
     // Column invalidation utility
     const { invalidateByProject } = useInvalidateColumns();
@@ -245,7 +244,7 @@ export function Column({ title, column }: ColumnProps) {
                 getOverflow: () => ({ forTopEdge: { top: 1000 }, forBottomEdge: { bottom: 1000 } }),
             })
         );
-    }, [column, column.cards, moveCard, settings]);
+    }, [column, column.cards, settings]);
 
     return (
         <ColumnWrapper

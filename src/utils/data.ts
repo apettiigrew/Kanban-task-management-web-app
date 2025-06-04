@@ -1,13 +1,36 @@
+
+
+export interface ProjectWithColumnsAndTasks extends TProject {
+    columns: (TColumn & {
+      cards: TCard[];
+    })[];
+  }
+  
 export type TCard = {
     id: string | number;
     title: string;
     description: string;
 };
 
+export interface TProject {
+    id: string;
+    title: string;
+    description: string;
+    emoji: string;
+    createdAt: Date;
+    updatedAt: Date;
+    columns: TColumn[];
+    cards: TCard[];
+}
+
 export type TColumn = {
     id: string;
     title: string;
     cards: TCard[];
+    createdAt: Date;
+    updatedAt: Date;
+    order: number;
+    projectId: string;
 };
 
 export type TBoard = {
