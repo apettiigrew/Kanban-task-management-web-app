@@ -1,7 +1,5 @@
 export interface ProjectWithColumnsAndTasks extends TProject {
-    columns: (TColumn & {
-      cards: TCard[];
-    })[];
+    columns: TColumn[]
   }
   
 export type TCard = {

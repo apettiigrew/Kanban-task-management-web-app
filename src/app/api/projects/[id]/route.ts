@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       include: {
         columns: {
           include: {
-            tasks: true
+            cards: true
           }
         }
       },
@@ -63,7 +63,7 @@ export async function PUT(
       include: {
         _count: {
           select: {
-            tasks: true,
+            cards: true,
             columns: true,
           }
         }
@@ -74,7 +74,7 @@ export async function PUT(
     const { _count, ...projectData } = project
     const transformedProject = {
       ...projectData,
-      taskCount: _count.tasks,
+      taskCount: _count.cards,
       columnCount: _count.columns,
     }
 

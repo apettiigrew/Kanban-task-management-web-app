@@ -51,12 +51,11 @@ interface BoardContentProps {
 }
 
 function BoardContent({ projectId }: BoardContentProps) {
-  const { 
-    data: project, 
-    isLoading: projectLoading, 
-    error: projectError 
-  } = useProject({ id: projectId })
+  const { data: project, isLoading: projectLoading, error: projectError } = useProject({ id: projectId })
 
+  console.log(project);
+  console.log(projectLoading);
+  console.log(projectError);
   if (projectError) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -73,14 +72,15 @@ function BoardContent({ projectId }: BoardContentProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      <ProjectHeader 
-        project={project} 
-        isLoading={projectLoading} 
+      <ProjectHeader
+        project={project}
+        isLoading={projectLoading}
       />
-      
+
       <main className="flex-1">
         <Suspense fallback={<RouteLoading message="Loading board..." />}>
-          <Board project={project as ProjectWithColumnsAndTasks} />
+          {project && <Board project={project as ProjectWithColumnsAndTasks} />}
+          {/* <p>{JSON.stringify(project)}</p> */}
         </Suspense>
       </main>
     </div>
