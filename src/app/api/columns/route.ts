@@ -11,11 +11,7 @@ import {
 // GET /api/columns - Get all columns (optionally filtered by project)
 export async function GET(request: NextRequest) {
   try {
-    // Basic rate limiting
-    if (!checkRateLimit('columns-get', 200)) {
-      throw new Error('Rate limit exceeded')
-    }
-
+  
     const { searchParams } = new URL(request.url)
     const projectId = searchParams.get('projectId')
     const includeTasks = searchParams.get('includeTasks') === 'true'
@@ -25,37 +21,17 @@ export async function GET(request: NextRequest) {
     const columns = await prisma.column.findMany({
       where: whereClause,
       include: {
-        tasks: includeTasks ? {
-          orderBy: { order: 'asc' }
-        } : false,
+        cards: includeTasks,
         project: {
           select: {
             id: true,
             title: true,
           }
-        },
-        _count: {
-          select: {
-            tasks: true,
-          }
         }
       },
-      orderBy: [
-        { projectId: 'asc' },
-        { order: 'asc' }
-      ],
     })
 
-    // Transform data to include task count
-    const transformedColumns = columns.map(column => {
-      const { _count, ...columnData } = column
-      return {
-        ...columnData,
-        taskCount: _count.tasks,
-      }
-    })
-
-    return createSuccessResponse(transformedColumns, 'Columns fetched successfully')
+    return createSuccessResponse(columns, 'Columns fetched successfully')
   } catch (error) {
     return handleAPIError(error, '/api/columns')
   }
@@ -102,23 +78,11 @@ export async function POST(request: NextRequest) {
             id: true,
             title: true,
           }
-        },
-        _count: {
-          select: {
-            tasks: true,
-          }
         }
       }
     })
 
-    // Transform to include task count
-    const { _count, ...columnData } = column
-    const transformedColumn = {
-      ...columnData,
-      taskCount: _count.tasks,
-    }
-
-    return createSuccessResponse(transformedColumn, 'Column created successfully', 201)
+    return createSuccessResponse(column, 'Column created successfully', 201)
   } catch (error) {
     return handleAPIError(error, '/api/columns')
   }
