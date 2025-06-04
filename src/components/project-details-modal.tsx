@@ -27,7 +27,6 @@ export function ProjectDetailsModal({
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <span>{project.emoji}</span>
               <span>{project.title}</span>
             </DialogTitle>
           </DialogHeader>

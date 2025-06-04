@@ -1,5 +1,3 @@
-
-
 export interface ProjectWithColumnsAndTasks extends TProject {
     columns: (TColumn & {
       cards: TCard[];
@@ -16,7 +14,6 @@ export interface TProject {
     id: string;
     title: string;
     description: string;
-    emoji: string;
     createdAt: Date;
     updatedAt: Date;
     columns: TColumn[];

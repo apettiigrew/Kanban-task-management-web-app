@@ -57,7 +57,6 @@ function BoardContent({ projectId }: BoardContentProps) {
     error: projectError 
   } = useProject({ id: projectId })
 
-  console.log(project);
   if (projectError) {
     return (
       <div className="min-h-screen flex items-center justify-center">

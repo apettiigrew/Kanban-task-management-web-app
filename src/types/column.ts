@@ -12,7 +12,6 @@ export interface Column {
   project?: {
     id: string
     title: string
-    emoji: string | null
   }
   tasks?: Array<{
     id: string

@@ -32,7 +32,6 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             title: true,
-            emoji: true,
           }
         } : false,
         column: includeRelations ? {
@@ -106,7 +105,6 @@ export async function POST(request: NextRequest) {
           select: {
             id: true,
             title: true,
-            emoji: true,
           }
         },
         column: {

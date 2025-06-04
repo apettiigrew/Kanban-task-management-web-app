@@ -7,7 +7,6 @@ export interface Board {
   id: string
   title: string
   description: string | null
-  emoji: string | null
   columns: Array<{
     id: string
     title: string
@@ -45,7 +44,6 @@ export interface PaginatedResponse<T = unknown> {
 export interface CreateProjectForm {
   title: string
   description?: string
-  emoji?: string
 }
 
 export interface CreateColumnForm {

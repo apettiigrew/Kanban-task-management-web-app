@@ -1,18 +1,16 @@
-import { NextRequest } from 'next/server'
+import {
+  createSuccessResponse,
+  handleAPIError,
+  validateRequestBody
+} from '@/lib/api-error-handler'
 import { prisma } from '@/lib/prisma'
 import { createProjectSchema } from '@/lib/validations/project'
-import { 
-  handleAPIError, 
-  createSuccessResponse, 
-  validateRequestBody,
-  checkRateLimit 
-} from '@/lib/api-error-handler'
+import { NextRequest } from 'next/server'
 
 // GET /api/projects - Get all projects
 export async function GET(request: NextRequest) {
   try {
     
-
     const { searchParams } = new URL(request.url)
     const includeStats = searchParams.get('includeStats') === 'true'
     const includeRelations = searchParams.get('includeRelations') === 'true'
@@ -20,7 +18,7 @@ export async function GET(request: NextRequest) {
     const projects = await prisma.project.findMany({
       include: {
         columns: includeRelations,
-        tasks: includeRelations ? {
+        cards: includeRelations ? {
           select: {
             id: true,
             title: true,
@@ -28,32 +26,11 @@ export async function GET(request: NextRequest) {
             columnId: true,
             createdAt: true,
           }
-        } : false,
-        _count: includeStats ? {
-          select: {
-            tasks: true,
-            columns: true,
-          }
-        } : false,
-      },
-      orderBy: {
-        updatedAt: 'desc',
+        } : false
       },
     })
 
-    // Transform data to include stats if requested
-    const transformedProjects = projects.map(project => {
-      const { _count, ...projectData } = project
-      return {
-        ...projectData,
-        ...(includeStats && _count ? {
-          taskCount: _count.tasks,
-          columnCount: _count.columns,
-        } : {}),
-      }
-    })
-
-    return createSuccessResponse(transformedProjects, 'Projects fetched successfully')
+    return createSuccessResponse(projects, 'Projects fetched successfully')
   } catch (error) {
     return handleAPIError(error, '/api/projects')
   }
@@ -74,7 +51,7 @@ export async function POST(request: NextRequest) {
       include: {
         _count: {
           select: {
-            tasks: true,
+            cards: true,
             columns: true,
           }
         }
@@ -85,7 +62,7 @@ export async function POST(request: NextRequest) {
     const { _count, ...projectData } = project
     const transformedProject = {
       ...projectData,
-      taskCount: _count.tasks,
+      taskCount: _count.cards,
       columnCount: _count.columns,
     }
 

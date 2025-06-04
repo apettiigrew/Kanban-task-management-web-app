@@ -33,13 +33,11 @@ const fetchProjectsWithStats = async (): Promise<ProjectWithStats[]> => {
 interface CreateProjectData {
   title: string
   description?: string | null
-  emoji?: string | null
 }
 
 interface UpdateProjectData {
   title?: string
   description?: string | null
-  emoji?: string | null
 }
 
 const createProject = async (data: CreateProjectData): Promise<Project> => {
@@ -161,7 +159,6 @@ export const useCreateProject = (options: UseCreateProjectOptions = {}) => {
         id: `temp-${Date.now()}`, // Temporary ID for optimistic update
         title: newProject.title,
         description: newProject.description || null,
-        emoji: newProject.emoji || null,
         createdAt: new Date(),
         updatedAt: new Date(),
       }

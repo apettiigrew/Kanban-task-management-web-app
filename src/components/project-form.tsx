@@ -41,7 +41,6 @@ export function ProjectForm({
     defaultValues: {
       title: "",
       description: "",
-      emoji: "📋",
       ...defaultValues
     }
   })
@@ -59,8 +58,11 @@ export function ProjectForm({
 
   // Clear errors when form values change
   React.useEffect(() => {
-    clearFormErrors()
-  }, [Object.values(errors), clearFormErrors])
+    // Only clear server errors if there are client-side validation errors
+    if (Object.keys(errors).length > 0) {
+      clearFormErrors()
+    }
+  }, [errors, clearFormErrors])
 
   const handleFormErrors = React.useCallback((error: FormError) => {
     // If there are field errors, set them in both React Hook Form and our error state
@@ -160,20 +162,6 @@ export function ProjectForm({
             className={errors.title || fieldErrors.title ? "border-red-500 focus-visible:ring-red-500" : ""}
           />
           <FieldError error={errors.title?.message || fieldErrors.title} />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="emoji">Emoji</Label>
-          <Input
-            id="emoji"
-            {...register("emoji")}
-            placeholder="📋"
-            disabled={isLoading}
-            maxLength={2}
-            aria-invalid={!!(errors.emoji || fieldErrors.emoji)}
-            className={errors.emoji || fieldErrors.emoji ? "border-red-500 focus-visible:ring-red-500" : ""}
-          />
-          <FieldError error={errors.emoji?.message || fieldErrors.emoji} />
         </div>
 
         <div className="space-y-2">

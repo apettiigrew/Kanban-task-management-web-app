@@ -2,7 +2,6 @@ export interface Project {
   id: string
   title: string
   description: string | null
-  emoji: string | null
   createdAt: Date
   updatedAt: Date
   

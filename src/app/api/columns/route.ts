@@ -32,7 +32,6 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             title: true,
-            emoji: true,
           }
         },
         _count: {
@@ -102,7 +101,6 @@ export async function POST(request: NextRequest) {
           select: {
             id: true,
             title: true,
-            emoji: true,
           }
         },
         _count: {

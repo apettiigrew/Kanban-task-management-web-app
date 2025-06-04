@@ -33,7 +33,6 @@ export async function GET(
           select: {
             id: true,
             title: true,
-            emoji: true,
           }
         },
         _count: {
@@ -94,7 +93,6 @@ export async function PUT(
           select: {
             id: true,
             title: true,
-            emoji: true,
           }
         },
         _count: {

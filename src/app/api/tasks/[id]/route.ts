@@ -30,7 +30,6 @@ export async function GET(
           select: {
             id: true,
             title: true,
-            emoji: true,
           }
         } : false,
         column: includeRelations ? {
@@ -99,7 +98,6 @@ export async function PUT(
           select: {
             id: true,
             title: true,
-            emoji: true,
           }
         },
         column: {

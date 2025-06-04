@@ -43,7 +43,6 @@ export function EditProjectModal({ project, open, onOpenChange }: EditProjectMod
           defaultValues={{
             title: project.title,
             description: project.description || "",
-            emoji: project.emoji
           }}
           onSuccess={handleSuccess}
           onCancel={() => onOpenChange(false)}

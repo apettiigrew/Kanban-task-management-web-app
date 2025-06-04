@@ -16,7 +16,6 @@ export interface Task {
   project?: {
     id: string
     title: string
-    emoji: string | null
   }
   column?: {
     id: string
@@ -28,7 +27,6 @@ export interface TaskWithDetails extends Task {
   project: {
     id: string
     title: string
-    emoji: string | null
   }
   column: {
     id: string

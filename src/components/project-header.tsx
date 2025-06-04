@@ -51,9 +51,6 @@ export function ProjectHeader({ project, isLoading = false }: ProjectHeaderProps
 
         <div className="flex items-center space-x-2">
           <div className="flex items-center space-x-2">
-            {project.emoji && (
-              <span className="text-lg">{project.emoji}</span>
-            )}
             <h1 className="text-lg font-semibold">{project.title}</h1>
           </div>
           

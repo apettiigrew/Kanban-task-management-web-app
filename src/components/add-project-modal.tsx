@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { ProjectForm } from "./project-form"
@@ -24,6 +24,9 @@ export function AddProjectModal() {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Create New Project</DialogTitle>
+          <DialogDescription>
+            Add a new project to organize your tasks and track progress.
+          </DialogDescription>
         </DialogHeader>
         <div className="pt-4">
           <ProjectForm

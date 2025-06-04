@@ -5,7 +5,6 @@ export const projectSchema = z.object({
   id: z.string().cuid(),
   title: z.string().min(1, 'Project title is required').max(100, 'Project title must be less than 100 characters'),
   description: z.string().max(500, 'Description must be less than 500 characters').optional().nullable(),
-  emoji: z.string().max(10).optional().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })
@@ -14,14 +13,12 @@ export const projectSchema = z.object({
 export const createProjectSchema = z.object({
   title: z.string().min(1, 'Project title is required').max(100, 'Project title must be less than 100 characters'),
   description: z.string().max(500, 'Description must be less than 500 characters').optional().nullable(),
-  emoji: z.string().max(10).optional().nullable(),
 })
 
 // Schema for updating a project
 export const updateProjectSchema = z.object({
   title: z.string().min(1, 'Project title is required').max(100, 'Project title must be less than 100 characters').optional(),
   description: z.string().max(500, 'Description must be less than 500 characters').optional().nullable(),
-  emoji: z.string().max(10).optional().nullable(),
 })
 
 // Schema for project with related data

@@ -49,7 +49,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         >
           <span className="text-muted-foreground text-xl mr-4">#</span>
           <span className="text-lg font-medium">
-            {project.title} {project.emoji && <span>{project.emoji}</span>}
+            {project.title}
           </span>
         </Link>
         
