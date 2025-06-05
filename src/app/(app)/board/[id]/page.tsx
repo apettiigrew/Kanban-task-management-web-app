@@ -80,7 +80,6 @@ function BoardContent({ projectId }: BoardContentProps) {
       <main className="flex-1">
         <Suspense fallback={<RouteLoading message="Loading board..." />}>
           {project && <Board project={project as ProjectWithColumnsAndTasks} />}
-          {/* <p>{JSON.stringify(project)}</p> */}
         </Suspense>
       </main>
     </div>

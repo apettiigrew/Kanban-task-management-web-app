@@ -6,22 +6,22 @@ import { Input } from '@/components/ui/input';
 import { useCreateColumn, useInvalidateColumns } from '@/hooks/mutations/use-column-mutations';
 import { useInvalidateProjects } from '@/hooks/queries/use-projects';
 import { FormError } from '@/lib/form-error-handler';
-import { Project } from '@prisma/client';
+import { ProjectWithColumnsAndTasks } from '@/utils/data';
 import { PlusCircle } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Column } from './column';
-import { ProjectWithColumnsAndTasks } from '@/utils/data';
 
 interface BoardProps {
-    project: ProjectWithColumnsAndTasks 
+    project: ProjectWithColumnsAndTasks
 }
 
 export function Board({ project }: BoardProps) {
-    console.log(project);
+
     const [isAddingList, setIsAddingList] = useState(false);
     const [newListTitle, setNewListTitle] = useState('');
     const boardRef = useRef<HTMLDivElement>(null);
+    const rollbackStateRef = useRef<any>(null);
 
     // Column invalidation utility
     const { invalidateByProject } = useInvalidateColumns();
@@ -32,19 +32,39 @@ export function Board({ project }: BoardProps) {
     // Create column mutation with database persistence
     const createColumnMutation = useCreateColumn({
         onSuccess: (data) => {
+            // Replace the optimistic column with actual data from database
+            const optimisticIndex = project.columns.findIndex(col => col.id === 'optimistic-column-id');
+            if (optimisticIndex !== -1) {
+                project.columns[optimisticIndex] = {
+                    ...data,
+                    cards: [] // Initialize with empty cards array since it's a new column
+                };
+            }
+            
             toast.success(`Column "${data.title}" created successfully`);
             setNewListTitle('');
             setIsAddingList(false);
+            // Clear rollback state on success
+            rollbackStateRef.current = null;
             // Invalidate both columns and project cache to refresh the board
-            if (project.id) {
-                invalidateByProject(project.id);
-                invalidateProjects(); // This will refresh the board context
-            }
+
+            invalidateByProject(project.id);
+            // invalidateProjects();
         },
         onError: (error: FormError) => {
+            // Rollback optimistic update
+            if (rollbackStateRef.current) {
+                project.columns.splice(0, project.columns.length, ...rollbackStateRef.current);
+                rollbackStateRef.current = null;
+            }
             toast.error(error.message || 'Failed to create column');
         },
         onFieldErrors: (errors) => {
+            // Rollback optimistic update
+            if (rollbackStateRef.current) {
+                project.columns.splice(0, project.columns.length, ...rollbackStateRef.current);
+                rollbackStateRef.current = null;
+            }
             if (errors.title) {
                 toast.error(errors.title);
             }
@@ -53,23 +73,31 @@ export function Board({ project }: BoardProps) {
 
     const handleAddList = () => {
         const trimmedTitle = newListTitle.trim();
-        
+
         if (!trimmedTitle) {
             toast.error('Column title cannot be empty');
             return;
         }
 
-        if (!project.id) {
-            toast.error('No project selected');
-            return;
-        }
+        const maxOrder = project.columns.length > 0 ? project.columns.length - 1 : 0;
 
-        // Get the next order number based on existing columns
-        const maxOrder = project.columns.length > 0 
-            ? Math.max(...project.columns.map((_, index) => index)) 
-            : 0;
+        // Store original state for rollback
+        rollbackStateRef.current = [...project.columns];
 
-        // Create column in database with TanStack Query
+        // add a new column to the project (optimistic update)
+        const newColumn = {
+            id: 'optimistic-column-id',
+            title: trimmedTitle,
+            order: maxOrder + 1,
+            projectId: project.id,
+            cards: [],
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+
+        // add the new column to the project
+        project.columns.push(newColumn);
+
         createColumnMutation.mutate({
             title: trimmedTitle,
             projectId: project.id,
@@ -107,7 +135,7 @@ export function Board({ project }: BoardProps) {
                             isCreating={createColumnMutation.isPending}
                         />
                     ) : (
-                        <AddListButton 
+                        <AddListButton
                             onClick={() => setIsAddingList(true)}
                             disabled={createColumnMutation.isPending}
                         />
@@ -174,7 +202,7 @@ export const NewListForm: React.FC<NewListFormProps> = ({
                     onClick={handleAddList}
                     disabled={!newListTitle.trim() || isCreating}
                 >
-                    {isCreating ? 'Creating...' : 'Add List'}
+                    Add List
                 </Button>
                 <Button
                     variant="ghost"
