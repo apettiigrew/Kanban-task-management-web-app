@@ -1,9 +1,10 @@
 'use client'
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Column, ColumnWithTasks } from '../../types/column'
 import { apiRequest, FormError } from '@/lib/form-error-handler'
 import { columnKeys } from '../queries/use-columns'
+import { projectKeys } from '../queries/use-projects'
+import { ProjectWithColumnsAndTasks, TColumn } from '@/utils/data'
 
 // Types for mutation data
 interface CreateColumnData {
@@ -26,15 +27,15 @@ interface ReorderColumnsData {
 }
 
 // API client functions for mutations
-const createColumn = async (data: CreateColumnData): Promise<Column & { taskCount: number }> => {
-  return apiRequest<Column & { taskCount: number }>('/api/columns', {
+const createColumn = async (data: CreateColumnData): Promise<TColumn & { taskCount: number }> => {
+  return apiRequest<TColumn & { taskCount: number }>('/api/columns', {
     method: 'POST',
     body: JSON.stringify(data),
   })
 }
 
-const updateColumn = async ({ id, data }: { id: string; data: UpdateColumnData }): Promise<Column & { taskCount: number }> => {
-  return apiRequest<Column & { taskCount: number }>(`/api/columns/${id}`, {
+const updateColumn = async ({ id, data }: { id: string; data: UpdateColumnData }): Promise<TColumn & { taskCount: number }> => {
+  return apiRequest<TColumn & { taskCount: number }>(`/api/columns/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   })
@@ -55,13 +56,13 @@ const reorderColumns = async (data: ReorderColumnsData): Promise<void> => {
 
 // Enhanced mutation hooks with form error handling and optimistic updates
 interface UseCreateColumnOptions {
-  onSuccess?: (data: Column & { taskCount: number }) => void
+  onSuccess?: (data: TColumn & { taskCount: number }) => void
   onError?: (error: FormError) => void
   onFieldErrors?: (errors: Record<string, string>) => void
 }
 
 interface UseUpdateColumnOptions {
-  onSuccess?: (data: Column & { taskCount: number }) => void
+  onSuccess?: (data: TColumn & { taskCount: number }) => void
   onError?: (error: FormError) => void
   onFieldErrors?: (errors: Record<string, string>) => void
 }
@@ -83,59 +84,27 @@ export const useCreateColumn = (options: UseCreateColumnOptions = {}) => {
     mutationKey: ['createColumn'],
     mutationFn: createColumn,
     onMutate: async (newColumn) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: columnKeys.byProject(newColumn.projectId) })
-      await queryClient.cancelQueries({ queryKey: columnKeys.byProjectWithTasks(newColumn.projectId) })
-      await queryClient.cancelQueries({ queryKey: columnKeys.lists() })
-
-      // Snapshot the previous values
-      const previousColumns = queryClient.getQueryData(columnKeys.byProject(newColumn.projectId))
-      const previousColumnsWithTasks = queryClient.getQueryData(columnKeys.byProjectWithTasks(newColumn.projectId))
-      const previousAllColumns = queryClient.getQueryData(columnKeys.lists())
-
-      // Create optimistic column with temporary ID
-      const optimisticColumn: Column & { taskCount: number } = {
-        id: `temp-${Date.now()}`, // Temporary ID for optimistic update
+     
+      const previousProject = queryClient.getQueryData(projectKeys.detail(newColumn.projectId))
+      console.log("Previous project", previousProject)
+     
+      const optimisticColumn: TColumn = {
+        id: `temp-${Date.now()}`,
         title: newColumn.title,
         projectId: newColumn.projectId,
         order: newColumn.order ?? 0,
-        taskCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
+        cards: [],
       }
 
-      // Optimistically add the new column to the project's columns
-      queryClient.setQueryData(columnKeys.byProject(newColumn.projectId), (oldData: (Column & { taskCount: number })[] | undefined) => {
-        if (oldData) {
-          return [...oldData, optimisticColumn]
-        }
-        return [optimisticColumn]
+      queryClient.setQueryData(projectKeys.detail(newColumn.projectId), (oldData: ProjectWithColumnsAndTasks) => {
+          return { ...oldData, columns: [...oldData.columns, optimisticColumn] }
       })
 
-      // Optimistically add to all columns if that query exists
-      queryClient.setQueryData(columnKeys.lists(), (oldData: (Column & { taskCount: number })[] | undefined) => {
-        if (oldData) {
-          return [...oldData, optimisticColumn]
-        }
-        return undefined // Don't create data if it doesn't exist
-      })
-
-      // Return a context object with the snapshotted values
-      return { previousColumns, previousColumnsWithTasks, previousAllColumns, optimisticColumn }
+      return { optimisticColumn }
     },
     onError: (error: FormError, newColumn, context) => {
-      // If the mutation fails, use the context to roll back
-      if (context?.previousColumns) {
-        queryClient.setQueryData(columnKeys.byProject(newColumn.projectId), context.previousColumns)
-      }
-      if (context?.previousColumnsWithTasks) {
-        queryClient.setQueryData(columnKeys.byProjectWithTasks(newColumn.projectId), context.previousColumnsWithTasks)
-      }
-      if (context?.previousAllColumns) {
-        queryClient.setQueryData(columnKeys.lists(), context.previousAllColumns)
-      }
-
-      // Handle errors through options
       if (error.fieldErrors && options.onFieldErrors) {
         options.onFieldErrors(error.fieldErrors)
       } else if (options.onError) {
@@ -144,7 +113,7 @@ export const useCreateColumn = (options: UseCreateColumnOptions = {}) => {
     },
     onSuccess: (data, variables, context) => {
       // Update the optimistic data with real data
-      queryClient.setQueryData(columnKeys.byProject(variables.projectId), (oldData: (Column & { taskCount: number })[] | undefined) => {
+      queryClient.setQueryData(columnKeys.byProject(variables.projectId), (oldData: (TColumn & { taskCount: number })[] | undefined) => {
         if (oldData) {
           return oldData.map(column => 
             column.id === context?.optimisticColumn.id ? data : column
@@ -176,7 +145,7 @@ export const useUpdateColumn = (options: UseUpdateColumnOptions = {}) => {
       await queryClient.cancelQueries({ queryKey: columnKeys.detail(id) })
       
       // Get current column data to find projectId for invalidation
-      const currentColumn = queryClient.getQueryData(columnKeys.detail(id)) as (Column & { taskCount: number }) | undefined
+      const currentColumn = queryClient.getQueryData(columnKeys.detail(id)) as (TColumn & { taskCount: number }) | undefined
       
       if (currentColumn) {
         await queryClient.cancelQueries({ queryKey: columnKeys.byProject(currentColumn.projectId) })
@@ -194,7 +163,7 @@ export const useUpdateColumn = (options: UseUpdateColumnOptions = {}) => {
         queryClient.setQueryData(columnKeys.detail(id), optimisticColumn)
         
         // Update in project columns list
-        queryClient.setQueryData(columnKeys.byProject(currentColumn.projectId), (oldData: (Column & { taskCount: number })[] | undefined) => {
+        queryClient.setQueryData(columnKeys.byProject(currentColumn.projectId), (oldData: (TColumn)[] | undefined) => {
           if (oldData) {
             return oldData.map(column => column.id === id ? optimisticColumn : column)
           }
@@ -245,7 +214,7 @@ export const useDeleteColumn = (options: UseDeleteColumnOptions = {}) => {
     mutationFn: deleteColumn,
     onMutate: async (id) => {
       // Get current column data to find projectId for invalidation
-      const currentColumn = queryClient.getQueryData(columnKeys.detail(id)) as (Column & { taskCount: number }) | undefined
+      const currentColumn = queryClient.getQueryData(columnKeys.detail(id)) as (TColumn) | undefined
       
       if (currentColumn) {
         // Cancel any outgoing refetches
@@ -258,14 +227,14 @@ export const useDeleteColumn = (options: UseDeleteColumnOptions = {}) => {
         const previousColumnsWithTasks = queryClient.getQueryData(columnKeys.byProjectWithTasks(currentColumn.projectId))
 
         // Optimistically remove the column
-        queryClient.setQueryData(columnKeys.byProject(currentColumn.projectId), (oldData: (Column & { taskCount: number })[] | undefined) => {
+        queryClient.setQueryData(columnKeys.byProject(currentColumn.projectId), (oldData: (TColumn)[] | undefined) => {
           if (oldData) {
             return oldData.filter(column => column.id !== id)
           }
           return oldData
         })
 
-        queryClient.setQueryData(columnKeys.byProjectWithTasks(currentColumn.projectId), (oldData: ColumnWithTasks[] | undefined) => {
+        queryClient.setQueryData(columnKeys.byProjectWithTasks(currentColumn.projectId), (oldData: TColumn[] | undefined) => {
           if (oldData) {
             return oldData.filter(column => column.id !== id)
           }
@@ -328,7 +297,7 @@ export const useReorderColumns = (options: UseReorderColumnsOptions = {}) => {
       const previousColumnsWithTasks = queryClient.getQueryData(columnKeys.byProjectWithTasks(data.projectId))
 
       // Optimistically reorder columns
-      queryClient.setQueryData(columnKeys.byProject(data.projectId), (oldData: (Column & { taskCount: number })[] | undefined) => {
+      queryClient.setQueryData(columnKeys.byProject(data.projectId), (oldData: (TColumn)[] | undefined) => {
         if (oldData) {
           const newData = [...oldData]
           // Apply new order based on columnOrders
@@ -383,16 +352,3 @@ export const useColumnMutationStates = () => {
   }
 }
 
-// Utility hook for invalidating column queries
-export const useInvalidateColumns = () => {
-  const queryClient = useQueryClient()
-  
-  return {
-    invalidateAll: () => queryClient.invalidateQueries({ queryKey: columnKeys.all }),
-    invalidateByProject: (projectId: string) => {
-      queryClient.invalidateQueries({ queryKey: columnKeys.byProject(projectId) })
-      queryClient.invalidateQueries({ queryKey: columnKeys.byProjectWithTasks(projectId) })
-    },
-    invalidateColumn: (id: string) => queryClient.invalidateQueries({ queryKey: columnKeys.detail(id) }),
-  }
-} 

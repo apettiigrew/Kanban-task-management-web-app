@@ -2,9 +2,8 @@
 
 import React from 'react'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { Project, ProjectWithStats } from '../../types/project'
 import { apiRequest, FormError, parseApiError } from '@/lib/form-error-handler'
-import { ProjectWithColumnsAndTasks } from '@/utils/data'
+import { ProjectWithColumnsAndTasks, TProject } from '@/utils/data'
 
 // Query key factory for projects
 export const projectKeys = {
@@ -17,16 +16,16 @@ export const projectKeys = {
 }
 
 // API client functions with enhanced error handling
-const fetchProjects = async (): Promise<Project[]> => {
-  return apiRequest<Project[]>('/api/projects')
+const fetchProjects = async (): Promise<TProject[]> => {
+  return apiRequest<TProject[]>('/api/projects')
 }
 
-const fetchProject = async (id: string): Promise<Project> => {
+const fetchProject = async (id: string): Promise<TProject> => {
   return apiRequest<ProjectWithColumnsAndTasks>(`/api/projects/${id}?includeRelations=true`)
 }
 
-const fetchProjectsWithStats = async (): Promise<ProjectWithStats[]> => {
-  return apiRequest<ProjectWithStats[]>('/api/projects?includeStats=true')
+const fetchProjectsWithStats = async (): Promise<TProject[]> => {
+  return apiRequest<TProject[]>('/api/projects?includeStats=true')
 }
 
 // Types for mutation data
@@ -40,15 +39,15 @@ interface UpdateProjectData {
   description?: string | null
 }
 
-const createProject = async (data: CreateProjectData): Promise<Project> => {
-  return apiRequest<Project>('/api/projects', {
+const createProject = async (data: CreateProjectData): Promise<TProject> => {
+  return apiRequest<TProject>('/api/projects', {
     method: 'POST',
     body: JSON.stringify(data),
   })
 }
 
-const updateProject = async ({ id, data }: { id: string; data: UpdateProjectData }): Promise<Project> => {
-  return apiRequest<Project>(`/api/projects/${id}`, {
+const updateProject = async ({ id, data }: { id: string; data: UpdateProjectData }): Promise<TProject> => {
+  return apiRequest<TProject>(`/api/projects/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   })
@@ -124,13 +123,13 @@ export const useProjectsWithStats = (options: UseProjectsOptions = {}) => {
 
 // Enhanced mutation hooks with form error handling
 interface UseCreateProjectOptions {
-  onSuccess?: (data: Project) => void
+  onSuccess?: (data: TProject) => void
   onError?: (error: FormError) => void
   onFieldErrors?: (errors: Record<string, string>) => void
 }
 
 interface UseUpdateProjectOptions {
-  onSuccess?: (data: Project) => void
+  onSuccess?: (data: TProject) => void
   onError?: (error: FormError) => void
   onFieldErrors?: (errors: Record<string, string>) => void
 }
@@ -155,16 +154,18 @@ export const useCreateProject = (options: UseCreateProjectOptions = {}) => {
       const previousProjectsWithStats = queryClient.getQueryData(projectKeys.stats())
 
       // Create optimistic project with temporary ID
-      const optimisticProject: Project = {
-        id: `temp-${Date.now()}`, // Temporary ID for optimistic update
+      const optimisticProject: TProject = {
+        id: `temp-${Date.now()}`,
         title: newProject.title,
-        description: newProject.description || null,
+        description: newProject.description || '',
         createdAt: new Date(),
         updatedAt: new Date(),
+        columns: [],
+        cards: [],
       }
 
       // Optimistically add the new project to the list
-      queryClient.setQueryData(projectKeys.lists(), (oldData: Project[] | undefined) => {
+      queryClient.setQueryData(projectKeys.lists(), (oldData: TProject[] | undefined) => {
         if (oldData) {
           return [...oldData, optimisticProject]
         }
@@ -172,13 +173,10 @@ export const useCreateProject = (options: UseCreateProjectOptions = {}) => {
       })
 
       // Optimistically add to stats queries if they exist
-      queryClient.setQueryData(projectKeys.stats(), (oldData: ProjectWithStats[] | undefined) => {
+      queryClient.setQueryData(projectKeys.stats(), (oldData: TProject[] | undefined) => {
         if (oldData) {
-          const optimisticProjectWithStats: ProjectWithStats = {
-            ...optimisticProject,
-            taskCount: 0,
-            completedTaskCount: 0,
-            columnCount: 0,
+          const optimisticProjectWithStats: TProject = {
+            ...optimisticProject
           }
           return [...oldData, optimisticProjectWithStats]
         }
@@ -208,7 +206,7 @@ export const useCreateProject = (options: UseCreateProjectOptions = {}) => {
     },
     onSuccess: (data, newProject, context) => {
       // Replace optimistic project with real data
-      queryClient.setQueryData(projectKeys.lists(), (oldData: Project[] | undefined) => {
+      queryClient.setQueryData(projectKeys.lists(), (oldData: TProject[] | undefined) => {
         if (oldData && context?.optimisticProject) {
           return oldData.map(project => 
             project.id === context.optimisticProject.id ? data : project
@@ -218,13 +216,10 @@ export const useCreateProject = (options: UseCreateProjectOptions = {}) => {
       })
 
       // Update stats queries with real data
-      queryClient.setQueryData(projectKeys.stats(), (oldData: ProjectWithStats[] | undefined) => {
+      queryClient.setQueryData(projectKeys.stats(), (oldData: TProject[] | undefined) => {
         if (oldData && context?.optimisticProject) {
-          const projectWithStats: ProjectWithStats = {
+          const projectWithStats: TProject = {
             ...data,
-            taskCount: 0,
-            completedTaskCount: 0,
-            columnCount: 0,
           }
           return oldData.map(project => 
             project.id === context.optimisticProject.id ? projectWithStats : project
@@ -267,12 +262,12 @@ export const useUpdateProject = (options: UseUpdateProjectOptions = {}) => {
       const previousProjectsWithStats = queryClient.getQueryData(projectKeys.stats())
 
       // Optimistically update to the new value
-      queryClient.setQueryData(projectKeys.detail(id), (old: Project | undefined) => {
+        queryClient.setQueryData(projectKeys.detail(id), (old: TProject | undefined) => {
         if (!old) return old
         return { ...old, ...data, updatedAt: new Date() }
       })
 
-      queryClient.setQueryData(projectKeys.lists(), (old: Project[] | undefined) => {
+      queryClient.setQueryData(projectKeys.lists(), (old: TProject[] | undefined) => {
         if (!old) return old
         return old.map(project => 
           project.id === id ? { ...project, ...data, updatedAt: new Date() } : project
@@ -280,7 +275,7 @@ export const useUpdateProject = (options: UseUpdateProjectOptions = {}) => {
       })
 
       // Optimistically update stats queries if they exist
-      queryClient.setQueryData(projectKeys.stats(), (old: ProjectWithStats[] | undefined) => {
+      queryClient.setQueryData(projectKeys.stats(), (old: TProject[] | undefined) => {
         if (!old) return old
         return old.map(project => 
           project.id === id ? { ...project, ...data, updatedAt: new Date() } : project
@@ -346,13 +341,13 @@ export const useDeleteProject = (options: UseDeleteProjectOptions = {}) => {
       const previousProjectsWithStats = queryClient.getQueryData(projectKeys.stats())
 
       // Optimistically remove the project from the list
-      queryClient.setQueryData(projectKeys.lists(), (old: Project[] | undefined) => {
+      queryClient.setQueryData(projectKeys.lists(), (old: TProject[] | undefined) => {
         if (!old) return old
         return old.filter(project => project.id !== id)
       })
 
       // Optimistically remove from stats queries if they exist
-      queryClient.setQueryData(projectKeys.stats(), (old: ProjectWithStats[] | undefined) => {
+                queryClient.setQueryData(projectKeys.stats(), (old: TProject[] | undefined) => {
         if (!old) return old
         return old.filter(project => project.id !== id)
       })
@@ -433,5 +428,19 @@ export const useProjectMutationStates = () => {
   }
 }
 
+// Utility hook for invalidating column queries
+export const useInvalidateProject = () => {
+  const queryClient = useQueryClient()
+  
+  return {
+    invalidateAll: () => queryClient.invalidateQueries({ queryKey: projectKeys.all }),
+    invalidateByProject: (projectId: string) => {
+      queryClient.invalidateQueries({ queryKey: projectKeys.detail(projectId)})
+    
+    }
+  }
+} 
+
 // Re-export the key types for convenience
 export type { CreateProjectData, UpdateProjectData }
+// 

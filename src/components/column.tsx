@@ -1,7 +1,6 @@
 import { SettingsContext } from '@/providers/settings-context';
 import { useUpdateColumn, useDeleteColumn } from '@/hooks/mutations/use-column-mutations';
-import { useInvalidateColumns } from '@/hooks/mutations/use-column-mutations';
-import { useInvalidateProjects } from '@/hooks/queries/use-projects';
+import { useInvalidateProject, useInvalidateProjects } from '@/hooks/queries/use-projects';
 import { getColumnData, isCardData, isCardDropTargetData, isColumnData, isDraggingACard, isDraggingAColumn, isShallowEqual, TCard, TCardData, TColumn } from '@/utils/data';
 import { cc } from '@/utils/style-utils';
 import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element';
@@ -72,7 +71,7 @@ export function Column({ title, column }: ColumnProps) {
     const titleInputRef = useRef<HTMLInputElement>(null);
     const newCardInputRef = useRef<HTMLInputElement>(null);
     const scrollableRef = useRef<HTMLDivElement | null>(null);
-    const tasksToRender = column.cards.length > 0 ? column.cards : column.cards.map(card => card);
+    const tasksToRender = column.cards && column.cards.length > 0 ? column.cards : column.cards.map(card => card);
     const [state, setState] = useState<TColumnState>(idle);
     const { settings } = useContext(SettingsContext);
 
@@ -80,7 +79,7 @@ export function Column({ title, column }: ColumnProps) {
     const projectId = column.projectId;
 
     // Column invalidation utility
-    const { invalidateByProject } = useInvalidateColumns();
+    const { invalidateByProject } = useInvalidateProject();
 
     // Project invalidation utility
     const invalidateProjects = useInvalidateProjects();
