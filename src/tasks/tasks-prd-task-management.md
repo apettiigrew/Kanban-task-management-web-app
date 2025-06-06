@@ -107,13 +107,12 @@ This ensures quality control and allows the user to review and test implementati
 
 - [ ] 4.0 Build enhanced task management with database integration and optimistic updates
   - [x] 4.1 Create TanStack Query hooks for task operations in `src/hooks/queries/use-tasks.ts` with proper caching and query key factory
-  - [ ] 4.2 Build task mutation hooks in `src/hooks/mutations/use-task-mutations.ts` with optimistic updates using TanStack Query
-  - [ ] 4.3 Create enhanced task card component using Shadcn Card and Badge components with TanStack Query data and optimistic updates
-  - [ ] 4.4 Build task creation/editing modal using React Hook Form and Shadcn Dialog with optimistic mutation handling
-  - [ ] 4.5 Implement task deletion with confirmation using Shadcn AlertDialog and TanStack Query optimistic updates and invalidation
-  - [ ] 4.6 Add task search and filtering with Shadcn Input and Select components using TanStack Query selectors and optimistic filtering
-  - [ ] 4.7 Implement real-time task updates using TanStack Query invalidation, optimistic updates, and automatic refetching
-  - [ ] 4.8 Write unit tests for enhanced task management components with TanStack Query mocks and optimistic update scenarios
+  - [x] 4.2 Build task mutation hooks in `src/hooks/mutations/use-task-mutations.ts` with optimistic updates using TanStack Query
+  - [ ] 4.4 Build task editing modal using React Hook Form and Shadcn Dialog with optimistic mutation handling with tanstack. The modal
+  should have the ability to inline edit the title and description of the card. The description should be updated using "@tiptap/pm package that will allow users add formatting styles to their text like bold, text and italic. Before completing this task ask for image to follow to setup the description.
+  - [ ] 4.5 Implement task deletion with confirmation using Shadcn AlertDialog and TanStack Query optimistic updates and invalidation that is only done on the view modal
+  - [ ] 4.6 Implement real-time task updates using TanStack Query invalidation, optimistic updates, and automatic refetching
+  - [ ] 4.7 Write unit tests for enhanced task management components with TanStack Query mocks and optimistic update scenarios
 
 - [x] 5.0 Build enhanced column management with database integration
   - [x] 5.1 Create TanStack Query hooks for column operations in `src/hooks/queries/use-columns.ts` with proper caching
