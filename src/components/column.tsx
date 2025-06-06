@@ -265,7 +265,7 @@ export function Column({ title, column }: ColumnProps) {
     return (
         <ColumnWrapper
             className={cc(
-                'bg-gray-50 text-gray-900 rounded-2xl p-4 border border-gray-200 max-w-[260px] w-full max-h-[90vh] h-min flex flex-col gap-4',
+                'bg-gray-50 text-gray-900 rounded-2xl p-4 border border-gray-200 max-w-[260px] w-full max-h-[calc(100vh-160px)] flex flex-col gap-4',
                 stateStyles[state.type]
             )}
             ref={outerFullHeightRef}

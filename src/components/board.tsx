@@ -17,7 +17,6 @@ interface BoardProps {
 }
 
 export function Board({ project }: BoardProps) {
-
     const [isAddingList, setIsAddingList] = useState(false);
     const [newListTitle, setNewListTitle] = useState('');
     const boardRef = useRef<HTMLDivElement>(null);
@@ -60,13 +59,13 @@ export function Board({ project }: BoardProps) {
     };
 
     return (
-        <div ref={boardRef} className="min-h-screen bg-background pt-6 pb-16 transition-colors">
+        <div ref={boardRef}>
             <div className="px-6">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-6 mt-6">
                     <h1 className="text-3xl font-bold">{project.title}</h1>
                 </div>
 
-                <div className="flex items-start gap-4 overflow-x-auto pb-8 min-h-[calc(100vh-200px)] snap-x snap-mandatory">
+                <div className="flex items-start gap-4 overflow-x-auto pb-4 snap-x snap-mandatory">
                     {project.columns.map((column) => (
                         <Column
                             key={column.id}
