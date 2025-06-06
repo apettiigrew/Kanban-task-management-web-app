@@ -25,9 +25,6 @@ export function Board({ project }: BoardProps) {
     // Column invalidation utility
     const { invalidateByProject } = useInvalidateProject();
 
-    // Project invalidation utility
-    // const invalidateProjects = useInvalidateProjects();
-
     // Create column mutation with database persistence
     const createColumnMutation = useCreateColumn({
         onSuccess: (data) => {

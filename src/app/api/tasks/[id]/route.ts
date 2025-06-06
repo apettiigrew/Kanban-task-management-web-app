@@ -23,7 +23,7 @@ export async function GET(
     const { searchParams } = new URL(request.url)
     const includeRelations = searchParams.get('includeRelations') === 'true'
 
-    const task = await prisma.task.findUnique({
+    const task = await prisma.card.findUnique({
       where: { id: params.id },
       include: {
         project: includeRelations ? {
@@ -68,7 +68,7 @@ export async function PUT(
     const validatedData = validateRequestBody(updateTaskSchema, body)
 
     // Check if task exists
-    const existingTask = await prisma.task.findUnique({
+    const existingTask = await prisma.card.findUnique({
       where: { id: params.id },
     })
 
@@ -90,7 +90,7 @@ export async function PUT(
       }
     }
 
-    const task = await prisma.task.update({
+    const task = await prisma.card.update({
       where: { id: params.id },
       data: validatedData,
       include: {
@@ -127,7 +127,7 @@ export async function DELETE(
     }
 
     // Check if task exists
-    const existingTask = await prisma.task.findUnique({
+    const existingTask = await prisma.card.findUnique({
       where: { id: params.id },
     })
 
@@ -136,7 +136,7 @@ export async function DELETE(
     }
 
     // Delete the task
-    await prisma.task.delete({
+    await prisma.card.delete({
       where: { id: params.id },
     })
 

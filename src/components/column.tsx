@@ -40,6 +40,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
+import { useCreateTask } from '@/hooks/mutations/use-task-mutations';
 
 type TColumnState =
     | { type: 'is-card-over'; isOverChildCard: boolean; dragging: DOMRect }
@@ -83,6 +84,12 @@ export function Column({ title, column }: ColumnProps) {
 
     // Project invalidation utility
     const invalidateProjects = useInvalidateProjects();
+
+    const createTaskMutation = useCreateTask({
+        onError: (error: FormError) => {
+            toast.error(error.message || 'Failed to create task');
+        }
+    });
 
     // Update column mutation with optimistic updates
     const updateColumnMutation = useUpdateColumn({
@@ -151,8 +158,6 @@ export function Column({ title, column }: ColumnProps) {
             return;
         }
 
-        // Optimistic update: keep the new title in local state
-        // It will only rollback if the database update fails
         updateColumnMutation.mutate({
             id: column.id,
             data: { title: trimmedTitle }
@@ -244,6 +249,18 @@ export function Column({ title, column }: ColumnProps) {
             })
         );
     }, [column, column.cards, settings]);
+
+    const addCard = (columnId: string, title: string) => {
+        setIsAddingCard(false); 
+        setNewCardTitle('');
+        createTaskMutation.mutate({ 
+            projectId: column.projectId,
+            columnId: columnId,
+            title: title,
+            order: column.cards.length,
+        });
+
+    }
 
     return (
         <ColumnWrapper

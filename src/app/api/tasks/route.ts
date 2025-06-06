@@ -11,11 +11,7 @@ import {
 // GET /api/tasks - Get all tasks (optionally filtered by project or column)
 export async function GET(request: NextRequest) {
   try {
-    // Basic rate limiting
-    if (!checkRateLimit('tasks-get', 300)) {
-      throw new Error('Rate limit exceeded')
-    }
-
+    
     const { searchParams } = new URL(request.url)
     const projectId = searchParams.get('projectId')
     const columnId = searchParams.get('columnId')
@@ -25,7 +21,7 @@ export async function GET(request: NextRequest) {
     if (projectId) whereClause.projectId = projectId
     if (columnId) whereClause.columnId = columnId
 
-    const tasks = await prisma.task.findMany({
+    const tasks = await prisma.card.findMany({
       where: whereClause,
       include: {
         project: includeRelations ? {
@@ -56,11 +52,7 @@ export async function GET(request: NextRequest) {
 // POST /api/tasks - Create a new task
 export async function POST(request: NextRequest) {
   try {
-    // Basic rate limiting
-    if (!checkRateLimit('tasks-post', 100)) {
-      throw new Error('Rate limit exceeded')
-    }
-
+    
     const body = await request.json()
     
     // Validate the request body using our validation helper
@@ -88,31 +80,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the next order number for this column
-    const maxOrder = await prisma.task.aggregate({
+    const maxOrder = await prisma.card.aggregate({
       where: { columnId: validatedData.columnId },
       _max: { order: true },
     })
 
     const nextOrder = (maxOrder._max.order ?? 0) + 1
 
-    const task = await prisma.task.create({
+    const task = await prisma.card.create({
       data: {
         ...validatedData,
         order: nextOrder,
-      },
-      include: {
-        project: {
-          select: {
-            id: true,
-            title: true,
-          }
-        },
-        column: {
-          select: {
-            id: true,
-            title: true,
-          }
-        }
       }
     })
 
@@ -125,11 +103,7 @@ export async function POST(request: NextRequest) {
 // PUT /api/tasks - Reorder tasks within a column
 export async function PUT(request: NextRequest) {
   try {
-    // Basic rate limiting
-    if (!checkRateLimit('tasks-put', 50)) {
-      throw new Error('Rate limit exceeded')
-    }
-
+  
     const body = await request.json()
     
     // Validate the request body using our validation helper
@@ -138,7 +112,7 @@ export async function PUT(request: NextRequest) {
     // Use a transaction to update all task orders atomically
     await prisma.$transaction(
       validatedData.taskOrders.map(({ id, order }) =>
-        prisma.task.update({
+        prisma.card.update({
           where: { id },
           data: { order },
         })

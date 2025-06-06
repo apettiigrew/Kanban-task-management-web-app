@@ -18,8 +18,6 @@ export const taskSchema = z.object({
 export const createTaskSchema = z.object({
   title: z.string().min(1, 'Task title is required').max(200, 'Task title must be less than 200 characters'),
   description: z.string().max(1000, 'Description must be less than 1000 characters').optional().nullable(),
-  labels: z.array(z.string().max(30, 'Label must be less than 30 characters')).default([]),
-  dueDate: z.string().datetime().optional().nullable().or(z.date().optional().nullable()),
   projectId: z.string().cuid(),
   columnId: z.string().cuid(),
   order: z.number().int().min(0, 'Order must be a non-negative integer').optional(),
@@ -73,7 +71,7 @@ export const taskWithRelationsSchema = taskSchema.extend({
   }).optional(),
 })
 
-// Type exports
+// Type exports 
 export type Task = z.infer<typeof taskSchema>
 export type CreateTask = z.infer<typeof createTaskSchema>
 export type UpdateTask = z.infer<typeof updateTaskSchema>
