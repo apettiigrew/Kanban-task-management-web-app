@@ -1,26 +1,5 @@
-export type { Project, ProjectWithStats } from './project'
-export type { Column, ColumnWithTasks } from './column'
-export type { Task, TaskWithDetails } from './task'
 
-// Board interface for combining project data with columns and tasks
-export interface Board {
-  id: string
-  title: string
-  description: string | null
-  columns: Array<{
-    id: string
-    title: string
-    order: number
-    tasks: Array<{
-      id: string
-      title: string
-      description: string | null
-      order: number
-      labels: string[]
-      dueDate: Date | null
-    }>
-  }>
-}
+
 
 // API Response types
 export interface ApiResponse<T = unknown> {
