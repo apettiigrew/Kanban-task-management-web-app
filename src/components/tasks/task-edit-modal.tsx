@@ -18,11 +18,391 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { ProjectWithColumnsAndTasks, TCard } from '@/utils/data'
+import { 
+  Bold, 
+  Italic, 
+  Strikethrough, 
+  Code, 
+  Eraser,
+  Type,
+  Heading1,
+  Heading2,
+  Heading3,
+  Heading4,
+  Heading5,
+  Heading6,
+  List,
+  ListOrdered,
+  Terminal,
+  Quote,
+  Minus,
+  RotateCcw,
+  RotateCw
+} from 'lucide-react'
 
 interface TaskEditModalProps {
   card: TCard
   isOpen: boolean
   onClose: () => void
+}
+
+interface EditorToolbarProps {
+  editor: any
+}
+
+const EditorToolbar = ({ editor }: EditorToolbarProps) => {
+  if (!editor) {
+    return null
+  }
+
+  const ToolbarButton = ({ 
+    onClick, 
+    isActive = false, 
+    children, 
+    disabled = false 
+  }: { 
+    onClick: () => void
+    isActive?: boolean
+    children: React.ReactNode
+    disabled?: boolean
+  }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background h-8 px-3 py-1 ${
+        isActive 
+          ? 'bg-accent text-accent-foreground' 
+          : 'hover:bg-accent hover:text-accent-foreground'
+      }`}
+    >
+      {children}
+    </button>
+  )
+
+  return (
+    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-border bg-muted/30">
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleBold().run()}
+        isActive={editor.isActive('bold')}
+      >
+        <Bold className="h-4 w-4" />
+      </ToolbarButton>
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        isActive={editor.isActive('italic')}
+      >
+        <Italic className="h-4 w-4" />
+      </ToolbarButton>
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleStrike().run()}
+        isActive={editor.isActive('strike')}
+      >
+        <Strikethrough className="h-4 w-4" />
+      </ToolbarButton>
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleCode().run()}
+        isActive={editor.isActive('code')}
+      >
+        <Code className="h-4 w-4" />
+      </ToolbarButton>
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().unsetAllMarks().run()}
+      >
+        <Eraser className="h-4 w-4" />
+      </ToolbarButton>
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().clearNodes().run()}
+      >
+        <Type className="h-4 w-4" />
+      </ToolbarButton>
+
+      <div className="w-px h-6 bg-border mx-1" />
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().setParagraph().run()}
+        isActive={editor.isActive('paragraph')}
+      >
+        <span className="text-xs font-medium">P</span>
+      </ToolbarButton>
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+        isActive={editor.isActive('heading', { level: 1 })}
+      >
+        <Heading1 className="h-4 w-4" />
+      </ToolbarButton>
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        isActive={editor.isActive('heading', { level: 2 })}
+      >
+        <Heading2 className="h-4 w-4" />
+      </ToolbarButton>
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+        isActive={editor.isActive('heading', { level: 3 })}
+      >
+        <Heading3 className="h-4 w-4" />
+      </ToolbarButton>
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
+        isActive={editor.isActive('heading', { level: 4 })}
+      >
+        <Heading4 className="h-4 w-4" />
+      </ToolbarButton>
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()}
+        isActive={editor.isActive('heading', { level: 5 })}
+      >
+        <Heading5 className="h-4 w-4" />
+      </ToolbarButton>
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleHeading({ level: 6 }).run()}
+        isActive={editor.isActive('heading', { level: 6 })}
+      >
+        <Heading6 className="h-4 w-4" />
+      </ToolbarButton>
+
+      <div className="w-px h-6 bg-border mx-1" />
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        isActive={editor.isActive('bulletList')}
+      >
+        <List className="h-4 w-4" />
+      </ToolbarButton>
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        isActive={editor.isActive('orderedList')}
+      >
+        <ListOrdered className="h-4 w-4" />
+      </ToolbarButton>
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+        isActive={editor.isActive('codeBlock')}
+      >
+        <Terminal className="h-4 w-4" />
+      </ToolbarButton>
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        isActive={editor.isActive('blockquote')}
+      >
+        <Quote className="h-4 w-4" />
+      </ToolbarButton>
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().setHorizontalRule().run()}
+      >
+        <Minus className="h-4 w-4" />
+      </ToolbarButton>
+
+      <div className="w-px h-6 bg-border mx-1" />
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().undo().run()}
+        disabled={!editor.can().chain().focus().undo().run()}
+      >
+        <RotateCcw className="h-4 w-4" />
+      </ToolbarButton>
+      
+      <ToolbarButton
+        onClick={() => editor.chain().focus().redo().run()}
+        disabled={!editor.can().chain().focus().redo().run()}
+      >
+        <RotateCw className="h-4 w-4" />
+      </ToolbarButton>
+    </div>
+  )
+}
+
+// MenuBar for Tiptap formatting
+const MenuBar = ({ editor }: { editor: any }) => {
+  if (!editor) return null
+  return (
+    <div className="flex flex-wrap gap-2 p-2 pb-0">
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleBold().run()}
+        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('bold') ? 'bg-primary text-primary-foreground' : ''}`}
+        aria-label="Bold"
+      >
+        Bold
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('italic') ? 'bg-primary text-primary-foreground' : ''}`}
+        aria-label="Italic"
+      >
+        Italic
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleStrike().run()}
+        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('strike') ? 'bg-primary text-primary-foreground' : ''}`}
+        aria-label="Strike"
+      >
+        Strike
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleCode().run()}
+        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('code') ? 'bg-primary text-primary-foreground' : ''}`}
+        aria-label="Code"
+      >
+        Code
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().unsetAllMarks().run()}
+        className="rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors"
+        aria-label="Clear marks"
+      >
+        Clear marks
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().clearNodes().run()}
+        className="rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors"
+        aria-label="Clear nodes"
+      >
+        Clear nodes
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().setParagraph().run()}
+        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('paragraph') ? 'bg-primary text-primary-foreground' : ''}`}
+        aria-label="Paragraph"
+      >
+        Paragraph
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('heading', { level: 1 }) ? 'bg-primary text-primary-foreground' : ''}`}
+        aria-label="H1"
+      >
+        H1
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('heading', { level: 2 }) ? 'bg-primary text-primary-foreground' : ''}`}
+        aria-label="H2"
+      >
+        H2
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('heading', { level: 3 }) ? 'bg-primary text-primary-foreground' : ''}`}
+        aria-label="H3"
+      >
+        H3
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
+        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('heading', { level: 4 }) ? 'bg-primary text-primary-foreground' : ''}`}
+        aria-label="H4"
+      >
+        H4
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()}
+        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('heading', { level: 5 }) ? 'bg-primary text-primary-foreground' : ''}`}
+        aria-label="H5"
+      >
+        H5
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 6 }).run()}
+        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('heading', { level: 6 }) ? 'bg-primary text-primary-foreground' : ''}`}
+        aria-label="H6"
+      >
+        H6
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('bulletList') ? 'bg-primary text-primary-foreground' : ''}`}
+        aria-label="Bullet list"
+      >
+        Bullet list
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('orderedList') ? 'bg-primary text-primary-foreground' : ''}`}
+        aria-label="Ordered list"
+      >
+        Ordered list
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('codeBlock') ? 'bg-primary text-primary-foreground' : ''}`}
+        aria-label="Code block"
+      >
+        Code block
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('blockquote') ? 'bg-primary text-primary-foreground' : ''}`}
+        aria-label="Blockquote"
+      >
+        Blockquote
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().setHorizontalRule().run()}
+        className="rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors"
+        aria-label="Horizontal rule"
+      >
+        Horizontal rule
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().setHardBreak().run()}
+        className="rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors"
+        aria-label="Hard break"
+      >
+        Hard break
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().undo().run()}
+        className="rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors"
+        aria-label="Undo"
+      >
+        Undo
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().redo().run()}
+        className="rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors"
+        aria-label="Redo"
+      >
+        Redo
+      </button>
+    </div>
+  )
 }
 
 export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
@@ -155,8 +535,14 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
             <label className="text-sm font-medium">Description</label>
             {isEditingDescription ? (
               <div className="space-y-2">
-                <div className="min-h-[200px] rounded-md border p-2">
-                  <EditorContent editor={editor} className="prose prose-sm max-w-none dark:prose-invert" />
+                <div className="bg-background rounded-md">
+                  <MenuBar editor={editor} />
+                  <div className="min-h-[200px] p-4">
+                    <EditorContent 
+                      editor={editor} 
+                      className="prose prose-sm max-w-none dark:prose-invert focus:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:border-none bg-background" 
+                    />
+                  </div>
                 </div>
                 <div className="flex justify-end space-x-2">
                   <Button
@@ -176,8 +562,11 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
               </div>
             ) : (
               <div
-                className="cursor-pointer rounded-md border border-transparent p-2 hover:border-border"
+                className="cursor-pointer rounded-md border border-transparent p-2 hover:border-border transition-opacity duration-200 hover:opacity-70 focus-within:opacity-70"
                 onClick={() => setIsEditingDescription(true)}
+                tabIndex={0}
+                aria-label="Edit description"
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setIsEditingDescription(true) }}
               >
                 {card.description ? (
                   <div
