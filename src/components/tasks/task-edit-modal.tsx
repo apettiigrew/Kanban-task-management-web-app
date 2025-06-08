@@ -18,6 +18,7 @@ import StarterKit from '@tiptap/starter-kit'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import DOMPurify from 'dompurify'
 
 interface TaskEditModalProps {
   card: TCard
@@ -385,7 +386,7 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
                 {card.description ? (
                   <div
                     className="prose prose-sm max-w-none dark:prose-invert"
-                    dangerouslySetInnerHTML={{ __html: card.description }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(card.description) }}
                   />
                 ) : (
                   <p className="text-muted-foreground">Add a description...</p>
