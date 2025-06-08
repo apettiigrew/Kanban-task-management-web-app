@@ -1,12 +1,12 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { updateTaskSchema } from '@/lib/validations/task'
-import { 
-  handleAPIError, 
-  createSuccessResponse, 
+import {
+  handleAPIError,
+  createSuccessResponse,
   validateRequestBody,
   checkRateLimit,
-  NotFoundError 
+  NotFoundError
 } from '@/lib/api-error-handler'
 
 // GET /api/tasks/[id] - Get a specific task
@@ -15,10 +15,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Basic rate limiting
-    if (!checkRateLimit(`task-get-${params.id}`, 100)) {
-      throw new Error('Rate limit exceeded')
-    }
+
 
     const { searchParams } = new URL(request.url)
     const includeRelations = searchParams.get('includeRelations') === 'true'
@@ -57,13 +54,8 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Basic rate limiting
-    if (!checkRateLimit(`task-put-${params.id}`, 20)) {
-      throw new Error('Rate limit exceeded')
-    }
-
     const body = await request.json()
-    
+
     // Validate the request body using centralized validation
     const validatedData = validateRequestBody(updateTaskSchema, body)
 
@@ -79,7 +71,7 @@ export async function PUT(
     // If columnId is being updated, verify the new column exists and belongs to the same project
     if (validatedData.columnId && validatedData.columnId !== existingTask.columnId) {
       const newColumn = await prisma.column.findUnique({
-        where: { 
+        where: {
           id: validatedData.columnId,
           projectId: existingTask.projectId,
         },
@@ -121,12 +113,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Basic rate limiting
-    if (!checkRateLimit(`task-delete-${params.id}`, 10)) {
-      throw new Error('Rate limit exceeded')
-    }
 
-    // Check if task exists
     const existingTask = await prisma.card.findUnique({
       where: { id: params.id },
     })

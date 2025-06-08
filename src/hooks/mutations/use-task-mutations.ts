@@ -1,12 +1,11 @@
 'use client'
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiRequest, FormError } from '@/lib/form-error-handler'
-import { taskKeys } from '../queries/use-tasks'
-import { columnKeys } from '../queries/use-columns'
-import { projectKeys } from '../queries/use-projects'
-import { Task, CreateTask, UpdateTask, MoveTask, ReorderTasks, BulkUpdateTasks } from '@/lib/validations/task'
+import { BulkUpdateTasks, CreateTask, MoveTask, ReorderTasks, Task, UpdateTaskTitle } from '@/lib/validations/task'
 import { ProjectWithColumnsAndTasks } from '@/utils/data'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { projectKeys } from '../queries/use-projects'
+import { taskKeys } from '../queries/use-tasks'
 
 // API client functions for mutations
 const createTask = async (data: CreateTask): Promise<Task> => {
@@ -16,8 +15,8 @@ const createTask = async (data: CreateTask): Promise<Task> => {
     })
 }
 
-const updateTask = async ({ id, data }: { id: string; data: UpdateTask }): Promise<Task> => {
-    return apiRequest<Task>(`/api/tasks/${id}`, {
+const updateTaskTitle = async (data: UpdateTaskTitle): Promise<Task> => {
+    return apiRequest<Task>(`/api/tasks/${data.id}`, {
         method: 'PUT',
         body: JSON.stringify(data),
     })
@@ -57,7 +56,7 @@ interface UseCreateTaskOptions {
     onFieldErrors?: (errors: Record<string, string>) => void
 }
 
-interface UseUpdateTaskOptions {
+interface UseUpdateTaskTitleOptions {
     onSuccess?: (data: Task) => void
     onError?: (error: FormError) => void
     onFieldErrors?: (errors: Record<string, string>) => void
@@ -94,7 +93,7 @@ export const useCreateTask = (options: UseCreateTaskOptions = {}) => {
             // get snapshot of preivous state
             const previousProject = queryClient.getQueryData(projectKeys.detail(newTask.projectId))
 
-            const optimisticTask: CreateTask & {id: string, createdAt: Date, updatedAt: Date} = {
+            const optimisticTask: CreateTask & { id: string, createdAt: Date, updatedAt: Date } = {
                 id: "temp",
                 title: newTask.title,
                 description: newTask.description || "",
@@ -150,6 +149,27 @@ export const useCreateTask = (options: UseCreateTaskOptions = {}) => {
             // Invalidate related queries to ensure consistency
             queryClient.invalidateQueries({ queryKey: projectKeys.detail(variables.projectId) })
 
+            if (options.onSuccess) {
+                options.onSuccess(data)
+            }
+        },
+    })
+}
+
+export const useUpdateTaskTitle = (options: UseUpdateTaskTitleOptions = {}) => {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationKey: ['updateTask'],
+        mutationFn: updateTaskTitle,
+        onError: (error: FormError, variables, context) => {
+            if (error.fieldErrors && options.onFieldErrors) {
+                options.onFieldErrors(error.fieldErrors)
+            } else if (options.onError) {
+                options.onError(error)
+            }
+        },
+        onSuccess: (data, variables) => {
             if (options.onSuccess) {
                 options.onSuccess(data)
             }

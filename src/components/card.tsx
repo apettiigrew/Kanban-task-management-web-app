@@ -20,6 +20,8 @@ import {
   isShallowEqual,
 } from '@/utils/data';
 import { cc, classIf } from '@/utils/style-utils';
+import { TaskEditModal } from './tasks/task-edit-modal';
+import { Task } from '@/lib/validations/task';
 
 interface CardProps {
   card: TCard;
@@ -38,14 +40,15 @@ const draggingState: CardState = { type: 'idle' };
 
 export function CardTask(props: CardProps) {
   const [cardState, setCardState] = useState<CardState>(draggingState);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { card, columnId } = props;
   const outerRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (cardState.type === 'dragging') return;
-    
+    if (cardState.type === 'is-dragging') return;
+    setIsModalOpen(true);
   };
 
   useEffect(() => {
@@ -97,6 +100,19 @@ export function CardTask(props: CardProps) {
     );
   }, [card, columnId]);
 
+  // Convert TCard to Task type
+  const task: Task = {
+    id: card.id.toString(),
+    title: card.title,
+    description: card.description || null,
+    order: 0, // This will be updated by the backend
+    labels: [],
+    projectId: '', // This will be updated by the backend
+    columnId,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
   return (
     <>
       {cardState.type === 'is-over' && cardState.closestEdge === 'top' && (
@@ -114,6 +130,12 @@ export function CardTask(props: CardProps) {
       {cardState.type === 'is-over' && cardState.closestEdge === 'bottom' && (
         <CardShadow dragging={cardState.dragging} />
       )}
+
+      <TaskEditModal
+        task={task}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </>
   );
 }
@@ -145,7 +167,7 @@ export function CardDisplay({ card, state, outerRef, innerRef, handleCardClick }
       ref={outerRef}
       className={cc(
         outerStyles[state.type],
-        classIf(state.type === 'dragging', 'opacity-50')
+        classIf(state.type === 'is-dragging', 'opacity-50')
       )}
     >
       <div
@@ -156,7 +178,7 @@ export function CardDisplay({ card, state, outerRef, innerRef, handleCardClick }
           'bg-white rounded-md p-4 text-gray-900 text-sm border border-gray-200 shadow-sm transition-transform duration-200 ease-in-out cursor-pointer relative',
           'hover:-translate-y-0.5 hover:shadow-lg active:cursor-grabbing',
           innerStyles[state.type],
-          classIf(state.type === 'dragging', 'opacity-50 shadow-none')
+          classIf(state.type === 'is-dragging', 'opacity-50 shadow-none')
         )}
       >
         {card.title}
