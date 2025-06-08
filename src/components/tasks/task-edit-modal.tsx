@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { useUpdateTask } from '@/hooks/mutations/use-task-mutations'
@@ -123,6 +124,7 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]">
+        <DialogTitle className="sr-only">Edit Task</DialogTitle>
         <div className="flex items-center justify-between">
           <div className="flex-1">
             {isEditingTitle ? (
