@@ -6,6 +6,9 @@ export type TCard = {
     id: string | number;
     title: string;
     description: string;
+    columnId: string;
+    order: number;
+    projectId: string;
 };
 
 export interface TProject {

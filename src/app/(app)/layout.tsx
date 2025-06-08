@@ -40,7 +40,7 @@ export default function AppLayout({
 
   const handleHelp = () => {
     // TODO: Implement help functionality
-    console.log("Help clicked")
+    
   }
 
   return (

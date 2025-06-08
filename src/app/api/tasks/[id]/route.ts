@@ -57,6 +57,7 @@ export async function PUT(
   
     const body = await request.json()
 
+    console.log('body', body)
     // Validate the request body using centralized validation
     const validatedData = validateRequestBody(updateTaskSchema, body)
 

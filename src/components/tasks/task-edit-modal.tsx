@@ -16,14 +16,17 @@ import StarterKit from '@tiptap/starter-kit'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { ProjectWithColumnsAndTasks, TCard } from '@/utils/data'
 
 interface TaskEditModalProps {
-  task: Task
+  card: TCard
   isOpen: boolean
   onClose: () => void
 }
 
-export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
+export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
+  const [title, setTitle] = useState(card.title)
+  const [description, setDescription] = useState(card.description)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [isEditingDescription, setIsEditingDescription] = useState(false)
   const queryClient = useQueryClient()
@@ -31,57 +34,66 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
   const form = useForm({
     resolver: zodResolver(updateTaskSchema),
     defaultValues: {
-      title: task.title,
-      description: task.description || '',
+      title: card.title,
+      description: card.description || '',
     },
   })
 
   const updateTaskMutation = useUpdateTask({
-    onSuccess: () => {
+    onSuccess: (updatedCard) => {
       setIsEditingTitle(false)
       setIsEditingDescription(false)
-    
-      // replace optimistic task with real data in all caches
+      setTitle(updatedCard.title)
     },
     onError: (error: FormError) => {
+      setTitle(card.title)
+      form.setValue('title', card.title)
       toast.error(error.message || 'Failed to update task')
     },
   })
 
   const editor = useEditor({
     extensions: [StarterKit],
-    content: task.description || '',
+    content: card.description || '',
     onUpdate: ({ editor }) => {
       form.setValue('description', editor.getHTML())
     },
   })
 
   const handleTitleBlur = async () => {
-    let title = form.getValues('title')
-    title = title?.trim()
+    let newTitle = form.getValues('title')
+    newTitle = newTitle?.trim()
 
-    if (title === task.title) {
+    if (newTitle === card.title) {
       setIsEditingTitle(false)
       return
     }
 
-    if (!title?.trim()) {
-      form.setValue('title', task.title)
+    if (!newTitle?.trim()) {
+      form.setValue('title', card.title)
+      setTitle(card.title)
       setIsEditingTitle(false)
       return
     }
 
+    setTitle(newTitle)
 
-    // add optimisitic updates of task here
-
+    console.log({
+      id: card.id,
+      title: newTitle,
+      description: card.description || null,
+      columnId: card.columnId,
+      order: card.order,
+      projectId: card.projectId,
+    })
 
     updateTaskMutation.mutate({
-      id: task.id,
-      title,
-      description: task.description || null,
-      columnId: task.columnId,
-      order: task.order,
-      projectId: task.projectId,
+      id: card.id as string,
+      title: newTitle,
+      description: card.description || null,
+      columnId: card.columnId,
+      order: card.order,
+      projectId: card.projectId,
     })
 
     setIsEditingTitle(false)
@@ -89,18 +101,22 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
 
   const handleDescriptionSave = async () => {
     const description = form.getValues('description')
-    if (description !== task.description) {
+    if (description !== card.description) {
       updateTaskMutation.mutate({
-        id: task.id,
-        data: { description },
+        id: card.id as string,
+        title: card.title,
+        description: description,
+        columnId: card.columnId,
+        order: card.order,
+        projectId: card.projectId,
       })
     }
     setIsEditingDescription(false)
   }
 
   const handleDescriptionCancel = () => {
-    form.setValue('description', task.description || '')
-    editor?.commands.setContent(task.description || '')
+    form.setValue('description', card.description || '')
+    editor?.commands.setContent(card.description || '')
     setIsEditingDescription(false)
   }
 
@@ -126,7 +142,7 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
                 className="cursor-pointer p-2"
                 onClick={() => setIsEditingTitle(true)}
               >
-                {task.title}
+                {title}
               </div>
             )}
           </div>
@@ -161,10 +177,10 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
                 className="cursor-pointer rounded-md border border-transparent p-2 hover:border-border"
                 onClick={() => setIsEditingDescription(true)}
               >
-                {task.description ? (
+                {card.description ? (
                   <div
                     className="prose prose-sm max-w-none dark:prose-invert"
-                    dangerouslySetInnerHTML={{ __html: task.description }}
+                    dangerouslySetInnerHTML={{ __html: card.description }}
                   />
                 ) : (
                   <p className="text-muted-foreground">Add a description...</p>

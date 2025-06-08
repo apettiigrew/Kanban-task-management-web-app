@@ -103,8 +103,6 @@ export const useCreateTask = (options: UseCreateTaskOptions = {}) => {
                 updatedAt: new Date(),
             }
 
-            console.log('optimisticTask', optimisticTask)
-
             // Optimistically add the new task to various query caches
             queryClient.setQueryData(projectKeys.detail(newTask.projectId), (oldData: ProjectWithColumnsAndTasks) => {
                 const column = oldData.columns.find(column => column.id === newTask.columnId)
@@ -156,10 +154,39 @@ export const useCreateTask = (options: UseCreateTaskOptions = {}) => {
 }
 
 export const useUpdateTask = (options: UseUpdateTaskOptions = {}) => {
+    const queryClient = useQueryClient()
+    
     return useMutation({
         mutationKey: ['updateTask'],
         mutationFn: updateTask,
+        onMutate: async (updatedTask) => {
+            // Get snapshot of previous state
+            const previousProject = queryClient.getQueryData(projectKeys.detail(updatedTask.projectId))
+
+            // Optimistically update the task
+            queryClient.setQueryData(projectKeys.detail(updatedTask.projectId), (oldData: ProjectWithColumnsAndTasks) => {
+                const column = oldData.columns.find(column => column.id === updatedTask.columnId)
+                if (column) {
+                    const newCards = column.cards.map(card => 
+                        card.id === updatedTask.id ? { ...card, ...updatedTask } : card
+                    )
+                    const newColumn = { ...column, cards: newCards }
+                    const newColumns = oldData.columns.map(column => 
+                        column.id === updatedTask.columnId ? newColumn : column
+                    )
+                    return { ...oldData, columns: newColumns }
+                }
+                return oldData
+            })
+
+            return { previousProject }
+        },
         onError: (error: FormError, variables, context) => {
+            // Revert to previous state on error
+            if (context?.previousProject) {
+                queryClient.setQueryData(projectKeys.detail(variables.projectId), context.previousProject)
+            }
+
             if (error.fieldErrors && options.onFieldErrors) {
                 options.onFieldErrors(error.fieldErrors)
             } else if (options.onError) {
@@ -167,6 +194,22 @@ export const useUpdateTask = (options: UseUpdateTaskOptions = {}) => {
             }
         },
         onSuccess: (data, variables) => {
+            // Replace optimistic update with real data
+            queryClient.setQueryData(projectKeys.detail(variables.projectId), (oldData: ProjectWithColumnsAndTasks) => {
+                const column = oldData.columns.find(column => column.id === variables.columnId)
+                if (column) {
+                    const newCards = column.cards.map(card => 
+                        card.id === variables.id ? data : card
+                    )
+                    const newColumn = { ...column, cards: newCards }
+                    const newColumns = oldData.columns.map(column => 
+                        column.id === variables.columnId ? newColumn : column
+                    )
+                    return { ...oldData, columns: newColumns }
+                }
+                return oldData
+            })
+
             if (options.onSuccess) {
                 options.onSuccess(data)
             }

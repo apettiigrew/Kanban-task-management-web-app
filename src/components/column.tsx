@@ -72,7 +72,7 @@ export function Column({ title, column }: ColumnProps) {
     const titleInputRef = useRef<HTMLInputElement>(null);
     const newCardInputRef = useRef<HTMLInputElement>(null);
     const scrollableRef = useRef<HTMLDivElement | null>(null);
-    const tasksToRender = column.cards && column.cards.length > 0 ? column.cards : column.cards.map(card => card);
+    
     const [state, setState] = useState<TColumnState>(idle);
     const { settings } = useContext(SettingsContext);
 
@@ -359,7 +359,7 @@ export function Column({ title, column }: ColumnProps) {
             </div>
 
             <div className="flex flex-col gap-3 overflow-y-auto flex-grow max-h-screen min-h-0" ref={scrollableRef}>
-                <DisplayCard columnId={column.id} cards={tasksToRender} state={state} />
+                <DisplayCard columnId={column.id} cards={column.cards} state={state} />
             </div>
             <div>
                 {isAddingCard ? (

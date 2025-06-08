@@ -86,8 +86,7 @@ export const useCreateColumn = (options: UseCreateColumnOptions = {}) => {
     onMutate: async (newColumn) => {
      
       const previousProject = queryClient.getQueryData(projectKeys.detail(newColumn.projectId))
-      console.log("Previous project", previousProject)
-     
+    
       const optimisticColumn: TColumn = {
         id: `temp-${Date.now()}`,
         title: newColumn.title,

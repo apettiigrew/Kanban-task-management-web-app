@@ -132,7 +132,7 @@ export function CardTask(props: CardProps) {
       )}
 
       <TaskEditModal
-        task={task}
+        card={card}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
