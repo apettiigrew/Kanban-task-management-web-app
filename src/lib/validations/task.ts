@@ -23,20 +23,16 @@ export const createTaskSchema = z.object({
   order: z.number().int().min(0, 'Order must be a non-negative integer').optional(),
 })
 
-export const updateTaskTitleSchema = z.object({
-  id: z.string().cuid(),
-  title: z.string().min(1, 'Task title is required').max(200, 'Task title must be less than 200 characters'),
-  columnId: z.string().cuid(),
-  order: z.number().int().min(0, 'Order must be a non-negative integer'),
-  projectId: z.string().cuid(),
-})
+
 
 // Schema for updating a task
 export const updateTaskSchema = z.object({
+  id: z.string().cuid(),
   title: z.string().min(1, 'Task title is required').max(200, 'Task title must be less than 200 characters').optional(),
   description: z.string().max(1000, 'Description must be less than 1000 characters').optional().nullable(),
-  columnId: z.string().cuid().optional(),
-  order: z.number().int().min(0, 'Order must be a non-negative integer').optional(),
+  columnId: z.string().cuid(),
+  order: z.number().int().min(0, 'Order must be a non-negative integer'),
+  projectId: z.string().cuid(),
 })
 
 // Schema for moving a task (drag and drop)
@@ -80,7 +76,7 @@ export const taskWithRelationsSchema = taskSchema.extend({
 // Type exports 
 export type Task = z.infer<typeof taskSchema>
 export type CreateTask = z.infer<typeof createTaskSchema>
-export type UpdateTaskTitle = z.infer<typeof updateTaskTitleSchema>
+export type UpdateTask = z.infer<typeof updateTaskSchema>
 export type MoveTask = z.infer<typeof moveTaskSchema>
 export type ReorderTasks = z.infer<typeof reorderTasksSchema>
 export type BulkUpdateTasks = z.infer<typeof bulkUpdateTasksSchema>

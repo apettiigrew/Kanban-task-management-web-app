@@ -1,11 +1,10 @@
 'use client'
 
 import { apiRequest, FormError } from '@/lib/form-error-handler'
-import { BulkUpdateTasks, CreateTask, MoveTask, ReorderTasks, Task, UpdateTaskTitle } from '@/lib/validations/task'
+import { BulkUpdateTasks, CreateTask, MoveTask, ReorderTasks, Task, UpdateTask } from '@/lib/validations/task'
 import { ProjectWithColumnsAndTasks } from '@/utils/data'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { projectKeys } from '../queries/use-projects'
-import { taskKeys } from '../queries/use-tasks'
 
 // API client functions for mutations
 const createTask = async (data: CreateTask): Promise<Task> => {
@@ -15,7 +14,7 @@ const createTask = async (data: CreateTask): Promise<Task> => {
     })
 }
 
-const updateTaskTitle = async (data: UpdateTaskTitle): Promise<Task> => {
+const updateTask = async (data: UpdateTask): Promise<Task> => {
     return apiRequest<Task>(`/api/tasks/${data.id}`, {
         method: 'PUT',
         body: JSON.stringify(data),
@@ -56,7 +55,7 @@ interface UseCreateTaskOptions {
     onFieldErrors?: (errors: Record<string, string>) => void
 }
 
-interface UseUpdateTaskTitleOptions {
+interface UseUpdateTaskOptions {
     onSuccess?: (data: Task) => void
     onError?: (error: FormError) => void
     onFieldErrors?: (errors: Record<string, string>) => void
@@ -156,12 +155,10 @@ export const useCreateTask = (options: UseCreateTaskOptions = {}) => {
     })
 }
 
-export const useUpdateTaskTitle = (options: UseUpdateTaskTitleOptions = {}) => {
-    const queryClient = useQueryClient()
-
+export const useUpdateTask = (options: UseUpdateTaskOptions = {}) => {
     return useMutation({
         mutationKey: ['updateTask'],
-        mutationFn: updateTaskTitle,
+        mutationFn: updateTask,
         onError: (error: FormError, variables, context) => {
             if (error.fieldErrors && options.onFieldErrors) {
                 options.onFieldErrors(error.fieldErrors)

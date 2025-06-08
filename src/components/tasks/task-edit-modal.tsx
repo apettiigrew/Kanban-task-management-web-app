@@ -6,7 +6,7 @@ import {
   DialogContent,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { useUpdateTaskTitle } from '@/hooks/mutations/use-task-mutations'
+import { useUpdateTask } from '@/hooks/mutations/use-task-mutations'
 import { FormError } from '@/lib/form-error-handler'
 import { Task, updateTaskSchema } from '@/lib/validations/task'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -36,7 +36,7 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
     },
   })
 
-  const updateTaskTitleMutation = useUpdateTaskTitle({
+  const updateTaskMutation = useUpdateTask({
     onSuccess: () => {
       setIsEditingTitle(false)
       setIsEditingDescription(false)
@@ -75,9 +75,10 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
     // add optimisitic updates of task here
 
 
-    updateTaskTitleMutation.mutate({
+    updateTaskMutation.mutate({
       id: task.id,
       title,
+      description: task.description || null,
       columnId: task.columnId,
       order: task.order,
       projectId: task.projectId,

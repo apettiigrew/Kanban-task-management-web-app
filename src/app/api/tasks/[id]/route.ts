@@ -54,6 +54,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+  
     const body = await request.json()
 
     // Validate the request body using centralized validation
@@ -68,20 +69,7 @@ export async function PUT(
       throw new NotFoundError('Task')
     }
 
-    // If columnId is being updated, verify the new column exists and belongs to the same project
-    if (validatedData.columnId && validatedData.columnId !== existingTask.columnId) {
-      const newColumn = await prisma.column.findUnique({
-        where: {
-          id: validatedData.columnId,
-          projectId: existingTask.projectId,
-        },
-      })
-
-      if (!newColumn) {
-        throw new NotFoundError('Column or column does not belong to the same project')
-      }
-    }
-
+  
     const task = await prisma.card.update({
       where: { id: params.id },
       data: validatedData,
