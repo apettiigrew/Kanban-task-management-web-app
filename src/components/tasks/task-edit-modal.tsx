@@ -385,7 +385,7 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
               >
                 {card.description ? (
                   <div
-                    className="prose prose-sm max-w-none dark:prose-invert"
+                    className="prose prose-sm max-w-none ProseMirror"
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(card.description) }}
                   />
                 ) : (
