@@ -9,7 +9,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { useUpdateTask } from '@/hooks/mutations/use-task-mutations'
 import { FormError } from '@/lib/form-error-handler'
-import { Task, updateTaskSchema } from '@/lib/validations/task'
+import { updateTaskSchema } from '@/lib/validations/task'
+import { TCard } from '@/utils/data'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { EditorContent, useEditor } from '@tiptap/react'
@@ -17,28 +18,6 @@ import StarterKit from '@tiptap/starter-kit'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { ProjectWithColumnsAndTasks, TCard } from '@/utils/data'
-import { 
-  Bold, 
-  Italic, 
-  Strikethrough, 
-  Code, 
-  Eraser,
-  Type,
-  Heading1,
-  Heading2,
-  Heading3,
-  Heading4,
-  Heading5,
-  Heading6,
-  List,
-  ListOrdered,
-  Terminal,
-  Quote,
-  Minus,
-  RotateCcw,
-  RotateCw
-} from 'lucide-react'
 
 interface TaskEditModalProps {
   card: TCard
@@ -53,7 +32,7 @@ interface EditorToolbarProps {
 
 
 // MenuBar for Tiptap formatting
-const MenuBar = ({ editor }: { editor: any }) => {
+const MenuBar = ({ editor }: EditorToolbarProps) => {
   if (!editor) return null
   return (
     <div className="flex flex-wrap gap-2 p-2 pb-0">
@@ -258,8 +237,19 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
   })
 
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3, 4, 5, 6],
+        },
+      }),
+    ],
     content: card.description || '',
+    editorProps: {
+      attributes: {
+        spellcheck: 'false',
+      },
+    },
     onUpdate: ({ editor }) => {
       form.setValue('description', editor.getHTML())
     },
