@@ -1,7 +1,7 @@
 'use client'
 
 import { apiRequest, FormError } from '@/lib/form-error-handler'
-import { BulkUpdateTasks, CreateTask, MoveTask, ReorderTasks, Task, UpdateTask } from '@/lib/validations/task'
+import { BulkUpdateTasks, CreateTask, DeleteTask, MoveTask, ReorderTasks, Task, UpdateTask } from '@/lib/validations/task'
 import { ProjectWithColumnsAndTasks } from '@/utils/data'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { projectKeys } from '../queries/use-projects'
@@ -21,8 +21,8 @@ const updateTask = async (data: UpdateTask): Promise<Task> => {
     })
 }
 
-const deleteTask = async (id: string): Promise<void> => {
-    return apiRequest<void>(`/api/tasks/${id}`, {
+const deleteTask = async (data: DeleteTask): Promise<void> => {
+    return apiRequest<void>(`/api/tasks/${data.id}`, {
         method: 'DELETE',
     })
 }
@@ -212,6 +212,56 @@ export const useUpdateTask = (options: UseUpdateTaskOptions = {}) => {
 
             if (options.onSuccess) {
                 options.onSuccess(data)
+            }
+        },
+    })
+}
+
+export const useDeleteTask = (options: UseDeleteTaskOptions = {}) => {
+    const queryClient = useQueryClient()
+    
+    return useMutation({
+        mutationKey: ['deleteTask'],
+        mutationFn: deleteTask,
+        onMutate: async ({id, projectId, columnId}) => {
+            // Get snapshot of previous state
+            const previousProject = queryClient.getQueryData(projectKeys.detail(projectId))
+
+            // Optimistically remove the task
+            queryClient.setQueryData(projectKeys.detail(projectId), (oldData: ProjectWithColumnsAndTasks) => {
+                const column = oldData.columns.find(column => column.id === columnId)
+                if (column) {
+                    const newCards = column.cards.filter(card => card.id !== id)
+                    const newColumn = { ...column, cards: newCards }
+                  
+                    const newColumns = oldData.columns.map(column => 
+                        column.id === columnId ? newColumn : column
+                    )
+                    return { ...oldData, columns: newColumns }
+                }
+                return oldData
+            })
+
+            return { previousProject, projectId }
+        },
+        onError: (error: FormError, taskId, context) => {
+            // Revert to previous state on error
+            if (context?.previousProject && context?.projectId) {
+                queryClient.setQueryData(projectKeys.detail(context.projectId), context.previousProject)
+            }
+
+            if (options.onError) {
+                options.onError(error)
+            }
+        },
+        onSuccess: (data, taskId, context) => {
+            // Invalidate related queries to ensure consistency
+            if (context?.projectId) {
+                queryClient.invalidateQueries({ queryKey: projectKeys.detail(context.projectId) })
+            }
+
+            if (options.onSuccess) {
+                options.onSuccess()
             }
         },
     })

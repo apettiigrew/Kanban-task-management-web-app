@@ -10,6 +10,7 @@ import {
   type Edge,
 } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
 import React, { MutableRefObject, useEffect, useRef, useState } from 'react';
+import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 
 import {
   TCard,
@@ -21,7 +22,16 @@ import {
 } from '@/utils/data';
 import { cc, classIf } from '@/utils/style-utils';
 import { TaskEditModal } from './tasks/task-edit-modal';
+import { TaskDeleteDialog } from './tasks/task-delete-dialog';
 import { Task } from '@/lib/validations/task';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
 interface CardProps {
   card: TCard;
@@ -41,6 +51,7 @@ const draggingState: CardState = { type: 'idle' };
 export function CardTask(props: CardProps) {
   const [cardState, setCardState] = useState<CardState>(draggingState);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { card, columnId } = props;
   const outerRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
@@ -125,6 +136,7 @@ export function CardTask(props: CardProps) {
         outerRef={outerRef}
         innerRef={innerRef}
         handleCardClick={handleCardClick}
+        handleDeleteClick={() => setIsDeleteDialogOpen(true)}
       />
 
       {cardState.type === 'is-over' && cardState.closestEdge === 'bottom' && (
@@ -135,6 +147,12 @@ export function CardTask(props: CardProps) {
         card={card}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+
+      <TaskDeleteDialog
+        card={card}
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
       />
     </>
   );
@@ -159,9 +177,10 @@ interface CardDisplayProps {
   outerRef?: MutableRefObject<HTMLDivElement | null>;
   innerRef?: MutableRefObject<HTMLDivElement | null>;
   handleCardClick: (e: React.MouseEvent) => void;
+  handleDeleteClick: () => void;
 }
 
-export function CardDisplay({ card, state, outerRef, innerRef, handleCardClick }: CardDisplayProps) {
+export function CardDisplay({ card, state, outerRef, innerRef, handleCardClick, handleDeleteClick }: CardDisplayProps) {
   return (
     <div
       ref={outerRef}
@@ -173,15 +192,52 @@ export function CardDisplay({ card, state, outerRef, innerRef, handleCardClick }
       <div
         data-test-id={card.id}
         ref={innerRef}
-        onClick={handleCardClick}
         className={cc(
-          'bg-white rounded-md p-4 text-gray-900 text-sm border border-gray-200 shadow-sm transition-transform duration-200 ease-in-out cursor-pointer relative',
+          'bg-white rounded-md p-4 text-gray-900 text-sm border border-gray-200 shadow-sm transition-transform duration-200 ease-in-out cursor-pointer relative group',
           'hover:-translate-y-0.5 hover:shadow-lg active:cursor-grabbing',
           innerStyles[state.type],
           classIf(state.type === 'is-dragging', 'opacity-50 shadow-none')
         )}
       >
-        {card.title}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0" onClick={handleCardClick}>
+            {card.title}
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => e.stopPropagation()}
+                aria-label="Card actions"
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCardClick(e);
+                }}
+              >
+                Edit card
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteClick();
+                }}
+                className="text-red-600 focus:text-red-600 focus:bg-red-50"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete card
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </div>
   );

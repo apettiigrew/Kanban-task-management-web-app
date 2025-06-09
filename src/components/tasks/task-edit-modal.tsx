@@ -19,6 +19,8 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import DOMPurify from 'dompurify'
+import { Trash2 } from 'lucide-react'
+import { TaskDeleteDialog } from './task-delete-dialog'
 
 interface TaskEditModalProps {
   card: TCard
@@ -214,6 +216,7 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
   const [description, setDescription] = useState(card.description)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [isEditingDescription, setIsEditingDescription] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const queryClient = useQueryClient()
 
   const form = useForm({
@@ -343,6 +346,15 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
               </div>
             )}
           </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsDeleteDialogOpen(true)}
+            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            aria-label="Delete card"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
         <div className="space-y-4 py-4">
           {/* Description Section */}
@@ -396,6 +408,13 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
           </div>
         </div>
       </DialogContent>
+      
+      <TaskDeleteDialog
+        card={card}
+        isOpen={isDeleteDialogOpen}
+        onClose={() => setIsDeleteDialogOpen(false)}
+        onDeleted={onClose}
+      />
     </Dialog>
   )
 } 

@@ -35,6 +35,12 @@ export const updateTaskSchema = z.object({
   projectId: z.string().cuid(),
 })
 
+export const deleteTaskSchema = z.object({
+  id: z.string().cuid(),
+  projectId: z.string().cuid(),
+  columnId: z.string().cuid(),
+})
+
 // Schema for moving a task (drag and drop)
 export const moveTaskSchema = z.object({
   taskId: z.string().cuid(),
@@ -77,6 +83,7 @@ export const taskWithRelationsSchema = taskSchema.extend({
 export type Task = z.infer<typeof taskSchema>
 export type CreateTask = z.infer<typeof createTaskSchema>
 export type UpdateTask = z.infer<typeof updateTaskSchema>
+export type DeleteTask = z.infer<typeof deleteTaskSchema>
 export type MoveTask = z.infer<typeof moveTaskSchema>
 export type ReorderTasks = z.infer<typeof reorderTasksSchema>
 export type BulkUpdateTasks = z.infer<typeof bulkUpdateTasksSchema>
