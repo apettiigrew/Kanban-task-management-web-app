@@ -48,6 +48,11 @@ export const moveTaskSchema = z.object({
   destinationColumnId: z.string().cuid(),
   destinationOrder: z.number().int().min(0, 'Order must be a non-negative integer'),
   projectId: z.string().cuid(),
+  columns: z.array(z.object({
+    id: z.string().cuid(),
+    title: z.string(),
+    cards: createTaskSchema.array(),
+  })).min(1, 'At least one column must be provided'),
 })
 
 // Schema for reordering tasks within a column

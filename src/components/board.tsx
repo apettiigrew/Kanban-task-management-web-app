@@ -211,13 +211,15 @@ export function Board({ project }: BoardProps) {
                             cards: destinationCards,
                         };
                         
+                        console.log("move api is called")
                         // Move the task between columns
                         moveTaskMutation.mutate({
                             taskId: String(dragging.card.id),
                             sourceColumnId: home.id,
                             destinationColumnId: destination.id,
                             destinationOrder: finalIndex,
-                            projectId: project.id
+                            projectId: project.id,
+                            columns
                         });
                         return;
                     }
@@ -260,7 +262,8 @@ export function Board({ project }: BoardProps) {
                             reorderTasksMutation.mutate({
                                 columnId: home.id,
                                 projectId: project.id,
-                                taskOrders
+                                taskOrders,
+                                columns
                             });
                             return;
                         }
@@ -292,7 +295,8 @@ export function Board({ project }: BoardProps) {
                             sourceColumnId: home.id,
                             destinationColumnId: destination.id,
                             destinationOrder: destination.cards.length,
-                            projectId: project.id
+                            projectId: project.id,
+                            columns
                         });
                         
                         return;

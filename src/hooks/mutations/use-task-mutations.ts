@@ -281,39 +281,7 @@ export const useMoveTask = (options: UseMoveTaskOptions = {}) => {
 
             // Optimistically move the task
             queryClient.setQueryData(projectKeys.detail(moveData.projectId), (oldData: ProjectWithColumnsAndTasks) => {
-                const sourceColumn = oldData.columns.find(column => column.id === moveData.sourceColumnId)
-                const destinationColumn = oldData.columns.find(column => column.id === moveData.destinationColumnId)
-                
-                if (!sourceColumn || !destinationColumn) return oldData
-
-                const taskToMove = sourceColumn.cards.find(card => card.id === moveData.taskId)
-                if (!taskToMove) return oldData
-
-                // Remove from source column
-                const sourceCards = sourceColumn.cards.filter(card => card.id !== moveData.taskId)
-                
-                // Add to destination column at the specified order
-                const destinationCards = [...destinationColumn.cards]
-                const updatedTask = { ...taskToMove, columnId: moveData.destinationColumnId, order: moveData.destinationOrder }
-                destinationCards.splice(moveData.destinationOrder, 0, updatedTask)
-                
-                // Update order for other cards in destination column
-                const finalDestinationCards = destinationCards.map((card, index) => ({
-                    ...card,
-                    order: index
-                }))
-
-                const newColumns = oldData.columns.map(column => {
-                    if (column.id === moveData.sourceColumnId) {
-                        return { ...column, cards: sourceCards }
-                    }
-                    if (column.id === moveData.destinationColumnId) {
-                        return { ...column, cards: finalDestinationCards }
-                    }
-                    return column
-                })
-
-                return { ...oldData, columns: newColumns }
+                return { ...oldData, columns: moveData.columns }
             })
 
             return { previousProject, projectId: moveData.projectId }
