@@ -62,6 +62,8 @@ export function Board({ project }: BoardProps) {
         },
         onError: (error: FormError) => {
             toast.error(error.message || 'Failed to move task');
+            // Revert to previous state on error
+            setProjectState(project);
         }
     });
 
@@ -71,8 +73,15 @@ export function Board({ project }: BoardProps) {
         },
         onError: (error: FormError) => {
             toast.error(error.message || 'Failed to reorder tasks');
+            // Revert to previous state on error
+            setProjectState(project);
         }
     });
+
+    // Update local state when project prop changes
+    useEffect(() => {
+        setProjectState(project);
+    }, [project]);
 
     const handleAddList = () => {
         const trimmedTitle = newListTitle.trim();
@@ -82,10 +91,10 @@ export function Board({ project }: BoardProps) {
             return;
         }
 
-        const maxOrder = project.columns.length > 0 ? project.columns.length - 1 : 0;
+        const maxOrder = projectState.columns.length > 0 ? projectState.columns.length - 1 : 0;
         createColumnMutation.mutate({
             title: trimmedTitle,
-            projectId: project.id,
+            projectId: projectState.id,
             order: maxOrder + 1
         });
     };
@@ -99,7 +108,6 @@ export function Board({ project }: BoardProps) {
             monitorForElements({
                 canMonitor: isDraggingACard,
                 onDrop({ source, location }) {
-                    
                     const dragging = source.data;
                     if (!isCardData(dragging)) {
                         return;
@@ -111,10 +119,10 @@ export function Board({ project }: BoardProps) {
                         return;
                     }
                     const dropTargetData = innerMost.data;
-                    const homeColumnIndex = project.columns.findIndex(
+                    const homeColumnIndex = projectState.columns.findIndex(
                         (column) => column.id === dragging.columnId,
                     );
-                    const home: TColumn | undefined = project.columns[homeColumnIndex];
+                    const home: TColumn | undefined = projectState.columns[homeColumnIndex];
 
                     if (!home) {
                         return;
@@ -123,24 +131,21 @@ export function Board({ project }: BoardProps) {
 
                     // dropping on a card
                     if (isCardDropTargetData(dropTargetData)) {
-                        
-                        const destinationColumnIndex = project.columns.findIndex(
+                        const destinationColumnIndex = projectState.columns.findIndex(
                             (column) => column.id === dropTargetData.columnId,
                         );
-                        const destination = project.columns[destinationColumnIndex];
+                        const destination = projectState.columns[destinationColumnIndex];
+                        
                         // reordering in home column
                         if (home === destination) {
-                            
                             const cardFinishIndex = home.cards.findIndex(
                                 (card: TCard) => card.id === dropTargetData.card.id,
                             );
 
-                            // could not find cards needed
                             if (cardIndexInHome === -1 || cardFinishIndex === -1) {
                                 return;
                             }
 
-                            // no change needed
                             if (cardIndexInHome === cardFinishIndex) {
                                 return;
                             }
@@ -155,13 +160,18 @@ export function Board({ project }: BoardProps) {
                                 closestEdgeOfTarget: closestEdge,
                             });
 
-                            
                             const updated: TColumn = {
                                 ...home,
                                 cards: reordered,
                             };
-                            const columns = Array.from(project.columns);
+                            const columns = Array.from(projectState.columns);
                             columns[homeColumnIndex] = updated;
+                            
+                            // Optimistically update UI
+                            setProjectState(prev => ({
+                                ...prev,
+                                columns
+                            }));
                             
                             // Update the order in the database
                             const taskOrders = reordered.map((card, index) => ({
@@ -171,7 +181,7 @@ export function Board({ project }: BoardProps) {
                             
                             reorderTasksMutation.mutate({
                                 columnId: home.id,
-                                projectId: project.id,
+                                projectId: projectState.id,
                                 taskOrders,
                                 columns
                             });
@@ -179,8 +189,6 @@ export function Board({ project }: BoardProps) {
                         }
 
                         // moving card from one column to another
-
-                        // unable to find destination
                         if (!destination) {
                             return;
                         }
@@ -200,7 +208,7 @@ export function Board({ project }: BoardProps) {
                         const destinationCards = Array.from(destination.cards);
                         destinationCards.splice(finalIndex, 0, dragging.card);
 
-                        const columns = Array.from(project.columns);
+                        const columns = Array.from(projectState.columns);
                         columns[homeColumnIndex] = {
                             ...home,
                             cards: homeCards,
@@ -210,6 +218,11 @@ export function Board({ project }: BoardProps) {
                             cards: destinationCards,
                         };
                         
+                        // Optimistically update UI
+                        setProjectState(prev => ({
+                            ...prev,
+                            columns
+                        }));
                         
                         // Move the task between columns
                         moveTaskMutation.mutate({
@@ -217,7 +230,7 @@ export function Board({ project }: BoardProps) {
                             sourceColumnId: home.id,
                             destinationColumnId: destination.id,
                             destinationOrder: finalIndex,
-                            projectId: project.id,
+                            projectId: projectState.id,
                             columns
                         });
                         return;
@@ -225,10 +238,10 @@ export function Board({ project }: BoardProps) {
 
                     // dropping onto a column, but not onto a card
                     if (isColumnData(dropTargetData)) {
-                        const destinationColumnIndex = project.columns.findIndex(
+                        const destinationColumnIndex = projectState.columns.findIndex(
                             (column) => column.id === dropTargetData.column.id,
                         );
-                        const destination = project.columns[destinationColumnIndex];
+                        const destination = projectState.columns[destinationColumnIndex];
 
                         if (!destination) {
                             return;
@@ -236,9 +249,6 @@ export function Board({ project }: BoardProps) {
 
                         // dropping on home
                         if (home === destination) {
-                            
-
-                            // move to last position
                             const reordered = reorder({
                                 list: home.cards,
                                 startIndex: cardIndexInHome,
@@ -249,8 +259,14 @@ export function Board({ project }: BoardProps) {
                                 ...home,
                                 cards: reordered,
                             };
-                            const columns = Array.from(project.columns);
+                            const columns = Array.from(projectState.columns);
                             columns[homeColumnIndex] = updated;
+                            
+                            // Optimistically update UI
+                            setProjectState(prev => ({
+                                ...prev,
+                                columns
+                            }));
                             
                             // Update the order in the database
                             const taskOrders = reordered.map((card, index) => ({
@@ -260,7 +276,7 @@ export function Board({ project }: BoardProps) {
                             
                             reorderTasksMutation.mutate({
                                 columnId: home.id,
-                                projectId: project.id,
+                                projectId: projectState.id,
                                 taskOrders,
                                 columns
                             });
@@ -268,7 +284,6 @@ export function Board({ project }: BoardProps) {
                         }
 
                         // remove card from home list
-
                         const homeCards = Array.from(home.cards);
                         homeCards.splice(cardIndexInHome, 1);
 
@@ -276,7 +291,7 @@ export function Board({ project }: BoardProps) {
                         const destinationCards = Array.from(destination.cards);
                         destinationCards.splice(destination.cards.length, 0, dragging.card);
 
-                        const columns = Array.from(project.columns);
+                        const columns = Array.from(projectState.columns);
                         columns[homeColumnIndex] = {
                             ...home,
                             cards: homeCards,
@@ -286,13 +301,19 @@ export function Board({ project }: BoardProps) {
                             cards: destinationCards,
                         };
                         
+                        // Optimistically update UI
+                        setProjectState(prev => ({
+                            ...prev,
+                            columns
+                        }));
+                        
                         // Move the task to another column
                         moveTaskMutation.mutate({
                             taskId: String(dragging.card.id),
                             sourceColumnId: home.id,
                             destinationColumnId: destination.id,
                             destinationOrder: destination.cards.length,
-                            projectId: project.id,
+                            projectId: projectState.id,
                             columns
                         });
                         
@@ -319,8 +340,8 @@ export function Board({ project }: BoardProps) {
                         return;
                     }
 
-                    const homeIndex = project.columns.findIndex((column) => column.id === dragging.column.id);
-                    const destinationIndex = project.columns.findIndex(
+                    const homeIndex = projectState.columns.findIndex((column) => column.id === dragging.column.id);
+                    const destinationIndex = projectState.columns.findIndex(
                         (column) => column.id === dropTargetData.column.id,
                     );
 
@@ -336,7 +357,7 @@ export function Board({ project }: BoardProps) {
 
                     const reordered = reorderWithEdge({
                         axis: 'horizontal',
-                        list: project.columns,
+                        list: projectState.columns,
                         startIndex: homeIndex,
                         indexOfTarget: destinationIndex,
                         closestEdgeOfTarget: closestEdge,
@@ -386,17 +407,17 @@ export function Board({ project }: BoardProps) {
                 },
             }),
         );
-    }, [project, settings.boardScrollSpeed, settings.isOverElementAutoScrollEnabled, settings.isOverflowScrollingEnabled]);
+    }, [projectState, settings.boardScrollSpeed, settings.isOverElementAutoScrollEnabled, settings.isOverflowScrollingEnabled]);
 
     return (
         <div ref={scrollableRef}>
             <div className="px-6">
                 <div className="flex items-center justify-between mb-6 mt-6">
-                    <h1 className="text-3xl font-bold">{project.title}</h1>
+                    <h1 className="text-3xl font-bold">{projectState.title}</h1>
                 </div>
 
                 <div className="flex items-start gap-4 overflow-x-auto pb-4 snap-x snap-mandatory">
-                    {project.columns.map((column) => (
+                    {projectState.columns.map((column) => (
                         <Column
                             key={column.id}
                             title={column.title}

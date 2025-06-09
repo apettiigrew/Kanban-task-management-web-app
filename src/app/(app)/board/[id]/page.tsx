@@ -52,6 +52,7 @@ interface BoardContentProps {
 function BoardContent({ projectId }: BoardContentProps) {
   const { data: project, isLoading: projectLoading, error: projectError } = useProject({ id: projectId })
 
+  console.log("BoardContent project columns", project?.columns)
   if (projectError) {
     return (
       <div className="min-h-screen flex items-center justify-center">

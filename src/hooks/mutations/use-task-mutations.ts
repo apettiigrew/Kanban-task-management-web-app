@@ -274,14 +274,19 @@ export const useMoveTask = (options: UseMoveTaskOptions = {}) => {
         mutationKey: ['moveTask'],
         mutationFn: moveTask,
         onMutate: async (moveData) => {
+            // Cancel any outgoing refetches
             await queryClient.cancelQueries({ queryKey: projectKeys.detail(moveData.projectId) })
 
             // Get snapshot of previous state
             const previousProject = queryClient.getQueryData(projectKeys.detail(moveData.projectId))
 
-            // Optimistically move the task
+            // Optimistically update the cache
             queryClient.setQueryData(projectKeys.detail(moveData.projectId), (oldData: ProjectWithColumnsAndTasks) => {
-                return { ...oldData, columns: moveData.columns }
+                if (!oldData) return oldData
+                return {
+                    ...oldData,
+                    columns: moveData.columns
+                }
             })
 
             return { previousProject, projectId: moveData.projectId }
@@ -297,10 +302,14 @@ export const useMoveTask = (options: UseMoveTaskOptions = {}) => {
             }
         },
         onSuccess: (data, moveData, context) => {
-            // Invalidate related queries to ensure consistency
-            if (context?.projectId) {
-                queryClient.invalidateQueries({ queryKey: projectKeys.detail(context.projectId) })
-            }
+            // Update with server response
+            queryClient.setQueryData(projectKeys.detail(moveData.projectId), (oldData: ProjectWithColumnsAndTasks) => {
+                if (!oldData) return oldData
+                return {
+                    ...oldData,
+                    columns: moveData.columns
+                }
+            })
 
             if (options.onSuccess) {
                 options.onSuccess()
