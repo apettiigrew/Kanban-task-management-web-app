@@ -47,15 +47,22 @@ export const moveTaskSchema = z.object({
   sourceColumnId: z.string().cuid(),
   destinationColumnId: z.string().cuid(),
   destinationOrder: z.number().int().min(0, 'Order must be a non-negative integer'),
+  projectId: z.string().cuid(),
 })
 
 // Schema for reordering tasks within a column
 export const reorderTasksSchema = z.object({
   columnId: z.string().cuid(),
+  projectId: z.string().cuid(),
   taskOrders: z.array(z.object({
     id: z.string().cuid(),
     order: z.number().int().min(0),
   })).min(1, 'At least one task order must be provided'),
+  columns: z.array(z.object({
+    id: z.string().cuid(),
+    title: z.string(),
+    cards: createTaskSchema.array(),
+  })).min(1, 'At least one column must be provided'),
 })
 
 // Schema for bulk task operations

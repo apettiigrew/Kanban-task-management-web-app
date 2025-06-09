@@ -72,6 +72,7 @@ export interface TDragSource {
 }
 
 export function isDraggingACard({ source }: TDragSource): boolean {
+    // console.log('isDraggingACard', source.data);
     return isCardData(source.data);
 }
 
