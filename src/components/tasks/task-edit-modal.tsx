@@ -277,15 +277,6 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
 
     setTitle(newTitle)
 
-    console.log({
-      id: card.id,
-      title: newTitle,
-      description: card.description || null,
-      columnId: card.columnId,
-      order: card.order,
-      projectId: card.projectId,
-    })
-
     updateTaskMutation.mutate({
       id: card.id as string,
       title: newTitle,

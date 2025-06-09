@@ -16,7 +16,6 @@ export async function PUT(
     try {
     
       const body = await request.json()
-      console.log('moving task body', body)
       // Validate the request body using centralized validation
       const validatedData = validateRequestBody(moveTaskSchema, body)
   

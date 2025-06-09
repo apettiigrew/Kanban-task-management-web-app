@@ -123,14 +123,14 @@ export function Board({ project }: BoardProps) {
 
                     // dropping on a card
                     if (isCardDropTargetData(dropTargetData)) {
-                        console.log('dropping on a card');
+                        
                         const destinationColumnIndex = project.columns.findIndex(
                             (column) => column.id === dropTargetData.columnId,
                         );
                         const destination = project.columns[destinationColumnIndex];
                         // reordering in home column
                         if (home === destination) {
-                            console.log('reordering in home column');
+                            
                             const cardFinishIndex = home.cards.findIndex(
                                 (card: TCard) => card.id === dropTargetData.card.id,
                             );
@@ -155,8 +155,7 @@ export function Board({ project }: BoardProps) {
                                 closestEdgeOfTarget: closestEdge,
                             });
 
-                            console.log('reordered', reordered);    
-
+                            
                             const updated: TColumn = {
                                 ...home,
                                 cards: reordered,
@@ -211,7 +210,7 @@ export function Board({ project }: BoardProps) {
                             cards: destinationCards,
                         };
                         
-                        console.log("move api is called")
+                        
                         // Move the task between columns
                         moveTaskMutation.mutate({
                             taskId: String(dragging.card.id),
@@ -237,7 +236,7 @@ export function Board({ project }: BoardProps) {
 
                         // dropping on home
                         if (home === destination) {
-                            console.log('moving card to home column');
+                            
 
                             // move to last position
                             const reordered = reorder({
@@ -267,8 +266,6 @@ export function Board({ project }: BoardProps) {
                             });
                             return;
                         }
-
-                        console.log('moving card to another column');
 
                         // remove card from home list
 

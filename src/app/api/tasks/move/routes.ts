@@ -12,7 +12,6 @@ import { NextRequest } from 'next/server'
 export async function PUT(request: NextRequest) {
     try {
         const body = await request.json()
-        console.log('moving task body', body)
         
         // Validate the request body using centralized validation
         const validatedData = validateRequestBody(moveTaskSchema, body)

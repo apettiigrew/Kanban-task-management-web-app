@@ -101,7 +101,6 @@ export function FormErrorExamples() {
   }
 
   const onSubmit = (data: TestFormData) => {
-    console.log('Form submitted:', data)
     clearFormErrors()
   }
 
