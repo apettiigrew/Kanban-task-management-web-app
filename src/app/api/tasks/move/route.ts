@@ -10,49 +10,55 @@ import { moveTaskSchema } from '@/lib/validations/task'
 import { NextRequest } from 'next/server'
 
 export async function PUT(
-    request: NextRequest,
-    { params }: { params: { id: string } }
-  ) {
-    try {
-    
-      const body = await request.json()
-      // Validate the request body using centralized validation
-      const validatedData = validateRequestBody(moveTaskSchema, body)
-  
-      // Check if task exists
-      const existingTask = await prisma.card.findUnique({
-        where: { id: validatedData.taskId },
-      })
-  
-      if (!existingTask) {
-        throw new NotFoundError('Task')
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+
+    const body = await request.json()
+    // Validate the request body using centralized validation
+    const validatedData = validateRequestBody(moveTaskSchema, body)
+
+    // Check if task exists
+    const existingTask = await prisma.card.findUnique({
+      where: { id: validatedData.taskId },
+    })
+
+    if (!existingTask) {
+      throw new NotFoundError('Task')
+    }
+
+    // Update every cards that's in the two columns that change if they are one just update that column
+    for (const column of validatedData.columns) {
+      for (const card of column.cards) {
+        await prisma.card.update({
+          where: { id: card.id },
+          data: { columnId: column.id, order: card.order }
+        })
       }
-    
-      const task = await prisma.card.update({
-        where: { id: validatedData.taskId },
-        data: {
-            columnId: validatedData.destinationColumnId,
-            order: validatedData.destinationOrder
+    }
+
+    const task = await prisma.card.findUnique({
+      where: { id: validatedData.taskId },
+      include: {
+        project: {
+          select: {
+            id: true,
+            title: true,
+          }
         },
-        include: {
-          project: {
-            select: {
-              id: true,
-              title: true,
-            }
-          },
-          column: {
-            select: {
-              id: true,
-              title: true,
-            }
+        column: {
+          select: {
+            id: true,
+            title: true,
           }
         }
-      })
-  
-      return createSuccessResponse(task, 'Task updated successfully')
-    } catch (error) {
-        console.log('error', error)
-      return handleAPIError(error, `/api/tasks/move`)
-    }
+      }
+    })
+
+    return createSuccessResponse(task, 'Task updated successfully')
+  } catch (error) {
+    console.log('error', error)
+    return handleAPIError(error, `/api/tasks/move`)
   }
+}

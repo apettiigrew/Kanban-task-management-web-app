@@ -16,6 +16,7 @@ export const taskSchema = z.object({
 
 // Schema for creating a new task
 export const createTaskSchema = z.object({
+
   title: z.string().min(1, 'Task title is required').max(200, 'Task title must be less than 200 characters'),
   description: z.string().max(1000, 'Description must be less than 1000 characters').optional().nullable(),
   projectId: z.string().cuid(),
@@ -51,7 +52,11 @@ export const moveTaskSchema = z.object({
   columns: z.array(z.object({
     id: z.string().cuid(),
     title: z.string(),
-    cards: createTaskSchema.array(),
+    cards: z.array(
+      createTaskSchema.extend({
+        id: z.string().cuid()
+      })
+    ),
   })).min(1, 'At least one column must be provided'),
 })
 
@@ -70,14 +75,6 @@ export const reorderTasksSchema = z.object({
   })).min(1, 'At least one column must be provided'),
 })
 
-// Schema for bulk task operations
-export const bulkUpdateTasksSchema = z.object({
-  tasks: z.array(z.object({
-    id: z.string().cuid(),
-    columnId: z.string().cuid().optional(),
-    order: z.number().int().min(0).optional(),
-  })).min(1, 'At least one task must be provided'),
-})
 
 // Schema for task with relations
 export const taskWithRelationsSchema = taskSchema.extend({
@@ -98,5 +95,4 @@ export type UpdateTask = z.infer<typeof updateTaskSchema>
 export type DeleteTask = z.infer<typeof deleteTaskSchema>
 export type MoveTask = z.infer<typeof moveTaskSchema>
 export type ReorderTasks = z.infer<typeof reorderTasksSchema>
-export type BulkUpdateTasks = z.infer<typeof bulkUpdateTasksSchema>
 export type TaskWithRelations = z.infer<typeof taskWithRelationsSchema>

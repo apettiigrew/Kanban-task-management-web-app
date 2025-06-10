@@ -58,7 +58,7 @@ export function Board({ project }: BoardProps) {
     // Task mutation hooks for drag and drop functionality
     const moveTaskMutation = useMoveTask({
         onSuccess: () => {
-            invalidateByProject(project.id);
+            // invalidateByProject(project.id);
         },
         onError: (error: FormError) => {
             toast.error(error.message || 'Failed to move task');
@@ -188,6 +188,8 @@ export function Board({ project }: BoardProps) {
                             return;
                         }
 
+                        console.log("destination", destination);
+                        console.log("home", home);
                         // moving card from one column to another
                         if (!destination) {
                             return;
@@ -196,10 +198,11 @@ export function Board({ project }: BoardProps) {
                         const indexOfTarget = destination.cards.findIndex(
                             (card) => card.id === dropTargetData.card.id,
                         );
-
+                        console.log("indexOfTarget", indexOfTarget);
                         const closestEdge = extractClosestEdge(dropTargetData);
+                        console.log("closestEdge", closestEdge);
                         const finalIndex = closestEdge === 'bottom' ? indexOfTarget + 1 : indexOfTarget;
-
+                        console.log("finalIndex", finalIndex);
                         // remove card from home list
                         const homeCards = Array.from(home.cards);
                         homeCards.splice(cardIndexInHome, 1);
@@ -208,14 +211,33 @@ export function Board({ project }: BoardProps) {
                         const destinationCards = Array.from(destination.cards);
                         destinationCards.splice(finalIndex, 0, dragging.card);
 
+                        // Update the order in the database
+                        const reorderedDestinationCards = destinationCards.map((card, index) => ({
+                            id: String(card.id),
+                            title: card.title,
+                            description: card.description,
+                            columnId: card.columnId,
+                            projectId: card.projectId,
+                            order: index
+                        }));
+
+                        const reorderedHomeCards = homeCards.map((card, index) => ({
+                            id: String(card.id),
+                            title: card.title,
+                            description: card.description,
+                            columnId: card.columnId,
+                            projectId: card.projectId,
+                            order: index
+                        }));
+
                         const columns = Array.from(projectState.columns);
                         columns[homeColumnIndex] = {
                             ...home,
-                            cards: homeCards,
+                            cards: reorderedHomeCards,
                         };
                         columns[destinationColumnIndex] = {
                             ...destination,
-                            cards: destinationCards,
+                            cards: reorderedDestinationCards,
                         };
                         
                         // Optimistically update UI
@@ -231,10 +253,10 @@ export function Board({ project }: BoardProps) {
                             destinationColumnId: destination.id,
                             destinationOrder: finalIndex,
                             projectId: projectState.id,
-                            columns
+                            columns: columns
                         });
                         return;
-                    }
+                    } 
 
                     // dropping onto a column, but not onto a card
                     if (isColumnData(dropTargetData)) {

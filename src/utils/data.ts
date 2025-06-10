@@ -3,7 +3,7 @@ export interface ProjectWithColumnsAndTasks extends TProject {
   }
   
 export type TCard = {
-    id: string | number;
+    id: string;
     title: string;
     description: string;
     columnId: string;

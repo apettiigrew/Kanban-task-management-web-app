@@ -1,7 +1,7 @@
 'use client'
 
 import { apiRequest, FormError } from '@/lib/form-error-handler'
-import { BulkUpdateTasks, CreateTask, DeleteTask, MoveTask, ReorderTasks, Task, UpdateTask } from '@/lib/validations/task'
+import { CreateTask, DeleteTask, MoveTask, ReorderTasks, Task, UpdateTask } from '@/lib/validations/task'
 import { ProjectWithColumnsAndTasks } from '@/utils/data'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { projectKeys } from '../queries/use-projects'
@@ -36,13 +36,6 @@ const moveTask = async (data: MoveTask): Promise<void> => {
 
 const reorderTasks = async (data: ReorderTasks): Promise<void> => {
     return apiRequest<void>('/api/tasks', {
-        method: 'PUT',
-        body: JSON.stringify(data),
-    })
-}
-
-const bulkUpdateTasks = async (data: BulkUpdateTasks): Promise<void> => {
-    return apiRequest<void>('/api/tasks/bulk', {
         method: 'PUT',
         body: JSON.stringify(data),
     })
