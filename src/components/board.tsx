@@ -3,7 +3,7 @@
 import '@/app/board.css';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useCreateColumn } from '@/hooks/mutations/use-column-mutations';
+import { useCreateColumn, useReorderColumns } from '@/hooks/mutations/use-column-mutations';
 import { useMoveTask, useReorderTasks } from '@/hooks/mutations/use-task-mutations';
 import { FormError } from '@/lib/form-error-handler';
 import { isCardData, isCardDropTargetData, isColumnData, isDraggingACard, isDraggingAColumn, ProjectWithColumnsAndTasks, TCard, TColumn } from '@/utils/data';
@@ -75,6 +75,12 @@ export function Board({ project }: BoardProps) {
             toast.error(error.message || 'Failed to reorder tasks');
             // Revert to previous state on error
             setProjectState(project);
+        }
+    });
+
+    const reorderColumnsMutation = useReorderColumns({
+        onError: (error: FormError) => {
+            toast.error(error.message || 'Failed to reorder columns');
         }
     });
 
@@ -385,7 +391,22 @@ export function Board({ project }: BoardProps) {
                         closestEdgeOfTarget: closestEdge,
                     });
 
-                    // setBoard({ ...project, columns: reordered });
+                    // Optimistically update UI
+                    setProjectState(prev => ({
+                        ...prev,
+                        columns: reordered
+                    }));
+
+                    // Update the order in the database
+                    const columnOrders = reordered.map((column, index) => ({
+                        id: column.id,
+                        order: index
+                    }));
+
+                    reorderColumnsMutation.mutate({
+                        projectId: projectState.id,
+                        columnOrders
+                    });
                 },
             }),
             autoScrollForElements({

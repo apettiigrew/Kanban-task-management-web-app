@@ -111,19 +111,6 @@ export function CardTask(props: CardProps) {
     );
   }, [card, columnId]);
 
-  // Convert TCard to Task type
-  const task: Task = {
-    id: card.id.toString(),
-    title: card.title,
-    description: card.description || null,
-    order: 0, // This will be updated by the backend
-    labels: [],
-    projectId: '', // This will be updated by the backend
-    columnId,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-
   return (
     <>
       {cardState.type === 'is-over' && cardState.closestEdge === 'top' && (
