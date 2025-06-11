@@ -48,11 +48,6 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Basic rate limiting
-    if (!checkRateLimit(`column-put-${params.id}`, 20)) {
-      throw new Error('Rate limit exceeded')
-    }
-
     const body = await request.json()
 
     // Validate the request body using our validation helper
@@ -92,10 +87,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Basic rate limiting
-    if (!checkRateLimit(`column-delete-${params.id}`, 10)) {
-      throw new Error('Rate limit exceeded')
-    }
+    
 
     // Check if column exists
     const existingColumn = await prisma.column.findUnique({

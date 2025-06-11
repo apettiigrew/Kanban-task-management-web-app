@@ -253,7 +253,6 @@ The API should return errors in this format for optimal integration:
 3. **Network Errors**: Connection and timeout issues
 4. **Prisma Errors**: Database constraint violations
 5. **Authentication Errors**: Authorization failures
-6. **Rate Limiting**: API rate limit exceeded
 
 ## Best Practices
 

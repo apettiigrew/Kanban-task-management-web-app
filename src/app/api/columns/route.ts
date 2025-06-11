@@ -40,11 +40,7 @@ export async function GET(request: NextRequest) {
 // POST /api/columns - Create a new column
 export async function POST(request: NextRequest) {
   try {
-    // Basic rate limiting
-    if (!checkRateLimit('columns-post', 50)) {
-      throw new Error('Rate limit exceeded')
-    }
-
+  
     const body = await request.json()
     
     // Validate the request body using our validation helper
@@ -91,11 +87,7 @@ export async function POST(request: NextRequest) {
 // PUT /api/columns - Reorder columns
 export async function PUT(request: NextRequest) {
   try {
-    // Basic rate limiting
-    if (!checkRateLimit('columns-put', 30)) {
-      throw new Error('Rate limit exceeded')
-    }
-
+  
     const body = await request.json()
     
     // Validate the request body using our validation helper
