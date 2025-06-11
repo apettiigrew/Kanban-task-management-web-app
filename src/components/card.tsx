@@ -181,7 +181,7 @@ export function CardDisplay({ card, state, outerRef, innerRef, handleCardClick, 
         data-test-id={card.id}
         ref={innerRef}
         className={cc(
-          'bg-white rounded-md p-4 text-gray-900 text-sm border border-gray-200 shadow-sm transition-all duration-200 ease-in-out cursor-pointer relative group z-10',
+          'bg-white rounded-md p-4 text-gray-900 text-sm border border-gray-200 shadow-sm transition-all duration-200 ease-in-out cursor-pointer relative group',
           'hover:shadow-lg hover:border-2 hover:border-blue-900 hover:bg-blue-50 active:cursor-grabbing',
           innerStyles[state.type],
           classIf(state.type === 'is-dragging', 'opacity-50 shadow-none')

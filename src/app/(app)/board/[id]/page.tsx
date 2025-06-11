@@ -74,7 +74,7 @@ function BoardContent({ projectId }: BoardContentProps) {
         isLoading={projectLoading}
       />
 
-      <main className="flex-1">
+      <main className="flex-1 overflow-x-auto overflow-y-hidden">
         <Suspense fallback={<RouteLoading message="Loading board..." />}>
           {project && <Board project={project as ProjectWithColumnsAndTasks} />}
         </Suspense>

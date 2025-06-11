@@ -502,10 +502,10 @@ interface AddListButtonProps {
 
 export const AddListButton: React.FC<AddListButtonProps> = ({ onClick, disabled = false }) => {
     return (
-        <div className="shrink-0">
+        <div className="w-[280px] min-w-[280px] flex-shrink-0">
             <Button
                 variant="outline"
-                className="border-dashed border-2 h-10 w-72 justify-start"
+                className="border-dashed border-2 h-10 w-full justify-start"
                 onClick={onClick}
                 disabled={disabled}
             >
@@ -532,7 +532,7 @@ export const NewListForm: React.FC<NewListFormProps> = ({
     isCreating = false,
 }) => {
     return (
-        <div className="w-72 shrink-0 bg-muted/40 p-2 rounded-md">
+        <div className="w-[280px] min-w-[280px] flex-shrink-0 bg-muted/40 p-2 rounded-md">
             <Input
                 autoFocus
                 value={newListTitle}
