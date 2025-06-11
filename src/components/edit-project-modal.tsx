@@ -4,12 +4,12 @@ import React from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ProjectForm } from "@/components/project-form"
 import { useUpdateProject } from "@/hooks/queries/use-projects"
-import { Project } from "@/types/project"
+import { TProject } from '@/utils/data'
 import { toast } from "sonner"
 import { FormError } from "@/lib/form-error-handler"
 
 interface EditProjectModalProps {
-  project: Project
+  project: TProject
   open: boolean
   onOpenChange: (open: boolean) => void
 }

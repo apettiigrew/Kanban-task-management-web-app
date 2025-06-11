@@ -4,10 +4,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { EditProjectModal } from "@/components/edit-project-modal"
 import { useState } from "react"
-import { type Project } from "@/types"
+import { type TProject } from '@/utils/data'
 
 interface ProjectDetailsModalProps {
-  project: Project
+  project: TProject
   open: boolean
   onOpenChange: (open: boolean) => void
   onDeleteProject?: (projectId: string) => void

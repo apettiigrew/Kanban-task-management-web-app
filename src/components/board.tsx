@@ -22,6 +22,7 @@ import { reorder } from '@atlaskit/pragmatic-drag-and-drop/reorder';
 import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element';
 import { SettingsContext } from '@/providers/settings-context';
 import { unsafeOverflowAutoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/unsafe-overflow/element';
+import { CardShadow } from './card';
 
 interface BoardProps {
     project: ProjectWithColumnsAndTasks
@@ -33,7 +34,7 @@ export function Board({ project }: BoardProps) {
     const [newListTitle, setNewListTitle] = useState('');
     const { settings } = useContext(SettingsContext);
     const scrollableRef = useRef<HTMLDivElement | null>(null);
-    
+
     // Column invalidation utility
     const { invalidateByProject } = useInvalidateProject();
 
@@ -141,7 +142,7 @@ export function Board({ project }: BoardProps) {
                             (column) => column.id === dropTargetData.columnId,
                         );
                         const destination = projectState.columns[destinationColumnIndex];
-                        
+
                         // reordering in home column
                         if (home === destination) {
                             const cardFinishIndex = home.cards.findIndex(
@@ -172,19 +173,19 @@ export function Board({ project }: BoardProps) {
                             };
                             const columns = Array.from(projectState.columns);
                             columns[homeColumnIndex] = updated;
-                            
+
                             // Optimistically update UI
                             setProjectState(prev => ({
                                 ...prev,
                                 columns
                             }));
-                            
+
                             // Update the order in the database
                             const taskOrders = reordered.map((card, index) => ({
                                 id: String(card.id),
                                 order: index
                             }));
-                            
+
                             reorderTasksMutation.mutate({
                                 columnId: home.id,
                                 projectId: projectState.id,
@@ -245,13 +246,13 @@ export function Board({ project }: BoardProps) {
                             ...destination,
                             cards: reorderedDestinationCards,
                         };
-                        
+
                         // Optimistically update UI
                         setProjectState(prev => ({
                             ...prev,
                             columns
                         }));
-                        
+
                         // Move the task between columns
                         moveTaskMutation.mutate({
                             taskId: String(dragging.card.id),
@@ -262,7 +263,7 @@ export function Board({ project }: BoardProps) {
                             columns: columns
                         });
                         return;
-                    } 
+                    }
 
                     // dropping onto a column, but not onto a card
                     if (isColumnData(dropTargetData)) {
@@ -289,19 +290,19 @@ export function Board({ project }: BoardProps) {
                             };
                             const columns = Array.from(projectState.columns);
                             columns[homeColumnIndex] = updated;
-                            
+
                             // Optimistically update UI
                             setProjectState(prev => ({
                                 ...prev,
                                 columns
                             }));
-                            
+
                             // Update the order in the database
                             const taskOrders = reordered.map((card, index) => ({
                                 id: String(card.id),
                                 order: index
                             }));
-                            
+
                             reorderTasksMutation.mutate({
                                 columnId: home.id,
                                 projectId: projectState.id,
@@ -328,13 +329,13 @@ export function Board({ project }: BoardProps) {
                             ...destination,
                             cards: destinationCards,
                         };
-                        
+
                         // Optimistically update UI
                         setProjectState(prev => ({
                             ...prev,
                             columns
                         }));
-                        
+
                         // Move the task to another column
                         moveTaskMutation.mutate({
                             taskId: String(dragging.card.id),
@@ -344,7 +345,7 @@ export function Board({ project }: BoardProps) {
                             projectId: projectState.id,
                             columns
                         });
-                        
+
                         return;
                     }
                 },
@@ -461,10 +462,13 @@ export function Board({ project }: BoardProps) {
 
                 <div className="flex items-start gap-4 overflow-x-auto pb-4 snap-x snap-mandatory">
                     {projectState.columns.map((column) => (
-                        <Column
-                            key={column.id}
-                            title={column.title}
-                            column={column} />
+                        <>
+                           
+                            <Column
+                                key={column.id}
+                                title={column.title}
+                                column={column} />
+                        </>
                     ))}
 
                     {isAddingList ? (

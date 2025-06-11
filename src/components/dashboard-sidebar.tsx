@@ -11,10 +11,11 @@ import { UserProfileHeader } from "@/components/user-profile-header"
 import { ProjectSearch } from "@/components/project-search"
 import { CollapsibleProjectsList } from "@/components/collapsible-projects-list"
 import { SidebarHelpButton } from "@/components/sidebar-help-button"
-import { Project } from "@/types/project"
+import { TProject } from "@/utils/data"
+
 
 interface DashboardSidebarProps {
-  projects: Project[]
+  projects: TProject[]
   searchQuery: string
   onSearchChange: (query: string) => void
   showAllProjects: boolean

@@ -1,10 +1,10 @@
 "use client"
 
 import { ProjectCard } from "@/components/project-card"
-import { Project } from "@/types/project"
+import { TProject } from '@/utils/data'
 
 interface ProjectsGridProps {
-  projects: Project[]
+  projects: TProject[]
   className?: string
 }
 

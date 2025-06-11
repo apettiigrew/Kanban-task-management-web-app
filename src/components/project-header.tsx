@@ -4,7 +4,7 @@ import { ArrowLeft, Settings, MoreHorizontal } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Breadcrumb } from "@/components/breadcrumb"
-import { Project } from "@/types/project"
+import { TProject } from '@/utils/data'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 interface ProjectHeaderProps {
-  project?: Project
+  project?: TProject
   isLoading?: boolean
 }
 

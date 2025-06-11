@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import { MoreHorizontal, Edit, ExternalLink, Trash2 } from "lucide-react"
-import { Project } from "@/types/project"
+import { TProject } from '@/utils/data'
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -16,7 +16,7 @@ import { EditProjectModal } from "@/components/edit-project-modal"
 import { DeleteProjectDialog } from "@/components/delete-project-dialog"
 
 interface ProjectCardProps {
-  project: Project
+  project: TProject
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
