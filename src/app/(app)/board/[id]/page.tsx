@@ -1,14 +1,12 @@
 "use client"
 
-import { useParams } from "next/navigation"
-import { Suspense } from "react"
 import { Board } from "@/components/board"
 import { ErrorBoundary } from "@/components/error-boundary"
-import { ProjectHeader } from "@/components/project-header"
 import { RouteLoading } from "@/components/route-loading"
 import { useProject } from "@/hooks/queries/use-projects"
 import { ProjectWithColumnsAndTasks } from "@/utils/data"
-
+import { useParams } from "next/navigation"
+import { Suspense } from "react"
 
 export default function BoardPage() {
   const params = useParams()
@@ -69,10 +67,10 @@ function BoardContent({ projectId }: BoardContentProps) {
 
   return (
     <div className="max-h-screen bg-background bg-gradient-to-br from-blue-100 via-sky-100 to-indigo-200">
-      <ProjectHeader
+      {/* <ProjectHeader
         project={project}
         isLoading={projectLoading}
-      />
+      /> */}
 
       <main className="flex-1 overflow-x-auto overflow-y-hidden">
         <Suspense fallback={<RouteLoading message="Loading board..." />}>

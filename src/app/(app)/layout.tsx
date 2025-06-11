@@ -38,24 +38,21 @@ export default function AppLayout({
     setShowAllProjects(!showAllProjects)
   }
 
-  const handleHelp = () => {
-    // TODO: Implement help functionality
-    
-  }
-
   return (
-    <SidebarProvider>
-      <DashboardSidebar
-        projects={filteredProjects}
-        searchQuery={searchQuery}
-        onSearchChange={handleSearchChange}
-        showAllProjects={showAllProjects}
-        onToggleShowAll={handleToggleShowAll}
-        onHelp={handleHelp}
-      />
-      <SidebarInset>
-        {children}
-      </SidebarInset>
-    </SidebarProvider>
+    // <SidebarProvider>
+    //   <DashboardSidebar
+    //     projects={filteredProjects}
+    //     searchQuery={searchQuery}
+    //     onSearchChange={handleSearchChange}
+    //     showAllProjects={showAllProjects}
+    //     onToggleShowAll={handleToggleShowAll}
+    //   />
+    //   <SidebarInset>
+    //     {children}
+    //   </SidebarInset>
+    // </SidebarProvider>
+    <>
+    {children}
+    </>
   )
 }

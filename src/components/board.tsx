@@ -461,87 +461,84 @@ export function Board({ project }: BoardProps) {
 
 
     // Panning the board
-    useEffect(() => {
-        let cleanupActive: CleanupFn | null = null;
-        const scrollable = scrollableRef.current;
-        if (!scrollable) return;
+    // useEffect(() => {
+    //     let cleanupActive: CleanupFn | null = null;
+    //     const scrollable = scrollableRef.current;
+    //     if (!scrollable) return;
 
-        function begin({ startX }: { startX: number }) {
-            let lastX = startX;
+    //     function begin({ startX }: { startX: number }) {
+    //         let lastX = startX;
 
-            const cleanupEvents = bindAll(
-                window,
-                [
-                    {
-                        type: 'pointermove',
-                        listener(event) {
-                            const currentX = event.clientX;
-                            const diffX = lastX - currentX;
+    //         const cleanupEvents = bindAll(
+    //             window,
+    //             [
+    //                 {
+    //                     type: 'pointermove',
+    //                     listener(event) {
+    //                         const currentX = event.clientX;
+    //                         const diffX = lastX - currentX;
 
-                            lastX = currentX;
-                            scrollable?.scrollBy({ left: diffX });
-                        },
-                    },
-                    // stop panning if we see any of these events
-                    ...(
-                        [
-                            'pointercancel',
-                            'pointerup',
-                            'pointerdown',
-                            'keydown',
-                            'resize',
-                            'click',
-                            'visibilitychange',
-                        ] as const
-                    ).map((eventName) => ({ type: eventName, listener: () => cleanupEvents() })),
-                ],
-                // need to make sure we are not after the "pointerdown" on the scrollable
-                // Also this is helpful to make sure we always hear about events from this point
-                { capture: true },
-            );
+    //                         lastX = currentX;
+    //                         scrollable?.scrollBy({ left: diffX });
+    //                     },
+    //                 },
+    //                 // stop panning if we see any of these events
+    //                 ...(
+    //                     [
+    //                         'pointercancel',
+    //                         'pointerup',
+    //                         'pointerdown',
+    //                         'keydown',
+    //                         'resize',
+    //                         'click',
+    //                         'visibilitychange',
+    //                     ] as const
+    //                 ).map((eventName) => ({ type: eventName, listener: () => cleanupEvents() })),
+    //             ],
+    //             // need to make sure we are not after the "pointerdown" on the scrollable
+    //             // Also this is helpful to make sure we always hear about events from this point
+    //             { capture: true },
+    //         );
 
-            cleanupActive = cleanupEvents;
-        }
+    //         cleanupActive = cleanupEvents;
+    //     }
 
-        const cleanupStart = bindAll(scrollable, [
-            {
-                type: 'pointerdown',
-                listener(event) {
-                    if (!(event.target instanceof HTMLElement)) {
-                        return;
-                    }
-                    // ignore interactive elements
-                    if (event.target.closest(`[${blockBoardPanningAttr}]`)) {
-                        return;
-                    }
+    //     const cleanupStart = bindAll(scrollable, [
+    //         {
+    //             type: 'pointerdown',
+    //             listener(event) {
+    //                 if (!(event.target instanceof HTMLElement)) {
+    //                     return;
+    //                 }
+    //                 // ignore interactive elements
+    //                 if (event.target.closest(`[${blockBoardPanningAttr}]`)) {
+    //                     return;
+    //                 }
 
-                    begin({ startX: event.clientX });
-                },
-            },
-        ]);
+    //                 begin({ startX: event.clientX });
+    //             },
+    //         },
+    //     ]);
 
-        return function cleanupAll() {
-            cleanupStart();
-            cleanupActive?.();
-        };
-    }, []);
+    //     return function cleanupAll() {
+    //         cleanupStart();
+    //         cleanupActive?.();
+    //     };
+    // }, []);
 
     return (
-        <div ref={scrollableRef} className="min-h-screen">
-            <div className="px-6">
+        <div ref={scrollableRef} className="h-screen flex flex-col">
+            <div className="px-6 flex-1 flex flex-col">
                 <div className="flex items-center justify-between mb-6 mt-6">
                     <h1 className="text-3xl font-bold">{projectState.title}</h1>
                 </div>
 
-                <div className="flex items-start gap-4 overflow-x-auto pb-4 snap-x snap-mandatory">
+                <div className="flex items-start gap-4 overflow-x-auto pb-4 snap-x snap-mandatory flex-1">
                     {projectState.columns.map((column) => (
-                        <>
-
-                            <Column
-                                key={column.id}
-                                title={column.title}
-                                column={column} />
-                        </>
+                        <Column
+                            key={column.id}
+                            title={column.title}
+                            column={column} />
                     ))}
 
                     {isAddingList ? (

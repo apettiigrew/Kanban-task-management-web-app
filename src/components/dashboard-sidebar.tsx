@@ -60,10 +60,7 @@ export function DashboardSidebar({
         />
       </SidebarContent>
 
-      <SidebarFooter className="border-t p-4">
-        <SidebarHelpButton onClick={onHelp} />
-      </SidebarFooter>
-
+     
       <SidebarRail />
     </Sidebar>
   )
