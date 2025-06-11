@@ -60,14 +60,6 @@ export function handleAPIError(
 ): NextResponse<ErrorResponse> {
   const timestamp = new Date().toISOString()
   
-  // Log error with context
-  console.error('API Error:', {
-    error,
-    path,
-    timestamp,
-    stack: error instanceof Error ? error.stack : undefined,
-  })
-
   // Handle known error types
   if (error instanceof APIError) {
     return NextResponse.json(

@@ -9,10 +9,7 @@ import { prisma } from '@/lib/prisma'
 import { moveTaskSchema } from '@/lib/validations/task'
 import { NextRequest } from 'next/server'
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest) {
   try {
 
     const body = await request.json()
@@ -28,6 +25,7 @@ export async function PUT(
       throw new NotFoundError('Task')
     }
 
+    console.log("validatedData", validatedData);
     // Update every cards that's in the two columns that change if they are one just update that column
     for (const column of validatedData.columns) {
       for (const card of column.cards) {

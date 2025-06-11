@@ -83,7 +83,6 @@ export function ProjectForm({
       onSuccess?.()
     },
     onError: (error) => {
-      console.error('Create project error:', error)
       handleFormErrors(error)
       toast.error("Failed to create project")
     },

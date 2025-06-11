@@ -69,10 +69,6 @@ interface UseReorderTasksOptions {
     onError?: (error: FormError) => void
 }
 
-interface UseBulkUpdateTasksOptions {
-    onSuccess?: () => void
-    onError?: (error: FormError) => void
-}
 
 export const useCreateTask = (options: UseCreateTaskOptions = {}) => {
     const queryClient = useQueryClient()
@@ -89,7 +85,7 @@ export const useCreateTask = (options: UseCreateTaskOptions = {}) => {
                 id: "temp",
                 title: newTask.title,
                 description: newTask.description || "",
-                order: newTask.order ?? 0,
+                order: newTask.order,
                 projectId: newTask.projectId,
                 columnId: newTask.columnId,
                 createdAt: new Date(),

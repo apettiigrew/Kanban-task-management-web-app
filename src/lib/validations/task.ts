@@ -21,7 +21,7 @@ export const createTaskSchema = z.object({
   description: z.string().max(1000, 'Description must be less than 1000 characters').optional().nullable(),
   projectId: z.string().cuid(),
   columnId: z.string().cuid(),
-  order: z.number().int().min(0, 'Order must be a non-negative integer').optional(),
+  order: z.number().int().min(0, 'Order must be a non-negative integer'),
 })
 
 

@@ -62,7 +62,7 @@ interface ColumnProps {
     column: TColumn;
 }
 export function Column({ title, column }: ColumnProps) {
-
+    
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [columnTitle, setColumnTitle] = useState(title);
     const [isAddingCard, setIsAddingCard] = useState(false);
@@ -259,7 +259,6 @@ export function Column({ title, column }: ColumnProps) {
             title: title,
             order: column.cards.length,
         });
-
     }
 
     return (
@@ -293,7 +292,7 @@ export function Column({ title, column }: ColumnProps) {
                     ) : (
                         <h2
                             onClick={() => setIsEditingTitle(true)}
-                            className="text-sm font-semibold text-gray-500 cursor-pointer hover:text-gray-700 transition-colors flex-1"
+                            className="text-sm font-semibold text-black-500 cursor-pointer hover:text-gray-700 transition-colors flex-1"
                             title="Click to edit title"
                         >
                             {columnTitle}
@@ -390,7 +389,10 @@ export function Column({ title, column }: ColumnProps) {
                         </div>
                     </div>
                 ) : (
-                    <Button onClick={() => setIsAddingCard(true)}>
+                    <Button 
+                        className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 border-0 text-white"
+                        onClick={() => setIsAddingCard(true)}
+                    >
                         Add a card
                     </Button>
                 )}

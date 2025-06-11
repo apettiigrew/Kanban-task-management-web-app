@@ -29,6 +29,7 @@ interface BoardProps {
 }
 
 export function Board({ project }: BoardProps) {
+   
     const [projectState, setProjectState] = useState(project);
     const [isAddingList, setIsAddingList] = useState(false);
     const [newListTitle, setNewListTitle] = useState('');
@@ -38,6 +39,7 @@ export function Board({ project }: BoardProps) {
     // Column invalidation utility
     const { invalidateByProject } = useInvalidateProject();
 
+    console.log("projectState", projectState);
     // Create column mutation with database persistence
     const createColumnMutation = useCreateColumn({
         onSuccess: (data) => {
@@ -60,6 +62,7 @@ export function Board({ project }: BoardProps) {
     const moveTaskMutation = useMoveTask({
         onSuccess: () => {
             // invalidateByProject(project.id);
+            console.log("moveTaskMutation onSuccess", projectState);
         },
         onError: (error: FormError) => {
             toast.error(error.message || 'Failed to move task');
@@ -138,6 +141,7 @@ export function Board({ project }: BoardProps) {
 
                     // dropping on a card
                     if (isCardDropTargetData(dropTargetData)) {
+                        console.log("dropping on a card");
                         const destinationColumnIndex = projectState.columns.findIndex(
                             (column) => column.id === dropTargetData.columnId,
                         );
@@ -167,9 +171,14 @@ export function Board({ project }: BoardProps) {
                                 closestEdgeOfTarget: closestEdge,
                             });
 
+                            const reorderedCards = reordered.map((card, index) => ({
+                                ...card,
+                                order: index
+                            }));
+
                             const updated: TColumn = {
                                 ...home,
-                                cards: reordered,
+                                cards: reorderedCards,
                             };
                             const columns = Array.from(projectState.columns);
                             columns[homeColumnIndex] = updated;
@@ -180,23 +189,17 @@ export function Board({ project }: BoardProps) {
                                 columns
                             }));
 
-                            // Update the order in the database
-                            const taskOrders = reordered.map((card, index) => ({
-                                id: String(card.id),
-                                order: index
-                            }));
-
+                           
                             reorderTasksMutation.mutate({
                                 columnId: home.id,
                                 projectId: projectState.id,
-                                taskOrders,
+                                taskOrders: reorderedCards,
                                 columns
                             });
                             return;
                         }
 
-                        console.log("destination", destination);
-                        console.log("home", home);
+
                         // moving card from one column to another
                         if (!destination) {
                             return;
@@ -205,11 +208,11 @@ export function Board({ project }: BoardProps) {
                         const indexOfTarget = destination.cards.findIndex(
                             (card) => card.id === dropTargetData.card.id,
                         );
-                        console.log("indexOfTarget", indexOfTarget);
+
                         const closestEdge = extractClosestEdge(dropTargetData);
-                        console.log("closestEdge", closestEdge);
+
                         const finalIndex = closestEdge === 'bottom' ? indexOfTarget + 1 : indexOfTarget;
-                        console.log("finalIndex", finalIndex);
+
                         // remove card from home list
                         const homeCards = Array.from(home.cards);
                         homeCards.splice(cardIndexInHome, 1);
@@ -246,6 +249,7 @@ export function Board({ project }: BoardProps) {
                             ...destination,
                             cards: reorderedDestinationCards,
                         };
+                        console.log("columns", columns);
 
                         // Optimistically update UI
                         setProjectState(prev => ({
@@ -454,7 +458,7 @@ export function Board({ project }: BoardProps) {
     }, [projectState, settings.boardScrollSpeed, settings.isOverElementAutoScrollEnabled, settings.isOverflowScrollingEnabled]);
 
     return (
-        <div ref={scrollableRef}>
+        <div ref={scrollableRef} className="min-h-screen">
             <div className="px-6">
                 <div className="flex items-center justify-between mb-6 mt-6">
                     <h1 className="text-3xl font-bold">{projectState.title}</h1>
@@ -463,7 +467,7 @@ export function Board({ project }: BoardProps) {
                 <div className="flex items-start gap-4 overflow-x-auto pb-4 snap-x snap-mandatory">
                     {projectState.columns.map((column) => (
                         <>
-                           
+
                             <Column
                                 key={column.id}
                                 title={column.title}

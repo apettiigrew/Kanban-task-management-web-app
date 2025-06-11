@@ -79,18 +79,9 @@ export async function POST(request: NextRequest) {
       throw new Error('Column not found or does not belong to the specified project')
     }
 
-    // Get the next order number for this column
-    const maxOrder = await prisma.card.aggregate({
-      where: { columnId: validatedData.columnId },
-      _max: { order: true },
-    })
-
-    const nextOrder = (maxOrder._max.order ?? 0) + 1
-
     const task = await prisma.card.create({
       data: {
         ...validatedData,
-        order: nextOrder,
       }
     })
 

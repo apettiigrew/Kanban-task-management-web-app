@@ -32,6 +32,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { TextIcon } from './icons/icons';
 
 interface CardProps {
   card: TCard;
@@ -180,50 +181,57 @@ export function CardDisplay({ card, state, outerRef, innerRef, handleCardClick, 
         data-test-id={card.id}
         ref={innerRef}
         className={cc(
-          'bg-white rounded-md p-4 text-gray-900 text-sm border border-gray-200 shadow-sm transition-transform duration-200 ease-in-out cursor-pointer relative group',
-          'hover:-translate-y-0.5 hover:shadow-lg active:cursor-grabbing',
+          'bg-white rounded-md p-4 text-gray-900 text-sm border border-gray-200 shadow-sm transition-all duration-200 ease-in-out cursor-pointer relative group z-10',
+          'hover:shadow-lg hover:border-blue-500 hover:bg-blue-50 active:cursor-grabbing',
           innerStyles[state.type],
           classIf(state.type === 'is-dragging', 'opacity-50 shadow-none')
         )}
       >
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0" onClick={handleCardClick}>
-            {card.title}
+        <div className="flex flex-col">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 min-w-0" onClick={handleCardClick}>
+              {card.title}
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => e.stopPropagation()}
+                  aria-label="Card actions"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCardClick(e);
+                  }}
+                >
+                  Edit card
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteClick();
+                  }}
+                  className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete card
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={(e) => e.stopPropagation()}
-                aria-label="Card actions"
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCardClick(e);
-                }}
-              >
-                Edit card
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteClick();
-                }}
-                className="text-red-600 focus:text-red-600 focus:bg-red-50"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete card
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {card.description && card.description.trim() && (
+            <div className="flex justify-start mt-2">
+              <TextIcon className="h-4 w-4 text-gray-500" />
+            </div>
+          )}
         </div>
       </div>
     </div>
