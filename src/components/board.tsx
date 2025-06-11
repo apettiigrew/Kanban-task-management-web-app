@@ -5,31 +5,33 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCreateColumn, useReorderColumns } from '@/hooks/mutations/use-column-mutations';
 import { useMoveTask, useReorderTasks } from '@/hooks/mutations/use-task-mutations';
-import { FormError } from '@/lib/form-error-handler';
-import { isCardData, isCardDropTargetData, isColumnData, isDraggingACard, isDraggingAColumn, ProjectWithColumnsAndTasks, TCard, TColumn } from '@/utils/data';
-import { PlusCircle } from 'lucide-react';
-import { useContext, useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
-import { Column } from './column';
 import { useInvalidateProject } from '@/hooks/queries/use-projects';
-import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
-import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
+import { FormError } from '@/lib/form-error-handler';
+import { SettingsContext } from '@/providers/settings-context';
+import { isCardData, isCardDropTargetData, isColumnData, isDraggingACard, isDraggingAColumn, ProjectWithColumnsAndTasks, TCard, TColumn } from '@/utils/data';
+import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element';
+import { unsafeOverflowAutoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/unsafe-overflow/element';
 import {
     extractClosestEdge,
 } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge';
 import { reorderWithEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/util/reorder-with-edge';
+import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
+import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { reorder } from '@atlaskit/pragmatic-drag-and-drop/reorder';
-import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element';
-import { SettingsContext } from '@/providers/settings-context';
-import { unsafeOverflowAutoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/unsafe-overflow/element';
-import { CardShadow } from './card';
+import { bindAll } from 'bind-event-listener';
+import { PlusCircle } from 'lucide-react';
+import { useContext, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { Column } from './column';
+import { CleanupFn } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types';
+import { blockBoardPanningAttr } from '@/utils/data-attributes';
 
 interface BoardProps {
     project: ProjectWithColumnsAndTasks
 }
 
 export function Board({ project }: BoardProps) {
-   
+
     const [projectState, setProjectState] = useState(project);
     const [isAddingList, setIsAddingList] = useState(false);
     const [newListTitle, setNewListTitle] = useState('');
@@ -189,7 +191,7 @@ export function Board({ project }: BoardProps) {
                                 columns
                             }));
 
-                           
+
                             reorderTasksMutation.mutate({
                                 columnId: home.id,
                                 projectId: projectState.id,
@@ -456,6 +458,73 @@ export function Board({ project }: BoardProps) {
             }),
         );
     }, [projectState, settings.boardScrollSpeed, settings.isOverElementAutoScrollEnabled, settings.isOverflowScrollingEnabled]);
+
+
+    // Panning the board
+    useEffect(() => {
+        let cleanupActive: CleanupFn | null = null;
+        const scrollable = scrollableRef.current;
+        if (!scrollable) return;
+
+        function begin({ startX }: { startX: number }) {
+            let lastX = startX;
+
+            const cleanupEvents = bindAll(
+                window,
+                [
+                    {
+                        type: 'pointermove',
+                        listener(event) {
+                            const currentX = event.clientX;
+                            const diffX = lastX - currentX;
+
+                            lastX = currentX;
+                            scrollable?.scrollBy({ left: diffX });
+                        },
+                    },
+                    // stop panning if we see any of these events
+                    ...(
+                        [
+                            'pointercancel',
+                            'pointerup',
+                            'pointerdown',
+                            'keydown',
+                            'resize',
+                            'click',
+                            'visibilitychange',
+                        ] as const
+                    ).map((eventName) => ({ type: eventName, listener: () => cleanupEvents() })),
+                ],
+                // need to make sure we are not after the "pointerdown" on the scrollable
+                // Also this is helpful to make sure we always hear about events from this point
+                { capture: true },
+            );
+
+            cleanupActive = cleanupEvents;
+        }
+
+        const cleanupStart = bindAll(scrollable, [
+            {
+                type: 'pointerdown',
+                listener(event) {
+                    if (!(event.target instanceof HTMLElement)) {
+                        return;
+                    }
+                    // ignore interactive elements
+                    if (event.target.closest(`[${blockBoardPanningAttr}]`)) {
+                        return;
+                    }
+
+                    begin({ startX: event.clientX });
+                },
+            },
+        ]);
+
+        return function cleanupAll() {
+            cleanupStart();
+            cleanupActive?.();
+        };
+    }, []);
 
     return (
         <div ref={scrollableRef} className="min-h-screen">
