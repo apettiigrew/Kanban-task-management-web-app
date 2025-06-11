@@ -92,7 +92,35 @@ export function Board({ project }: BoardProps) {
 
     // Update local state when project prop changes
     useEffect(() => {
-        setProjectState(project);
+        setProjectState(prevState => {
+            // If this is the initial load or project ID changed, use the new project data
+            if (!prevState || prevState.id !== project.id) {
+                return project;
+            }
+            
+            // Otherwise, preserve the current column order while updating column data
+            const updatedColumns = prevState.columns.map(prevColumn => {
+                const updatedColumn = project.columns.find(col => col.id === prevColumn.id);
+                if (updatedColumn) {
+                    // Merge updated column data while preserving the order from prevState
+                    return {
+                        ...updatedColumn,
+                        order: prevColumn.order
+                    };
+                }
+                return prevColumn;
+            });
+            
+            // Add any new columns that weren't in the previous state
+            const newColumns = project.columns.filter(col => 
+                !prevState.columns.some(prevCol => prevCol.id === col.id)
+            );
+            
+            return {
+                ...project,
+                columns: [...updatedColumns, ...newColumns]
+            };
+        });
     }, [project]);
 
     const handleAddList = () => {
