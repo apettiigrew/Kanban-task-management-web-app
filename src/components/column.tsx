@@ -62,7 +62,7 @@ interface ColumnProps {
     column: TColumn;
 }
 export function Column({ title, column }: ColumnProps) {
-    
+
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [columnTitle, setColumnTitle] = useState(title);
     const [isAddingCard, setIsAddingCard] = useState(false);
@@ -72,7 +72,7 @@ export function Column({ title, column }: ColumnProps) {
     const titleInputRef = useRef<HTMLInputElement>(null);
     const newCardInputRef = useRef<HTMLInputElement>(null);
     const scrollableRef = useRef<HTMLDivElement | null>(null);
-    
+
     const [state, setState] = useState<TColumnState>(idle);
     const { settings } = useContext(SettingsContext);
 
@@ -251,9 +251,9 @@ export function Column({ title, column }: ColumnProps) {
     }, [column, column.cards, settings]);
 
     const addCard = (columnId: string, title: string) => {
-        setIsAddingCard(false); 
+        setIsAddingCard(false);
         setNewCardTitle('');
-        createTaskMutation.mutate({ 
+        createTaskMutation.mutate({
             projectId: column.projectId,
             columnId: columnId,
             title: title,
@@ -375,7 +375,9 @@ export function Column({ title, column }: ColumnProps) {
                             placeholder="Enter a title or paste a link"
                         />
                         <div className="flex justify-between gap-3">
-                            <Button onClick={() => addCard(column.id, newCardTitle.trim())}>
+                            <Button
+                                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 border-0 text-white"
+                                onClick={() => addCard(column.id, newCardTitle.trim())}>
                                 Add card
                             </Button>
                             <Button
@@ -389,7 +391,7 @@ export function Column({ title, column }: ColumnProps) {
                         </div>
                     </div>
                 ) : (
-                    <Button 
+                    <Button
                         className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 border-0 text-white"
                         onClick={() => setIsAddingCard(true)}
                     >
