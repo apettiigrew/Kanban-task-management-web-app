@@ -55,18 +55,14 @@ export async function POST(request: NextRequest) {
       throw new Error('Project not found')
     }
 
-    // Get the next order number for this project
-    const maxOrder = await prisma.column.aggregate({
-      where: { projectId: validatedData.projectId },
-      _max: { order: true },
-    })
+   
 
-    const nextOrder = (maxOrder._max.order ?? 0) + 1
+  
 
     const column = await prisma.column.create({
       data: {
         ...validatedData,
-        order: nextOrder,
+        order: validatedData.order,
       },
       include: {
         project: {

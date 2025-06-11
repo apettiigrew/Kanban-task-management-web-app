@@ -83,49 +83,14 @@ export const useCreateColumn = (options: UseCreateColumnOptions = {}) => {
   return useMutation({
     mutationKey: ['createColumn'],
     mutationFn: createColumn,
-    onMutate: async (newColumn) => {
-     
-      const previousProject = queryClient.getQueryData(projectKeys.detail(newColumn.projectId))
-    
-      const optimisticColumn: TColumn = {
-        id: `temp-${Date.now()}`,
-        title: newColumn.title,
-        projectId: newColumn.projectId,
-        order: newColumn.order ?? 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        cards: [],
-      }
-
-      queryClient.setQueryData(projectKeys.detail(newColumn.projectId), (oldData: ProjectWithColumnsAndTasks) => {
-          return { ...oldData, columns: [...oldData.columns, optimisticColumn] }
-      })
-
-      return { optimisticColumn }
-    },
-    onError: (error: FormError, newColumn, context) => {
+    onError: (error: FormError) => {
       if (error.fieldErrors && options.onFieldErrors) {
         options.onFieldErrors(error.fieldErrors)
       } else if (options.onError) {
         options.onError(error)
       }
     },
-    onSuccess: (data, variables, context) => {
-      // Update the optimistic data with real data
-      queryClient.setQueryData(columnKeys.byProject(variables.projectId), (oldData: (TColumn & { taskCount: number })[] | undefined) => {
-        if (oldData) {
-          return oldData.map(column => 
-            column.id === context?.optimisticColumn.id ? data : column
-          )
-        }
-        return [data]
-      })
-
-      // Invalidate related queries to ensure consistency
-      queryClient.invalidateQueries({ queryKey: columnKeys.byProject(variables.projectId) })
-      queryClient.invalidateQueries({ queryKey: columnKeys.byProjectWithTasks(variables.projectId) })
-      queryClient.invalidateQueries({ queryKey: columnKeys.lists() })
-      
+    onSuccess: (data, variables) => {
       if (options.onSuccess) {
         options.onSuccess(data)
       }

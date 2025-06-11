@@ -18,13 +18,10 @@ import { reorderWithEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/util/r
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { reorder } from '@atlaskit/pragmatic-drag-and-drop/reorder';
-import { bindAll } from 'bind-event-listener';
 import { PlusCircle } from 'lucide-react';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Column } from './column';
-import { CleanupFn } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types';
-import { blockBoardPanningAttr } from '@/utils/data-attributes';
 
 interface BoardProps {
     project: ProjectWithColumnsAndTasks
@@ -45,15 +42,30 @@ export function Board({ project }: BoardProps) {
     // Create column mutation with database persistence
     const createColumnMutation = useCreateColumn({
         onSuccess: (data) => {
-            toast.success(`Column "${data.title}" created successfully`);
             setNewListTitle('');
             setIsAddingList(false);
-            invalidateByProject(project.id);
+            // Replace the optimistic column with the real one from server
+            setProjectState(prev => ({
+                ...prev,
+                columns: prev.columns.map(col =>
+                    col.id.startsWith('temp') ? data : col
+                )
+            }));
         },
         onError: (error: FormError) => {
+            // Rollback optimistic update by removing the temporary column
+            setProjectState(prev => ({
+                ...prev,
+                columns: prev.columns.filter(col => !col.id.startsWith('temp-'))
+            }));
             toast.error(error.message || 'Failed to create column');
         },
         onFieldErrors: (errors) => {
+            // Rollback optimistic update by removing the temporary column
+            setProjectState(prev => ({
+                ...prev,
+                columns: prev.columns.filter(col => !col.id.startsWith('temp-'))
+            }));
             if (errors.title) {
                 toast.error(errors.title);
             }
@@ -90,39 +102,6 @@ export function Board({ project }: BoardProps) {
         }
     });
 
-    // Update local state when project prop changes
-    useEffect(() => {
-        setProjectState(prevState => {
-            // If this is the initial load or project ID changed, use the new project data
-            if (!prevState || prevState.id !== project.id) {
-                return project;
-            }
-            
-            // Otherwise, preserve the current column order while updating column data
-            const updatedColumns = prevState.columns.map(prevColumn => {
-                const updatedColumn = project.columns.find(col => col.id === prevColumn.id);
-                if (updatedColumn) {
-                    // Merge updated column data while preserving the order from prevState
-                    return {
-                        ...updatedColumn,
-                        order: prevColumn.order
-                    };
-                }
-                return prevColumn;
-            });
-            
-            // Add any new columns that weren't in the previous state
-            const newColumns = project.columns.filter(col => 
-                !prevState.columns.some(prevCol => prevCol.id === col.id)
-            );
-            
-            return {
-                ...project,
-                columns: [...updatedColumns, ...newColumns]
-            };
-        });
-    }, [project]);
-
     const handleAddList = () => {
         const trimmedTitle = newListTitle.trim();
 
@@ -131,11 +110,36 @@ export function Board({ project }: BoardProps) {
             return;
         }
 
-        const maxOrder = projectState.columns.length > 0 ? projectState.columns.length - 1 : 0;
+        console.log("projectState.columns", projectState.columns);
+        var order = 0;
+        if (projectState.columns.length === 0) {
+            order = 0;
+        } else {
+            const maxOrder = projectState.columns.length - 1;
+            order = maxOrder + 1;
+        }
+        // Create optimistic column for immediate UI update
+        const optimisticColumn: TColumn = {
+            id: `temp`,
+            title: trimmedTitle,
+            projectId: projectState.id,
+            order: order,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            cards: [],
+        };
+
+        // Optimistically update UI
+        setProjectState(prev => ({
+            ...prev,
+            columns: [...prev.columns, optimisticColumn]
+        }));
+
+        // Make the API call
         createColumnMutation.mutate({
             title: trimmedTitle,
             projectId: projectState.id,
-            order: maxOrder + 1
+            order: order
         });
     };
 
