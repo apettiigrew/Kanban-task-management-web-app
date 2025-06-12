@@ -3,7 +3,7 @@
 import '@/app/board.css';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useCreateColumn, useReorderColumns } from '@/hooks/mutations/use-column-mutations';
+import { useCreateColumn, useReorderColumns, useDeleteColumn } from '@/hooks/mutations/use-column-mutations';
 import { useMoveTask, useReorderTasks } from '@/hooks/mutations/use-task-mutations';
 import { FormError } from '@/lib/form-error-handler';
 import { SettingsContext } from '@/providers/settings-context';
@@ -96,6 +96,39 @@ export function Board({ project }: BoardProps) {
             toast.error(error.message || 'Failed to reorder columns');
         }
     });
+
+    const deleteColumnMutation = useDeleteColumn({
+        onSuccess: () => {
+            // The optimistic update is already applied, just need to handle success
+        },
+        onError: (error: FormError) => {
+            // Revert to previous state on error
+            setProjectState(project);
+            toast.error(error.message || 'Failed to delete column');
+        }
+    });
+
+    const handleDeleteColumn = (columnId: string) => {
+        // Optimistically update UI
+        setProjectState(prev => {
+            const filteredColumns = prev.columns.filter(col => col.id !== columnId);
+            // Reorder remaining columns
+            const reorderedColumns = filteredColumns.map((col, index) => ({
+                ...col,
+                order: index
+            }));
+            return {
+                ...prev,
+                columns: reorderedColumns
+            };
+        });
+
+        // Make the API call
+        deleteColumnMutation.mutate({
+            id: columnId,
+            projectId: projectState.id
+        });
+    };
 
     const handleAddList = () => {
         const trimmedTitle = newListTitle.trim();
@@ -504,7 +537,9 @@ export function Board({ project }: BoardProps) {
                     {projectState.columns.map((column) => (
                         <Column
                             key={column.id}
-                            column={column} />
+                            column={column}
+                            onDelete={() => handleDeleteColumn(column.id)}
+                        />
                     ))}
 
                     {isAddingList ? (

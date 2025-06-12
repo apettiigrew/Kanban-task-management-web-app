@@ -59,8 +59,9 @@ const stateStyles: { [Key in TColumnState['type']]: string } = {
 
 interface ColumnProps {
     column: TColumn;
+    onDelete: () => void;
 }
-export function Column({ column }: ColumnProps) {
+export function Column({ column, onDelete }: ColumnProps) {
 
     console.log("column", column);
     const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -140,7 +141,8 @@ export function Column({ column }: ColumnProps) {
     };
 
     const handleDelete = () => {
-        deleteColumnMutation.mutate(column.id, column.projectId);
+        onDelete();
+   
     };
 
     useEffect(() => {

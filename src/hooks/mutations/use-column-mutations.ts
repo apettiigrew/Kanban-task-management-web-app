@@ -42,8 +42,8 @@ const updateColumn = async (data: UpdateColumnData): Promise<TColumn & { taskCou
   })
 }
 
-const deleteColumn = async (id: string): Promise<void> => {
-  return apiRequest<void>(`/api/columns/${id}`, {
+const deleteColumn = async (data: { id: string, projectId: string }): Promise<void> => {
+  return apiRequest<void>(`/api/columns/${data.id}`, {
     method: 'DELETE',
   })
 }
@@ -155,68 +155,13 @@ export const useDeleteColumn = (options: UseDeleteColumnOptions = {}) => {
   return useMutation({
     mutationKey: ['deleteColumn'],
     mutationFn: deleteColumn,
-    onMutate: async (id) => {
-      // Get current column data to find projectId for invalidation
-      const currentColumn = queryClient.getQueryData(columnKeys.detail(id)) as (TColumn) | undefined
-
-      if (currentColumn) {
-        // Cancel any outgoing refetches
-        await queryClient.cancelQueries({ queryKey: columnKeys.byProject(currentColumn.projectId) })
-        await queryClient.cancelQueries({ queryKey: columnKeys.byProjectWithTasks(currentColumn.projectId) })
-        await queryClient.cancelQueries({ queryKey: columnKeys.detail(id) })
-
-        // Snapshot the previous values
-        const previousColumns = queryClient.getQueryData(columnKeys.byProject(currentColumn.projectId))
-        const previousColumnsWithTasks = queryClient.getQueryData(columnKeys.byProjectWithTasks(currentColumn.projectId))
-
-        // Optimistically remove the column
-        queryClient.setQueryData(columnKeys.byProject(currentColumn.projectId), (oldData: (TColumn)[] | undefined) => {
-          if (oldData) {
-            return oldData.filter(column => column.id !== id)
-          }
-          return oldData
-        })
-
-        queryClient.setQueryData(columnKeys.byProjectWithTasks(currentColumn.projectId), (oldData: TColumn[] | undefined) => {
-          if (oldData) {
-            return oldData.filter(column => column.id !== id)
-          }
-          return oldData
-        })
-
-        // Remove from detail cache
-        queryClient.removeQueries({ queryKey: columnKeys.detail(id) })
-
-        return { previousColumns, previousColumnsWithTasks, currentColumn }
-      }
-
-      return { currentColumn }
-    },
-    onError: (error: FormError, id, context) => {
-      // If the mutation fails, use the context to roll back
-      if (context?.currentColumn) {
-        if (context.previousColumns) {
-          queryClient.setQueryData(columnKeys.byProject(context.currentColumn.projectId), context.previousColumns)
-        }
-        if (context.previousColumnsWithTasks) {
-          queryClient.setQueryData(columnKeys.byProjectWithTasks(context.currentColumn.projectId), context.previousColumnsWithTasks)
-        }
-        // Restore the column detail
-        queryClient.setQueryData(columnKeys.detail(id), context.currentColumn)
-      }
-
+    onError: (error: FormError, data) => {
       if (options.onError) {
         options.onError(error)
       }
     },
-    onSuccess: (data, id, context) => {
-      if (context?.currentColumn) {
-        // Invalidate related queries to ensure consistency
-        queryClient.invalidateQueries({ queryKey: columnKeys.byProject(context.currentColumn.projectId) })
-        queryClient.invalidateQueries({ queryKey: columnKeys.byProjectWithTasks(context.currentColumn.projectId) })
-        queryClient.invalidateQueries({ queryKey: columnKeys.lists() })
-      }
-
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: projectKeys.detail(variables.projectId) })
       if (options.onSuccess) {
         options.onSuccess()
       }

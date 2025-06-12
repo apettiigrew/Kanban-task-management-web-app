@@ -89,8 +89,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    
-
+  
     // Check if column exists
     const existingColumn = await prisma.column.findUnique({
       where: { id: params.id },
@@ -107,14 +106,24 @@ export async function DELETE(
       throw new NotFoundError('Column')
     }
 
-    // Check if column has tasks
-    if (existingColumn._count.cards > 0) {
-      throw new Error('Cannot delete column with tasks. Please move or delete all tasks first.')
-    }
-
-    // Delete the column
+    await prisma.card.deleteMany({
+      where: {
+        columnId: params.id
+      }
+    })
+    
     await prisma.column.delete({
       where: { id: params.id },
+    })
+
+    // reorder the columns in prisma
+    await prisma.column.updateMany({
+      where: {
+        projectId: existingColumn.projectId
+      },
+      data: {
+        order: { decrement: 1 }
+      }
     })
 
     return createSuccessResponse(undefined, 'Column deleted successfully')
