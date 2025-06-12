@@ -342,7 +342,7 @@ export function Column({ column, onDelete }: ColumnProps) {
                             <Button
                                 className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 border-0 text-white"
                                 onClick={() => addCard(column.id, newCardTitle.trim())}>
-                                Add card
+                                Add a card
                             </Button>
                             <Button
                                 onClick={() => setIsAddingCard(false)}

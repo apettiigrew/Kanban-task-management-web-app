@@ -255,7 +255,6 @@ export function Board({ project }: BoardProps) {
                                 columns
                             }));
 
-
                             reorderTasksMutation.mutate({
                                 columnId: home.id,
                                 projectId: projectState.id,

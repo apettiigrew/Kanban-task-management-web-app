@@ -23,7 +23,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             order: 'asc'
           },
           include: {
-            cards: true
+            cards: {
+              orderBy: {
+                order: 'asc'
+              }
+            }
           }
         }
       },
