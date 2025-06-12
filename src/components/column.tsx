@@ -158,62 +158,62 @@ export function Column({ column, onDelete }: ColumnProps) {
         }
     }, [isAddingCard]);
 
-    // useEffect(() => {
-    //     const outer = outerFullHeightRef.current;
-    //     const scrollable = scrollableRef.current;
-    //     if (!outer || !scrollable) return;
+    useEffect(() => {
+        const outer = outerFullHeightRef.current;
+        const scrollable = scrollableRef.current;
+        if (!outer || !scrollable) return;
 
-    //     const data = getColumnData({ column });
+        const data = getColumnData({ column });
 
-    //     function setIsCardOver({ data, location }: { data: TCardData; location: DragLocationHistory }) {
-    //         const innerMost = location.current.dropTargets[0];
-    //         const isOverChildCard = Boolean(innerMost && isCardDropTargetData(innerMost.data));
+        function setIsCardOver({ data, location }: { data: TCardData; location: DragLocationHistory }) {
+            const innerMost = location.current.dropTargets[0];
+            const isOverChildCard = Boolean(innerMost && isCardDropTargetData(innerMost.data));
 
-    //         const proposed: TColumnState = {
-    //             type: 'is-card-over',
-    //             dragging: data.rect,
-    //             isOverChildCard,
-    //         };
-    //         setState((current) => (isShallowEqual(proposed, current) ? current : proposed));
-    //     }
+            const proposed: TColumnState = {
+                type: 'is-card-over',
+                dragging: data.rect,
+                isOverChildCard,
+            };
+            setState((current) => (isShallowEqual(proposed, current) ? current : proposed));
+        }
 
-    //     return combine(
-    //         draggable({
-    //             element: outer,
-    //             getInitialData: () => data,
-    //             onDragStart: () => setState({ type: 'is-dragging' }),
-    //             onDrop: () => setState(idle),
-    //         }),
-    //         dropTargetForElements({
-    //             element: outer,
-    //             getData: ({ input, element }) => attachClosestEdge(data, { element, input, allowedEdges: ['left', 'right'] }),
-    //             canDrop: ({ source }) => isDraggingACard({ source }) || isDraggingAColumn({ source }),
-    //             getIsSticky: () => true,
-    //             onDragStart: ({ source, location }) => isCardData(source.data) && setIsCardOver({ data: source.data, location }),
-    //             onDragEnter: ({ source, location }) => {
-    //                 if (isCardData(source.data)) return setIsCardOver({ data: source.data, location });
-    //                 if (isColumnData(source.data) && source.data.column.id !== column.id) setState({ type: 'is-column-over' });
-    //             },
-    //             onDropTargetChange: ({ source, location }) => isCardData(source.data) && setIsCardOver({ data: source.data, location }),
-    //             onDragLeave: ({ source }) => !isColumnData(source.data) || source.data.column.id !== column.id ? setState(idle) : undefined,
-    //             onDrop: () => setState(idle),
-    //         }),
-    //         autoScrollForElements({
-    //             canScroll: ({ source }) => settings.isOverElementAutoScrollEnabled && isDraggingACard({ source }),
-    //             getConfiguration: () => ({ maxScrollSpeed: settings.columnScrollSpeed }),
-    //             element: scrollable,
-    //         }),
-    //         unsafeOverflowAutoScrollForElements({
-    //             element: scrollable,
-    //             getConfiguration: () => ({ maxScrollSpeed: settings.columnScrollSpeed }),
-    //             canScroll: ({ source }) =>
-    //                 settings.isOverElementAutoScrollEnabled &&
-    //                 settings.isOverflowScrollingEnabled &&
-    //                 isDraggingACard({ source }),
-    //             getOverflow: () => ({ forTopEdge: { top: 1000 }, forBottomEdge: { bottom: 1000 } }),
-    //         })
-    //     );
-    // }, [column, column.cards, settings]);
+        return combine(
+            draggable({
+                element: outer,
+                getInitialData: () => data,
+                onDragStart: () => setState({ type: 'is-dragging' }),
+                onDrop: () => setState(idle),
+            }),
+            dropTargetForElements({
+                element: outer,
+                getData: ({ input, element }) => attachClosestEdge(data, { element, input, allowedEdges: ['left', 'right'] }),
+                canDrop: ({ source }) => isDraggingACard({ source }) || isDraggingAColumn({ source }),
+                getIsSticky: () => true,
+                onDragStart: ({ source, location }) => isCardData(source.data) && setIsCardOver({ data: source.data, location }),
+                onDragEnter: ({ source, location }) => {
+                    if (isCardData(source.data)) return setIsCardOver({ data: source.data, location });
+                    if (isColumnData(source.data) && source.data.column.id !== column.id) setState({ type: 'is-column-over' });
+                },
+                onDropTargetChange: ({ source, location }) => isCardData(source.data) && setIsCardOver({ data: source.data, location }),
+                onDragLeave: ({ source }) => !isColumnData(source.data) || source.data.column.id !== column.id ? setState(idle) : undefined,
+                onDrop: () => setState(idle),
+            }),
+            autoScrollForElements({
+                canScroll: ({ source }) => settings.isOverElementAutoScrollEnabled && isDraggingACard({ source }),
+                getConfiguration: () => ({ maxScrollSpeed: settings.columnScrollSpeed }),
+                element: scrollable,
+            }),
+            unsafeOverflowAutoScrollForElements({
+                element: scrollable,
+                getConfiguration: () => ({ maxScrollSpeed: settings.columnScrollSpeed }),
+                canScroll: ({ source }) =>
+                    settings.isOverElementAutoScrollEnabled &&
+                    settings.isOverflowScrollingEnabled &&
+                    isDraggingACard({ source }),
+                getOverflow: () => ({ forTopEdge: { top: 1000 }, forBottomEdge: { bottom: 1000 } }),
+            })
+        );
+    }, [column, column.cards, settings]);
 
     const addCard = (columnId: string, title: string) => {
         setIsAddingCard(false);
