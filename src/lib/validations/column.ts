@@ -19,8 +19,7 @@ export const createColumnSchema = z.object({
 
 // Schema for updating a column
 export const updateColumnSchema = z.object({
-  title: z.string().min(1, 'Column title is required').max(50, 'Column title must be less than 50 characters').optional(),
-  order: z.number().int().min(0, 'Order must be a non-negative integer').optional(),
+  title: z.string().min(1, 'Column title is required').max(50, 'Column title must be less than 50 characters'),
 })
 
 // Schema for reordering columns

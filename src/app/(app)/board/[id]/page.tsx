@@ -48,9 +48,8 @@ interface BoardContentProps {
 }
 
 function BoardContent({ projectId }: BoardContentProps) {
-  const { data: project, isLoading: projectLoading, error: projectError } = useProject({ id: projectId })
+  const { data: project, error: projectError } = useProject({ id: projectId, refetchOnWindowFocus: true })
 
-  
   if (projectError) {
     return (
       <div className="min-h-screen flex items-center justify-center">

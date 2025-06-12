@@ -14,8 +14,9 @@ interface CreateColumnData {
 }
 
 interface UpdateColumnData {
-  title?: string
-  order?: number
+  id: string
+  title: string
+  projectId: string
 }
 
 interface ReorderColumnsData {
@@ -34,8 +35,8 @@ const createColumn = async (data: CreateColumnData): Promise<TColumn & { taskCou
   })
 }
 
-const updateColumn = async ({ id, data }: { id: string; data: UpdateColumnData }): Promise<TColumn & { taskCount: number }> => {
-  return apiRequest<TColumn & { taskCount: number }>(`/api/columns/${id}`, {
+const updateColumn = async (data: UpdateColumnData): Promise<TColumn & { taskCount: number }> => {
+  return apiRequest<TColumn & { taskCount: number }>(`/api/columns/${data.id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   })
@@ -79,7 +80,7 @@ interface UseReorderColumnsOptions {
 
 export const useCreateColumn = (options: UseCreateColumnOptions = {}) => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationKey: ['createColumn'],
     mutationFn: createColumn,
@@ -100,69 +101,47 @@ export const useCreateColumn = (options: UseCreateColumnOptions = {}) => {
 
 export const useUpdateColumn = (options: UseUpdateColumnOptions = {}) => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationKey: ['updateColumn'],
     mutationFn: updateColumn,
-    onMutate: async ({ id, data }) => {
+    onMutate: async ({ id, title, projectId }) => {
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: columnKeys.detail(id) })
-      
-      // Get current column data to find projectId for invalidation
-      const currentColumn = queryClient.getQueryData(columnKeys.detail(id)) as (TColumn & { taskCount: number }) | undefined
-      
-      if (currentColumn) {
-        await queryClient.cancelQueries({ queryKey: columnKeys.byProject(currentColumn.projectId) })
-        await queryClient.cancelQueries({ queryKey: columnKeys.byProjectWithTasks(currentColumn.projectId) })
-      }
+      await queryClient.cancelQueries({ queryKey: projectKeys.detail(projectId) })
 
-      // Snapshot the previous values
-      const previousColumn = queryClient.getQueryData(columnKeys.detail(id))
-      const previousColumns = currentColumn ? queryClient.getQueryData(columnKeys.byProject(currentColumn.projectId)) : undefined
+      // Snapshot the previous value
+      const previousProject = queryClient.getQueryData(projectKeys.detail(projectId))
 
       // Optimistically update the column
-      if (currentColumn) {
-        const optimisticColumn = { ...currentColumn, ...data, updatedAt: new Date() }
-        
-        queryClient.setQueryData(columnKeys.detail(id), optimisticColumn)
-        
-        // Update in project columns list
-        queryClient.setQueryData(columnKeys.byProject(currentColumn.projectId), (oldData: (TColumn)[] | undefined) => {
-          if (oldData) {
-            return oldData.map(column => column.id === id ? optimisticColumn : column)
-          }
-          return oldData
-        })
-      }
+      queryClient.setQueryData(projectKeys.detail(projectId), (old: ProjectWithColumnsAndTasks) => {
+        if (!old) return old
+        return {
+          ...old,
+          columns: old.columns.map(col => 
+            col.id === id 
+              ? { ...col, title } 
+              : col
+          )
+        }
+      })
 
-      return { previousColumn, previousColumns, currentColumn }
+      return { previousProject }
     },
-    onError: (error: FormError, { id, data }, context) => {
+    onError: (error: FormError, { id, title, projectId }, context) => {
       // If the mutation fails, use the context to roll back
-      if (context?.previousColumn) {
-        queryClient.setQueryData(columnKeys.detail(id), context.previousColumn)
-      }
-      if (context?.currentColumn && context?.previousColumns) {
-        queryClient.setQueryData(columnKeys.byProject(context.currentColumn.projectId), context.previousColumns)
+      if (context?.previousProject) {
+        queryClient.setQueryData(projectKeys.detail(projectId), context.previousProject)
       }
 
-      // Handle errors through options
       if (error.fieldErrors && options.onFieldErrors) {
         options.onFieldErrors(error.fieldErrors)
       } else if (options.onError) {
         options.onError(error)
       }
     },
-    onSuccess: (data, { id }, context) => {
-      // Update with real data
-      queryClient.setQueryData(columnKeys.detail(id), data)
-      
-      if (context?.currentColumn) {
-        // Invalidate related queries
-        queryClient.invalidateQueries({ queryKey: columnKeys.byProject(context.currentColumn.projectId) })
-        queryClient.invalidateQueries({ queryKey: columnKeys.byProjectWithTasks(context.currentColumn.projectId) })
-      }
-      
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: projectKeys.detail(data.projectId) })
+
       if (options.onSuccess) {
         options.onSuccess(data)
       }
@@ -172,14 +151,14 @@ export const useUpdateColumn = (options: UseUpdateColumnOptions = {}) => {
 
 export const useDeleteColumn = (options: UseDeleteColumnOptions = {}) => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationKey: ['deleteColumn'],
     mutationFn: deleteColumn,
     onMutate: async (id) => {
       // Get current column data to find projectId for invalidation
       const currentColumn = queryClient.getQueryData(columnKeys.detail(id)) as (TColumn) | undefined
-      
+
       if (currentColumn) {
         // Cancel any outgoing refetches
         await queryClient.cancelQueries({ queryKey: columnKeys.byProject(currentColumn.projectId) })
@@ -237,7 +216,7 @@ export const useDeleteColumn = (options: UseDeleteColumnOptions = {}) => {
         queryClient.invalidateQueries({ queryKey: columnKeys.byProjectWithTasks(context.currentColumn.projectId) })
         queryClient.invalidateQueries({ queryKey: columnKeys.lists() })
       }
-      
+
       if (options.onSuccess) {
         options.onSuccess()
       }
@@ -247,56 +226,17 @@ export const useDeleteColumn = (options: UseDeleteColumnOptions = {}) => {
 
 export const useReorderColumns = (options: UseReorderColumnsOptions = {}) => {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationKey: ['reorderColumns'],
     mutationFn: reorderColumns,
-    onMutate: async (data) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: columnKeys.byProject(data.projectId) })
-      await queryClient.cancelQueries({ queryKey: columnKeys.byProjectWithTasks(data.projectId) })
-
-      // Snapshot the previous values
-      const previousColumns = queryClient.getQueryData(columnKeys.byProject(data.projectId))
-      const previousColumnsWithTasks = queryClient.getQueryData(columnKeys.byProjectWithTasks(data.projectId))
-
-      // Optimistically reorder columns
-      queryClient.setQueryData(columnKeys.byProject(data.projectId), (oldData: (TColumn)[] | undefined) => {
-        if (oldData) {
-          const newData = [...oldData]
-          // Apply new order based on columnOrders
-          data.columnOrders.forEach(({ id, order }) => {
-            const columnIndex = newData.findIndex(col => col.id === id)
-            if (columnIndex !== -1) {
-              newData[columnIndex] = { ...newData[columnIndex], order }
-            }
-          })
-          // Sort by new order
-          return newData.sort((a, b) => a.order - b.order)
-        }
-        return oldData
-      })
-
-      return { previousColumns, previousColumnsWithTasks }
-    },
-    onError: (error: FormError, data, context) => {
-      // If the mutation fails, use the context to roll back
-      if (context?.previousColumns) {
-        queryClient.setQueryData(columnKeys.byProject(data.projectId), context.previousColumns)
-      }
-      if (context?.previousColumnsWithTasks) {
-        queryClient.setQueryData(columnKeys.byProjectWithTasks(data.projectId), context.previousColumnsWithTasks)
-      }
-
+    onError: (error: FormError, data) => {
       if (options.onError) {
         options.onError(error)
       }
     },
     onSuccess: (result, data) => {
-      // Invalidate related queries to ensure consistency
-      queryClient.invalidateQueries({ queryKey: columnKeys.byProject(data.projectId) })
-      queryClient.invalidateQueries({ queryKey: columnKeys.byProjectWithTasks(data.projectId) })
-      
+      queryClient.refetchQueries({ queryKey: projectKeys.detail(data.projectId) })
       if (options.onSuccess) {
         options.onSuccess()
       }
@@ -307,7 +247,7 @@ export const useReorderColumns = (options: UseReorderColumnsOptions = {}) => {
 // Utility hooks for mutation states
 export const useColumnMutationStates = () => {
   const queryClient = useQueryClient()
-  
+
   return {
     isCreating: queryClient.isMutating({ mutationKey: ['createColumn'] }) > 0,
     isUpdating: queryClient.isMutating({ mutationKey: ['updateColumn'] }) > 0,

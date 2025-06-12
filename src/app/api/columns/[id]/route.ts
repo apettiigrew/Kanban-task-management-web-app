@@ -64,7 +64,9 @@ export async function PUT(
 
     const column = await prisma.column.update({
       where: { id: params.id },
-      data: validatedData,
+      data: {
+        title: validatedData.title,
+      },
       include: {
         project: {
           select: {

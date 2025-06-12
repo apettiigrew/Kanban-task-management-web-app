@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCreateColumn, useReorderColumns } from '@/hooks/mutations/use-column-mutations';
 import { useMoveTask, useReorderTasks } from '@/hooks/mutations/use-task-mutations';
-import { useInvalidateProject } from '@/hooks/queries/use-projects';
 import { FormError } from '@/lib/form-error-handler';
 import { SettingsContext } from '@/providers/settings-context';
 import { isCardData, isCardDropTargetData, isColumnData, isDraggingACard, isDraggingAColumn, ProjectWithColumnsAndTasks, TCard, TColumn } from '@/utils/data';
@@ -28,17 +27,13 @@ interface BoardProps {
 }
 
 export function Board({ project }: BoardProps) {
-
+    console.log("project", project);
     const [projectState, setProjectState] = useState(project);
     const [isAddingList, setIsAddingList] = useState(false);
     const [newListTitle, setNewListTitle] = useState('');
     const { settings } = useContext(SettingsContext);
     const scrollableRef = useRef<HTMLDivElement | null>(null);
 
-    // Column invalidation utility
-    const { invalidateByProject } = useInvalidateProject();
-
-    console.log("projectState", projectState);
     // Create column mutation with database persistence
     const createColumnMutation = useCreateColumn({
         onSuccess: (data) => {
@@ -87,7 +82,7 @@ export function Board({ project }: BoardProps) {
 
     const reorderTasksMutation = useReorderTasks({
         onSuccess: () => {
-            invalidateByProject(project.id);
+            
         },
         onError: (error: FormError) => {
             toast.error(error.message || 'Failed to reorder tasks');
@@ -143,420 +138,360 @@ export function Board({ project }: BoardProps) {
         });
     };
 
-    useEffect(() => {
-        const element = scrollableRef.current;
-        if (!element) {
-            return;
-        }
-        return combine(
-            monitorForElements({
-                canMonitor: isDraggingACard,
-                onDrop({ source, location }) {
-                    const dragging = source.data;
-                    if (!isCardData(dragging)) {
-                        return;
-                    }
-
-                    const innerMost = location.current.dropTargets[0];
-
-                    if (!innerMost) {
-                        return;
-                    }
-                    const dropTargetData = innerMost.data;
-                    const homeColumnIndex = projectState.columns.findIndex(
-                        (column) => column.id === dragging.columnId,
-                    );
-                    const home: TColumn | undefined = projectState.columns[homeColumnIndex];
-
-                    if (!home) {
-                        return;
-                    }
-                    const cardIndexInHome = home.cards.findIndex((card: TCard) => card.id === dragging.card.id);
-
-                    // dropping on a card
-                    if (isCardDropTargetData(dropTargetData)) {
-                        console.log("dropping on a card");
-                        const destinationColumnIndex = projectState.columns.findIndex(
-                            (column) => column.id === dropTargetData.columnId,
-                        );
-                        const destination = projectState.columns[destinationColumnIndex];
-
-                        // reordering in home column
-                        if (home === destination) {
-                            const cardFinishIndex = home.cards.findIndex(
-                                (card: TCard) => card.id === dropTargetData.card.id,
-                            );
-
-                            if (cardIndexInHome === -1 || cardFinishIndex === -1) {
-                                return;
-                            }
-
-                            if (cardIndexInHome === cardFinishIndex) {
-                                return;
-                            }
-
-                            const closestEdge = extractClosestEdge(dropTargetData);
-
-                            const reordered = reorderWithEdge({
-                                axis: 'vertical',
-                                list: home.cards,
-                                startIndex: cardIndexInHome,
-                                indexOfTarget: cardFinishIndex,
-                                closestEdgeOfTarget: closestEdge,
-                            });
-
-                            const reorderedCards = reordered.map((card, index) => ({
-                                ...card,
-                                order: index
-                            }));
-
-                            const updated: TColumn = {
-                                ...home,
-                                cards: reorderedCards,
-                            };
-                            const columns = Array.from(projectState.columns);
-                            columns[homeColumnIndex] = updated;
-
-                            // Optimistically update UI
-                            setProjectState(prev => ({
-                                ...prev,
-                                columns
-                            }));
-
-
-                            reorderTasksMutation.mutate({
-                                columnId: home.id,
-                                projectId: projectState.id,
-                                taskOrders: reorderedCards,
-                                columns
-                            });
-                            return;
-                        }
-
-
-                        // moving card from one column to another
-                        if (!destination) {
-                            return;
-                        }
-
-                        const indexOfTarget = destination.cards.findIndex(
-                            (card) => card.id === dropTargetData.card.id,
-                        );
-
-                        const closestEdge = extractClosestEdge(dropTargetData);
-
-                        const finalIndex = closestEdge === 'bottom' ? indexOfTarget + 1 : indexOfTarget;
-
-                        // remove card from home list
-                        const homeCards = Array.from(home.cards);
-                        homeCards.splice(cardIndexInHome, 1);
-
-                        // insert into destination list
-                        const destinationCards = Array.from(destination.cards);
-                        destinationCards.splice(finalIndex, 0, dragging.card);
-
-                        // Update the order in the database
-                        const reorderedDestinationCards = destinationCards.map((card, index) => ({
-                            id: String(card.id),
-                            title: card.title,
-                            description: card.description,
-                            columnId: card.columnId,
-                            projectId: card.projectId,
-                            order: index
-                        }));
-
-                        const reorderedHomeCards = homeCards.map((card, index) => ({
-                            id: String(card.id),
-                            title: card.title,
-                            description: card.description,
-                            columnId: card.columnId,
-                            projectId: card.projectId,
-                            order: index
-                        }));
-
-                        const columns = Array.from(projectState.columns);
-                        columns[homeColumnIndex] = {
-                            ...home,
-                            cards: reorderedHomeCards,
-                        };
-                        columns[destinationColumnIndex] = {
-                            ...destination,
-                            cards: reorderedDestinationCards,
-                        };
-                        console.log("columns", columns);
-
-                        // Optimistically update UI
-                        setProjectState(prev => ({
-                            ...prev,
-                            columns
-                        }));
-
-                        // Move the task between columns
-                        moveTaskMutation.mutate({
-                            taskId: String(dragging.card.id),
-                            sourceColumnId: home.id,
-                            destinationColumnId: destination.id,
-                            destinationOrder: finalIndex,
-                            projectId: projectState.id,
-                            columns: columns
-                        });
-                        return;
-                    }
-
-                    // dropping onto a column, but not onto a card
-                    if (isColumnData(dropTargetData)) {
-                        const destinationColumnIndex = projectState.columns.findIndex(
-                            (column) => column.id === dropTargetData.column.id,
-                        );
-                        const destination = projectState.columns[destinationColumnIndex];
-
-                        if (!destination) {
-                            return;
-                        }
-
-                        // dropping on home
-                        if (home === destination) {
-                            const reordered = reorder({
-                                list: home.cards,
-                                startIndex: cardIndexInHome,
-                                finishIndex: home.cards.length - 1,
-                            });
-
-                            const updated: TColumn = {
-                                ...home,
-                                cards: reordered,
-                            };
-                            const columns = Array.from(projectState.columns);
-                            columns[homeColumnIndex] = updated;
-
-                            // Optimistically update UI
-                            setProjectState(prev => ({
-                                ...prev,
-                                columns
-                            }));
-
-                            // Update the order in the database
-                            const taskOrders = reordered.map((card, index) => ({
-                                id: String(card.id),
-                                order: index
-                            }));
-
-                            reorderTasksMutation.mutate({
-                                columnId: home.id,
-                                projectId: projectState.id,
-                                taskOrders,
-                                columns
-                            });
-                            return;
-                        }
-
-                        // remove card from home list
-                        const homeCards = Array.from(home.cards);
-                        homeCards.splice(cardIndexInHome, 1);
-
-                        // insert into destination list
-                        const destinationCards = Array.from(destination.cards);
-                        destinationCards.splice(destination.cards.length, 0, dragging.card);
-
-                        const columns = Array.from(projectState.columns);
-                        columns[homeColumnIndex] = {
-                            ...home,
-                            cards: homeCards,
-                        };
-                        columns[destinationColumnIndex] = {
-                            ...destination,
-                            cards: destinationCards,
-                        };
-
-                        // Optimistically update UI
-                        setProjectState(prev => ({
-                            ...prev,
-                            columns
-                        }));
-
-                        // Move the task to another column
-                        moveTaskMutation.mutate({
-                            taskId: String(dragging.card.id),
-                            sourceColumnId: home.id,
-                            destinationColumnId: destination.id,
-                            destinationOrder: destination.cards.length,
-                            projectId: projectState.id,
-                            columns
-                        });
-
-                        return;
-                    }
-                },
-            }),
-            monitorForElements({
-                canMonitor: isDraggingAColumn,
-                onDrop({ source, location }) {
-                    const dragging = source.data;
-                    if (!isColumnData(dragging)) {
-                        return;
-                    }
-
-                    const innerMost = location.current.dropTargets[0];
-
-                    if (!innerMost) {
-                        return;
-                    }
-                    const dropTargetData = innerMost.data;
-
-                    if (!isColumnData(dropTargetData)) {
-                        return;
-                    }
-
-                    const homeIndex = projectState.columns.findIndex((column) => column.id === dragging.column.id);
-                    const destinationIndex = projectState.columns.findIndex(
-                        (column) => column.id === dropTargetData.column.id,
-                    );
-
-                    if (homeIndex === -1 || destinationIndex === -1) {
-                        return;
-                    }
-
-                    if (homeIndex === destinationIndex) {
-                        return;
-                    }
-
-                    const closestEdge = extractClosestEdge(dropTargetData);
-
-                    const reordered = reorderWithEdge({
-                        axis: 'horizontal',
-                        list: projectState.columns,
-                        startIndex: homeIndex,
-                        indexOfTarget: destinationIndex,
-                        closestEdgeOfTarget: closestEdge,
-                    });
-
-                    // Optimistically update UI
-                    setProjectState(prev => ({
-                        ...prev,
-                        columns: reordered
-                    }));
-
-                    // Update the order in the database
-                    const columnOrders = reordered.map((column, index) => ({
-                        id: column.id,
-                        order: index
-                    }));
-
-                    reorderColumnsMutation.mutate({
-                        projectId: projectState.id,
-                        columnOrders
-                    });
-                },
-            }),
-            autoScrollForElements({
-                canScroll({ source }) {
-                    if (!settings.isOverElementAutoScrollEnabled) {
-                        return false;
-                    }
-
-                    return isDraggingACard({ source }) || isDraggingAColumn({ source });
-                },
-                getConfiguration: () => ({ maxScrollSpeed: settings.boardScrollSpeed }),
-                element,
-            }),
-            unsafeOverflowAutoScrollForElements({
-                element,
-                getConfiguration: () => ({ maxScrollSpeed: settings.boardScrollSpeed }),
-                canScroll({ source }) {
-                    if (!settings.isOverElementAutoScrollEnabled) {
-                        return false;
-                    }
-
-                    if (!settings.isOverflowScrollingEnabled) {
-                        return false;
-                    }
-
-                    return isDraggingACard({ source }) || isDraggingAColumn({ source });
-                },
-                getOverflow() {
-                    return {
-                        forLeftEdge: {
-                            top: 1000,
-                            left: 1000,
-                            bottom: 1000,
-                        },
-                        forRightEdge: {
-                            top: 1000,
-                            right: 1000,
-                            bottom: 1000,
-                        },
-                    };
-                },
-            }),
-        );
-    }, [projectState, settings.boardScrollSpeed, settings.isOverElementAutoScrollEnabled, settings.isOverflowScrollingEnabled]);
-
-
-    // Panning the board
     // useEffect(() => {
-    //     let cleanupActive: CleanupFn | null = null;
-    //     const scrollable = scrollableRef.current;
-    //     if (!scrollable) return;
-
-    //     function begin({ startX }: { startX: number }) {
-    //         let lastX = startX;
-
-    //         const cleanupEvents = bindAll(
-    //             window,
-    //             [
-    //                 {
-    //                     type: 'pointermove',
-    //                     listener(event) {
-    //                         const currentX = event.clientX;
-    //                         const diffX = lastX - currentX;
-
-    //                         lastX = currentX;
-    //                         scrollable?.scrollBy({ left: diffX });
-    //                     },
-    //                 },
-    //                 // stop panning if we see any of these events
-    //                 ...(
-    //                     [
-    //                         'pointercancel',
-    //                         'pointerup',
-    //                         'pointerdown',
-    //                         'keydown',
-    //                         'resize',
-    //                         'click',
-    //                         'visibilitychange',
-    //                     ] as const
-    //                 ).map((eventName) => ({ type: eventName, listener: () => cleanupEvents() })),
-    //             ],
-    //             // need to make sure we are not after the "pointerdown" on the scrollable
-    //             // Also this is helpful to make sure we always hear about events from this point
-    //             { capture: true },
-    //         );
-
-    //         cleanupActive = cleanupEvents;
+    //     const element = scrollableRef.current;
+    //     if (!element) {
+    //         return;
     //     }
-
-    //     const cleanupStart = bindAll(scrollable, [
-    //         {
-    //             type: 'pointerdown',
-    //             listener(event) {
-    //                 if (!(event.target instanceof HTMLElement)) {
-    //                     return;
-    //                 }
-    //                 // ignore interactive elements
-    //                 if (event.target.closest(`[${blockBoardPanningAttr}]`)) {
+    //     return combine(
+    //         monitorForElements({
+    //             canMonitor: isDraggingACard,
+    //             onDrop({ source, location }) {
+    //                 const dragging = source.data;
+    //                 if (!isCardData(dragging)) {
     //                     return;
     //                 }
 
-    //                 begin({ startX: event.clientX });
+    //                 const innerMost = location.current.dropTargets[0];
+
+    //                 if (!innerMost) {
+    //                     return;
+    //                 }
+    //                 const dropTargetData = innerMost.data;
+    //                 const homeColumnIndex = projectState.columns.findIndex(
+    //                     (column) => column.id === dragging.columnId,
+    //                 );
+    //                 const home: TColumn | undefined = projectState.columns[homeColumnIndex];
+
+    //                 if (!home) {
+    //                     return;
+    //                 }
+    //                 const cardIndexInHome = home.cards.findIndex((card: TCard) => card.id === dragging.card.id);
+
+    //                 // dropping on a card
+    //                 if (isCardDropTargetData(dropTargetData)) {
+    //                     console.log("dropping on a card");
+    //                     const destinationColumnIndex = projectState.columns.findIndex(
+    //                         (column) => column.id === dropTargetData.columnId,
+    //                     );
+    //                     const destination = projectState.columns[destinationColumnIndex];
+
+    //                     // reordering in home column
+    //                     if (home === destination) {
+    //                         const cardFinishIndex = home.cards.findIndex(
+    //                             (card: TCard) => card.id === dropTargetData.card.id,
+    //                         );
+
+    //                         if (cardIndexInHome === -1 || cardFinishIndex === -1) {
+    //                             return;
+    //                         }
+
+    //                         if (cardIndexInHome === cardFinishIndex) {
+    //                             return;
+    //                         }
+
+    //                         const closestEdge = extractClosestEdge(dropTargetData);
+
+    //                         const reordered = reorderWithEdge({
+    //                             axis: 'vertical',
+    //                             list: home.cards,
+    //                             startIndex: cardIndexInHome,
+    //                             indexOfTarget: cardFinishIndex,
+    //                             closestEdgeOfTarget: closestEdge,
+    //                         });
+
+    //                         const reorderedCards = reordered.map((card, index) => ({
+    //                             ...card,
+    //                             order: index
+    //                         }));
+
+    //                         const updated: TColumn = {
+    //                             ...home,
+    //                             cards: reorderedCards,
+    //                         };
+    //                         const columns = Array.from(projectState.columns);
+    //                         columns[homeColumnIndex] = updated;
+
+    //                         // Optimistically update UI
+    //                         setProjectState(prev => ({
+    //                             ...prev,
+    //                             columns
+    //                         }));
+
+
+    //                         reorderTasksMutation.mutate({
+    //                             columnId: home.id,
+    //                             projectId: projectState.id,
+    //                             taskOrders: reorderedCards,
+    //                             columns
+    //                         });
+    //                         return;
+    //                     }
+
+
+    //                     // moving card from one column to another
+    //                     if (!destination) {
+    //                         return;
+    //                     }
+
+    //                     const indexOfTarget = destination.cards.findIndex(
+    //                         (card) => card.id === dropTargetData.card.id,
+    //                     );
+
+    //                     const closestEdge = extractClosestEdge(dropTargetData);
+
+    //                     const finalIndex = closestEdge === 'bottom' ? indexOfTarget + 1 : indexOfTarget;
+
+    //                     // remove card from home list
+    //                     const homeCards = Array.from(home.cards);
+    //                     homeCards.splice(cardIndexInHome, 1);
+
+    //                     // insert into destination list
+    //                     const destinationCards = Array.from(destination.cards);
+    //                     destinationCards.splice(finalIndex, 0, dragging.card);
+
+    //                     // Update the order in the database
+    //                     const reorderedDestinationCards = destinationCards.map((card, index) => ({
+    //                         id: String(card.id),
+    //                         title: card.title,
+    //                         description: card.description,
+    //                         columnId: card.columnId,
+    //                         projectId: card.projectId,
+    //                         order: index
+    //                     }));
+
+    //                     const reorderedHomeCards = homeCards.map((card, index) => ({
+    //                         id: String(card.id),
+    //                         title: card.title,
+    //                         description: card.description,
+    //                         columnId: card.columnId,
+    //                         projectId: card.projectId,
+    //                         order: index
+    //                     }));
+
+    //                     const columns = Array.from(projectState.columns);
+    //                     columns[homeColumnIndex] = {
+    //                         ...home,
+    //                         cards: reorderedHomeCards,
+    //                     };
+    //                     columns[destinationColumnIndex] = {
+    //                         ...destination,
+    //                         cards: reorderedDestinationCards,
+    //                     };
+    //                     console.log("columns", columns);
+
+    //                     // Optimistically update UI
+    //                     setProjectState(prev => ({
+    //                         ...prev,
+    //                         columns
+    //                     }));
+
+    //                     // Move the task between columns
+    //                     moveTaskMutation.mutate({
+    //                         taskId: String(dragging.card.id),
+    //                         sourceColumnId: home.id,
+    //                         destinationColumnId: destination.id,
+    //                         destinationOrder: finalIndex,
+    //                         projectId: projectState.id,
+    //                         columns: columns
+    //                     });
+    //                     return;
+    //                 }
+
+    //                 // dropping onto a column, but not onto a card
+    //                 if (isColumnData(dropTargetData)) {
+    //                     const destinationColumnIndex = projectState.columns.findIndex(
+    //                         (column) => column.id === dropTargetData.column.id,
+    //                     );
+    //                     const destination = projectState.columns[destinationColumnIndex];
+
+    //                     if (!destination) {
+    //                         return;
+    //                     }
+
+    //                     // dropping on home
+    //                     if (home === destination) {
+    //                         const reordered = reorder({
+    //                             list: home.cards,
+    //                             startIndex: cardIndexInHome,
+    //                             finishIndex: home.cards.length - 1,
+    //                         });
+
+    //                         const updated: TColumn = {
+    //                             ...home,
+    //                             cards: reordered,
+    //                         };
+    //                         const columns = Array.from(projectState.columns);
+    //                         columns[homeColumnIndex] = updated;
+
+    //                         // Optimistically update UI
+    //                         setProjectState(prev => ({
+    //                             ...prev,
+    //                             columns
+    //                         }));
+
+    //                         // Update the order in the database
+    //                         const taskOrders = reordered.map((card, index) => ({
+    //                             id: String(card.id),
+    //                             order: index
+    //                         }));
+
+    //                         reorderTasksMutation.mutate({
+    //                             columnId: home.id,
+    //                             projectId: projectState.id,
+    //                             taskOrders,
+    //                             columns
+    //                         });
+    //                         return;
+    //                     }
+
+    //                     // remove card from home list
+    //                     const homeCards = Array.from(home.cards);
+    //                     homeCards.splice(cardIndexInHome, 1);
+
+    //                     // insert into destination list
+    //                     const destinationCards = Array.from(destination.cards);
+    //                     destinationCards.splice(destination.cards.length, 0, dragging.card);
+
+    //                     const columns = Array.from(projectState.columns);
+    //                     columns[homeColumnIndex] = {
+    //                         ...home,
+    //                         cards: homeCards,
+    //                     };
+    //                     columns[destinationColumnIndex] = {
+    //                         ...destination,
+    //                         cards: destinationCards,
+    //                     };
+
+    //                     // Optimistically update UI
+    //                     setProjectState(prev => ({
+    //                         ...prev,
+    //                         columns
+    //                     }));
+
+    //                     // Move the task to another column
+    //                     moveTaskMutation.mutate({
+    //                         taskId: String(dragging.card.id),
+    //                         sourceColumnId: home.id,
+    //                         destinationColumnId: destination.id,
+    //                         destinationOrder: destination.cards.length,
+    //                         projectId: projectState.id,
+    //                         columns
+    //                     });
+
+    //                     return;
+    //                 }
     //             },
-    //         },
-    //     ]);
+    //         }),
+    //         monitorForElements({
+    //             canMonitor: isDraggingAColumn,
+    //             onDrop({ source, location }) {
+    //                 const dragging = source.data;
+    //                 if (!isColumnData(dragging)) {
+    //                     return;
+    //                 }
 
-    //     return function cleanupAll() {
-    //         cleanupStart();
-    //         cleanupActive?.();
-    //     };
-    // }, []);
+    //                 const innerMost = location.current.dropTargets[0];
+
+    //                 if (!innerMost) {
+    //                     return;
+    //                 }
+    //                 const dropTargetData = innerMost.data;
+
+    //                 if (!isColumnData(dropTargetData)) {
+    //                     return;
+    //                 }
+
+    //                 const homeIndex = projectState.columns.findIndex((column) => column.id === dragging.column.id);
+    //                 const destinationIndex = projectState.columns.findIndex(
+    //                     (column) => column.id === dropTargetData.column.id,
+    //                 );
+
+    //                 if (homeIndex === -1 || destinationIndex === -1) {
+    //                     return;
+    //                 }
+
+    //                 if (homeIndex === destinationIndex) {
+    //                     return;
+    //                 }
+
+    //                 const closestEdge = extractClosestEdge(dropTargetData);
+
+    //                 const reordered = reorderWithEdge({
+    //                     axis: 'horizontal',
+    //                     list: projectState.columns,
+    //                     startIndex: homeIndex,
+    //                     indexOfTarget: destinationIndex,
+    //                     closestEdgeOfTarget: closestEdge,
+    //                 });
+
+    //                  // Update the order in the database
+    //                  const columnOrders = reordered.map((column, index) => ({
+    //                     id: column.id,
+    //                     title: column.title,
+    //                     projectId: column.projectId,
+    //                     createdAt: column.createdAt,
+    //                     updatedAt: column.updatedAt,
+    //                     cards: column.cards,
+    //                     order: index
+    //                 }));
+
+    //                 // Optimistically update UI
+    //                 setProjectState(prev => ({
+    //                     ...prev,
+    //                     columns: columnOrders
+    //                 }));
+
+    //                 reorderColumnsMutation.mutate({
+    //                     projectId: projectState.id,
+    //                     columnOrders
+    //                 });
+    //             },
+    //         }),
+    //         autoScrollForElements({
+    //             canScroll({ source }) {
+    //                 if (!settings.isOverElementAutoScrollEnabled) {
+    //                     return false;
+    //                 }
+
+    //                 return isDraggingACard({ source }) || isDraggingAColumn({ source });
+    //             },
+    //             getConfiguration: () => ({ maxScrollSpeed: settings.boardScrollSpeed }),
+    //             element,
+    //         }),
+    //         unsafeOverflowAutoScrollForElements({
+    //             element,
+    //             getConfiguration: () => ({ maxScrollSpeed: settings.boardScrollSpeed }),
+    //             canScroll({ source }) {
+    //                 if (!settings.isOverElementAutoScrollEnabled) {
+    //                     return false;
+    //                 }
+
+    //                 if (!settings.isOverflowScrollingEnabled) {
+    //                     return false;
+    //                 }
+
+    //                 return isDraggingACard({ source }) || isDraggingAColumn({ source });
+    //             },
+    //             getOverflow() {
+    //                 return {
+    //                     forLeftEdge: {
+    //                         top: 1000,
+    //                         left: 1000,
+    //                         bottom: 1000,
+    //                     },
+    //                     forRightEdge: {
+    //                         top: 1000,
+    //                         right: 1000,
+    //                         bottom: 1000,
+    //                     },
+    //                 };
+    //             },
+    //         }),
+    //     );
+    // }, [projectState, settings.boardScrollSpeed, settings.isOverElementAutoScrollEnabled, settings.isOverflowScrollingEnabled]);
+
+
 
     return (
         <div ref={scrollableRef} className="h-screen flex flex-col">
@@ -569,7 +504,6 @@ export function Board({ project }: BoardProps) {
                     {projectState.columns.map((column) => (
                         <Column
                             key={column.id}
-                            title={column.title}
                             column={column} />
                     ))}
 

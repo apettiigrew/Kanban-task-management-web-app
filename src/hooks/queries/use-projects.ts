@@ -93,7 +93,7 @@ export const useProject = ({ id, ...options }: UseProjectOptions) => {
     queryFn: () => fetchProject(id),
     enabled: options.enabled !== false && !!id,
     refetchOnWindowFocus: options.refetchOnWindowFocus ?? true,
-    staleTime: options.staleTime ?? 5 * 60 * 1000, // 5 minutes
+    staleTime: options.staleTime ?? 1 * 60 * 1000, // 1 minute
     retry: (failureCount, error) => {
       // Don't retry on 4xx errors (client errors)
       if (error instanceof FormError || (error instanceof Error && error.message.includes('4'))) {
@@ -435,7 +435,7 @@ export const useInvalidateProject = () => {
   return {
     invalidateAll: () => queryClient.invalidateQueries({ queryKey: projectKeys.all }),
     invalidateByProject: (projectId: string) => {
-      queryClient.invalidateQueries({ queryKey: projectKeys.detail(projectId)})
+      queryClient.invalidateQueries({ queryKey: projectKeys.detail(projectId), refetchType: 'all' })
     
     }
   }

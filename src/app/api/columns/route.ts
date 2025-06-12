@@ -55,14 +55,9 @@ export async function POST(request: NextRequest) {
       throw new Error('Project not found')
     }
 
-   
-
-  
-
     const column = await prisma.column.create({
       data: {
-        ...validatedData,
-        order: validatedData.order,
+        ...validatedData
       },
       include: {
         project: {

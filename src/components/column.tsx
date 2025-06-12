@@ -58,13 +58,13 @@ const stateStyles: { [Key in TColumnState['type']]: string } = {
 };
 
 interface ColumnProps {
-    title: string;
     column: TColumn;
 }
-export function Column({ title, column }: ColumnProps) {
+export function Column({ column }: ColumnProps) {
 
+    console.log("column", column);
     const [isEditingTitle, setIsEditingTitle] = useState(false);
-    const [columnTitle, setColumnTitle] = useState(title);
+    const [columnTitle, setColumnTitle] = useState(column.title);
     const [isAddingCard, setIsAddingCard] = useState(false);
     const [newCardTitle, setNewCardTitle] = useState('');
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -76,14 +76,7 @@ export function Column({ title, column }: ColumnProps) {
     const [state, setState] = useState<TColumnState>(idle);
     const { settings } = useContext(SettingsContext);
 
-    // Get project ID from board
-    const projectId = column.projectId;
-
-    // Column invalidation utility
     const { invalidateByProject } = useInvalidateProject();
-
-    // Project invalidation utility
-    const invalidateProjects = useInvalidateProjects();
 
     const createTaskMutation = useCreateTask({
         onError: (error: FormError) => {
@@ -94,90 +87,60 @@ export function Column({ title, column }: ColumnProps) {
     // Update column mutation with optimistic updates
     const updateColumnMutation = useUpdateColumn({
         onSuccess: (data) => {
-            toast.success('Column title updated successfully');
-            // Invalidate both columns and project cache to refresh the board
-            if (projectId) {
-                invalidateByProject(projectId);
-                invalidateProjects(); // This will refresh the board context
-            }
+            console.log("updateColumnMutation onSuccess", data);
         },
         onError: (error: FormError) => {
             toast.error(error.message || 'Failed to update column title');
-            // Reset title on error (rollback optimistic update)
-            setColumnTitle(title);
-        },
-        onFieldErrors: (errors) => {
-            if (errors.title) {
-                toast.error(errors.title);
-            }
-            // Reset title on validation error (rollback optimistic update)
-            setColumnTitle(title);
+            setColumnTitle(column.title);
         }
     });
 
     // Delete column mutation
     const deleteColumnMutation = useDeleteColumn({
         onSuccess: () => {
-            toast.success(`Column "${title}" deleted successfully`);
             setShowDeleteDialog(false);
-            // Invalidate both columns and project cache to refresh the board
-            if (projectId) {
-                invalidateByProject(projectId);
-                invalidateProjects(); // This will refresh the board context
-            }
         },
         onError: (error: FormError) => {
             toast.error(error.message || 'Failed to delete column');
         }
     });
 
-    // Update column title when prop changes (for real-time sync)
     useEffect(() => {
-        setColumnTitle(title);
-    }, [title]);
+        setColumnTitle(column.title);
+    }, [column.title]);
 
     const handleTitleSave = () => {
         const trimmedTitle = columnTitle.trim();
 
         if (!trimmedTitle) {
             toast.error('Column title cannot be empty');
-            setColumnTitle(title); // Reset to original title
+            setColumnTitle(column.title);
             setIsEditingTitle(false);
             return;
         }
 
-        if (trimmedTitle === title) {
+        if (trimmedTitle === column.title) {
             setIsEditingTitle(false);
             return;
         }
 
-        if (!projectId) {
-            toast.error('No project selected');
-            setColumnTitle(title); // Reset to original title
-            setIsEditingTitle(false);
-            return;
-        }
-
+        setColumnTitle(trimmedTitle);
         updateColumnMutation.mutate({
             id: column.id,
-            data: { title: trimmedTitle }
+            title: trimmedTitle,
+            projectId: column.projectId,
         });
 
         setIsEditingTitle(false);
     };
 
     const handleTitleCancel = () => {
-        setColumnTitle(title); // Reset to original title
+        setColumnTitle(column.title);
         setIsEditingTitle(false);
     };
 
     const handleDelete = () => {
-        if (column.cards && column.cards.length > 0) {
-            toast.error('Cannot delete column with tasks. Please move or delete all tasks first.');
-            return;
-        }
-
-        deleteColumnMutation.mutate(column.id);
+        deleteColumnMutation.mutate(column.id, column.projectId);
     };
 
     useEffect(() => {
@@ -193,62 +156,62 @@ export function Column({ title, column }: ColumnProps) {
         }
     }, [isAddingCard]);
 
-    useEffect(() => {
-        const outer = outerFullHeightRef.current;
-        const scrollable = scrollableRef.current;
-        if (!outer || !scrollable) return;
+    // useEffect(() => {
+    //     const outer = outerFullHeightRef.current;
+    //     const scrollable = scrollableRef.current;
+    //     if (!outer || !scrollable) return;
 
-        const data = getColumnData({ column });
+    //     const data = getColumnData({ column });
 
-        function setIsCardOver({ data, location }: { data: TCardData; location: DragLocationHistory }) {
-            const innerMost = location.current.dropTargets[0];
-            const isOverChildCard = Boolean(innerMost && isCardDropTargetData(innerMost.data));
+    //     function setIsCardOver({ data, location }: { data: TCardData; location: DragLocationHistory }) {
+    //         const innerMost = location.current.dropTargets[0];
+    //         const isOverChildCard = Boolean(innerMost && isCardDropTargetData(innerMost.data));
 
-            const proposed: TColumnState = {
-                type: 'is-card-over',
-                dragging: data.rect,
-                isOverChildCard,
-            };
-            setState((current) => (isShallowEqual(proposed, current) ? current : proposed));
-        }
+    //         const proposed: TColumnState = {
+    //             type: 'is-card-over',
+    //             dragging: data.rect,
+    //             isOverChildCard,
+    //         };
+    //         setState((current) => (isShallowEqual(proposed, current) ? current : proposed));
+    //     }
 
-        return combine(
-            draggable({
-                element: outer,
-                getInitialData: () => data,
-                onDragStart: () => setState({ type: 'is-dragging' }),
-                onDrop: () => setState(idle),
-            }),
-            dropTargetForElements({
-                element: outer,
-                getData: ({ input, element }) => attachClosestEdge(data, { element, input, allowedEdges: ['left', 'right'] }),
-                canDrop: ({ source }) => isDraggingACard({ source }) || isDraggingAColumn({ source }),
-                getIsSticky: () => true,
-                onDragStart: ({ source, location }) => isCardData(source.data) && setIsCardOver({ data: source.data, location }),
-                onDragEnter: ({ source, location }) => {
-                    if (isCardData(source.data)) return setIsCardOver({ data: source.data, location });
-                    if (isColumnData(source.data) && source.data.column.id !== column.id) setState({ type: 'is-column-over' });
-                },
-                onDropTargetChange: ({ source, location }) => isCardData(source.data) && setIsCardOver({ data: source.data, location }),
-                onDragLeave: ({ source }) => !isColumnData(source.data) || source.data.column.id !== column.id ? setState(idle) : undefined,
-                onDrop: () => setState(idle),
-            }),
-            autoScrollForElements({
-                canScroll: ({ source }) => settings.isOverElementAutoScrollEnabled && isDraggingACard({ source }),
-                getConfiguration: () => ({ maxScrollSpeed: settings.columnScrollSpeed }),
-                element: scrollable,
-            }),
-            unsafeOverflowAutoScrollForElements({
-                element: scrollable,
-                getConfiguration: () => ({ maxScrollSpeed: settings.columnScrollSpeed }),
-                canScroll: ({ source }) =>
-                    settings.isOverElementAutoScrollEnabled &&
-                    settings.isOverflowScrollingEnabled &&
-                    isDraggingACard({ source }),
-                getOverflow: () => ({ forTopEdge: { top: 1000 }, forBottomEdge: { bottom: 1000 } }),
-            })
-        );
-    }, [column, column.cards, settings]);
+    //     return combine(
+    //         draggable({
+    //             element: outer,
+    //             getInitialData: () => data,
+    //             onDragStart: () => setState({ type: 'is-dragging' }),
+    //             onDrop: () => setState(idle),
+    //         }),
+    //         dropTargetForElements({
+    //             element: outer,
+    //             getData: ({ input, element }) => attachClosestEdge(data, { element, input, allowedEdges: ['left', 'right'] }),
+    //             canDrop: ({ source }) => isDraggingACard({ source }) || isDraggingAColumn({ source }),
+    //             getIsSticky: () => true,
+    //             onDragStart: ({ source, location }) => isCardData(source.data) && setIsCardOver({ data: source.data, location }),
+    //             onDragEnter: ({ source, location }) => {
+    //                 if (isCardData(source.data)) return setIsCardOver({ data: source.data, location });
+    //                 if (isColumnData(source.data) && source.data.column.id !== column.id) setState({ type: 'is-column-over' });
+    //             },
+    //             onDropTargetChange: ({ source, location }) => isCardData(source.data) && setIsCardOver({ data: source.data, location }),
+    //             onDragLeave: ({ source }) => !isColumnData(source.data) || source.data.column.id !== column.id ? setState(idle) : undefined,
+    //             onDrop: () => setState(idle),
+    //         }),
+    //         autoScrollForElements({
+    //             canScroll: ({ source }) => settings.isOverElementAutoScrollEnabled && isDraggingACard({ source }),
+    //             getConfiguration: () => ({ maxScrollSpeed: settings.columnScrollSpeed }),
+    //             element: scrollable,
+    //         }),
+    //         unsafeOverflowAutoScrollForElements({
+    //             element: scrollable,
+    //             getConfiguration: () => ({ maxScrollSpeed: settings.columnScrollSpeed }),
+    //             canScroll: ({ source }) =>
+    //                 settings.isOverElementAutoScrollEnabled &&
+    //                 settings.isOverflowScrollingEnabled &&
+    //                 isDraggingACard({ source }),
+    //             getOverflow: () => ({ forTopEdge: { top: 1000 }, forBottomEdge: { bottom: 1000 } }),
+    //         })
+    //     );
+    // }, [column, column.cards, settings]);
 
     const addCard = (columnId: string, title: string) => {
         setIsAddingCard(false);
@@ -267,8 +230,7 @@ export function Column({ title, column }: ColumnProps) {
                 'bg-gray-50 text-gray-900 rounded-2xl p-4 border border-gray-200 w-[280px] min-w-[280px] max-h-[calc(100vh-160px)] flex flex-col gap-4 flex-shrink-0',
                 stateStyles[state.type]
             )}
-            ref={outerFullHeightRef}
-        >
+            ref={outerFullHeightRef}>
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2 flex-1">
                     {isEditingTitle ? (
