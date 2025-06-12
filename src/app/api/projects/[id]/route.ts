@@ -14,10 +14,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const { id } = await params;
 
+    // order columsn by order fields in ascending order
     const project = await prisma.project.findUnique({
       where: { id },
       include: {
         columns: {
+          orderBy: {
+            order: 'asc'
+          },
           include: {
             cards: true
           }

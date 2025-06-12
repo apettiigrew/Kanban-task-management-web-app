@@ -132,9 +132,6 @@ export const useCreateTask = (options: UseCreateTaskOptions = {}) => {
                 return oldData
             })
 
-            // Invalidate related queries to ensure consistency
-            queryClient.invalidateQueries({ queryKey: projectKeys.detail(variables.projectId) })
-
             if (options.onSuccess) {
                 options.onSuccess(data)
             }
@@ -144,7 +141,7 @@ export const useCreateTask = (options: UseCreateTaskOptions = {}) => {
 
 export const useUpdateTask = (options: UseUpdateTaskOptions = {}) => {
     const queryClient = useQueryClient()
-    
+
     return useMutation({
         mutationKey: ['updateTask'],
         mutationFn: updateTask,
@@ -156,11 +153,11 @@ export const useUpdateTask = (options: UseUpdateTaskOptions = {}) => {
             queryClient.setQueryData(projectKeys.detail(updatedTask.projectId), (oldData: ProjectWithColumnsAndTasks) => {
                 const column = oldData.columns.find(column => column.id === updatedTask.columnId)
                 if (column) {
-                    const newCards = column.cards.map(card => 
+                    const newCards = column.cards.map(card =>
                         card.id === updatedTask.id ? { ...card, ...updatedTask } : card
                     )
                     const newColumn = { ...column, cards: newCards }
-                    const newColumns = oldData.columns.map(column => 
+                    const newColumns = oldData.columns.map(column =>
                         column.id === updatedTask.columnId ? newColumn : column
                     )
                     return { ...oldData, columns: newColumns }
@@ -187,11 +184,11 @@ export const useUpdateTask = (options: UseUpdateTaskOptions = {}) => {
             queryClient.setQueryData(projectKeys.detail(variables.projectId), (oldData: ProjectWithColumnsAndTasks) => {
                 const column = oldData.columns.find(column => column.id === variables.columnId)
                 if (column) {
-                    const newCards = column.cards.map(card => 
+                    const newCards = column.cards.map(card =>
                         card.id === variables.id ? data : card
                     )
                     const newColumn = { ...column, cards: newCards }
-                    const newColumns = oldData.columns.map(column => 
+                    const newColumns = oldData.columns.map(column =>
                         column.id === variables.columnId ? newColumn : column
                     )
                     return { ...oldData, columns: newColumns }
@@ -208,11 +205,11 @@ export const useUpdateTask = (options: UseUpdateTaskOptions = {}) => {
 
 export const useDeleteTask = (options: UseDeleteTaskOptions = {}) => {
     const queryClient = useQueryClient()
-    
+
     return useMutation({
         mutationKey: ['deleteTask'],
         mutationFn: deleteTask,
-        onMutate: async ({id, projectId, columnId}) => {
+        onMutate: async ({ id, projectId, columnId }) => {
             // Get snapshot of previous state
             const previousProject = queryClient.getQueryData(projectKeys.detail(projectId))
 
@@ -222,8 +219,8 @@ export const useDeleteTask = (options: UseDeleteTaskOptions = {}) => {
                 if (column) {
                     const newCards = column.cards.filter(card => card.id !== id)
                     const newColumn = { ...column, cards: newCards }
-                  
-                    const newColumns = oldData.columns.map(column => 
+
+                    const newColumns = oldData.columns.map(column =>
                         column.id === columnId ? newColumn : column
                     )
                     return { ...oldData, columns: newColumns }
@@ -258,7 +255,7 @@ export const useDeleteTask = (options: UseDeleteTaskOptions = {}) => {
 
 export const useMoveTask = (options: UseMoveTaskOptions = {}) => {
     const queryClient = useQueryClient()
-    
+
     return useMutation({
         mutationKey: ['moveTask'],
         mutationFn: moveTask,
@@ -309,7 +306,7 @@ export const useMoveTask = (options: UseMoveTaskOptions = {}) => {
 
 export const useReorderTasks = (options: UseReorderTasksOptions = {}) => {
     const queryClient = useQueryClient()
-    
+
     return useMutation({
         mutationKey: ['reorderTasks'],
         mutationFn: reorderTasks,
@@ -320,7 +317,7 @@ export const useReorderTasks = (options: UseReorderTasksOptions = {}) => {
             const previousProject = queryClient.getQueryData(projectKeys.detail(reorderData.projectId))
 
             // Optimistically reorder tasks within the column
-            queryClient.setQueryData(projectKeys.detail(reorderData.projectId), (oldData: ProjectWithColumnsAndTasks) => {             
+            queryClient.setQueryData(projectKeys.detail(reorderData.projectId), (oldData: ProjectWithColumnsAndTasks) => {
                 return { ...oldData, columns: reorderData.columns }
             })
 

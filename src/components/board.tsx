@@ -34,6 +34,10 @@ export function Board({ project }: BoardProps) {
     const { settings } = useContext(SettingsContext);
     const scrollableRef = useRef<HTMLDivElement | null>(null);
 
+    useEffect(() => {
+        setProjectState(project);
+    }, [project]);
+
     // Create column mutation with database persistence
     const createColumnMutation = useCreateColumn({
         onSuccess: (data) => {
@@ -82,7 +86,7 @@ export function Board({ project }: BoardProps) {
 
     const reorderTasksMutation = useReorderTasks({
         onSuccess: () => {
-            
+
         },
         onError: (error: FormError) => {
             toast.error(error.message || 'Failed to reorder tasks');
@@ -458,8 +462,8 @@ export function Board({ project }: BoardProps) {
                         closestEdgeOfTarget: closestEdge,
                     });
 
-                     // Update the order in the database
-                     const columnOrders = reordered.map((column, index) => ({
+                    // Update the order in the database
+                    const columnOrders = reordered.map((column, index) => ({
                         id: column.id,
                         title: column.title,
                         projectId: column.projectId,
