@@ -321,7 +321,7 @@ export function Column({ column, onDelete }: ColumnProps) {
                 )}
             </div>
 
-            <div className="flex flex-col gap-3 overflow-y-scroll scrollbar-gutter-stable flex-grow max-h-screen min-h-0" ref={scrollableRef}>
+            <div className="flex flex-col gap-3 overflow-y-auto scrollbar-thin [&:not(:hover)]:scrollbar-transparent hover:scrollbar-gray-300 flex-grow max-h-screen min-h-0" ref={scrollableRef}>
                 <DisplayCard columnId={column.id} cards={column.cards} state={state} />
             </div>
             <div>

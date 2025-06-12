@@ -209,3 +209,36 @@
   border-top: 2px solid #ccc;
   margin: 2em 0;
 }
+
+/* Custom scrollbar styles */
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  
+  .scrollbar-transparent {
+    scrollbar-color: transparent transparent;
+  }
+  
+  .scrollbar-gray-300 {
+    scrollbar-color: rgb(209 213 219) transparent;
+  }
+  
+  /* For Webkit browsers */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-transparent::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+  
+  .scrollbar-gray-300::-webkit-scrollbar-thumb {
+    background-color: rgb(209 213 219);
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
