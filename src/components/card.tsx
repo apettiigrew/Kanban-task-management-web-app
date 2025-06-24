@@ -187,20 +187,20 @@ export function CardDisplay({ card, state, outerRef, innerRef, handleCardClick, 
           classIf(state.type === 'is-dragging', 'opacity-50 shadow-none')
         )}
       >
-        <div className="flex flex-col">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0" onClick={handleCardClick}>
-              {card.title}
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={(e) => e.stopPropagation()}
-                  aria-label="Card actions"
-                >
+                  <div className="flex flex-col">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 break-all overflow-hidden" onClick={handleCardClick}>
+                {card.title}
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label="Card actions"
+                  >
                   <Pencil className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
