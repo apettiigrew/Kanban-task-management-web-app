@@ -19,7 +19,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import DOMPurify from 'dompurify'
-import { Trash2 } from 'lucide-react'
+import { TextIcon, Trash2 } from 'lucide-react'
 import { TaskDeleteDialog } from './task-delete-dialog'
 
 interface TaskEditModalProps {
@@ -348,17 +348,20 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
           </Button>
         </div>
         <div className="space-y-4 py-4">
-          {/* Description Section */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Description</label>
+            <div className='flex items-center gap-2'>
+              <TextIcon className="h-4 w-4 text-gray-500" />
+              <label className="text-sm font-medium">Description</label>
+            </div>
+
             {isEditingDescription ? (
               <div className="space-y-2">
                 <div className="bg-background rounded-md">
                   <MenuBar editor={editor} />
                   <div className="min-h-[200px] p-4">
-                    <EditorContent 
-                      editor={editor} 
-                      className="prose prose-sm max-w-none dark:prose-invert focus:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:border-none [&_.ProseMirror]:break-all [&_.ProseMirror]:overflow-wrap-anywhere bg-background" 
+                    <EditorContent
+                      editor={editor}
+                      className="prose prose-sm max-w-none dark:prose-invert focus:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:border-none [&_.ProseMirror]:break-all [&_.ProseMirror]:overflow-wrap-anywhere bg-background"
                     />
                   </div>
                 </div>
@@ -399,7 +402,7 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
           </div>
         </div>
       </DialogContent>
-      
+
       <TaskDeleteDialog
         card={card}
         isOpen={isDeleteDialogOpen}
