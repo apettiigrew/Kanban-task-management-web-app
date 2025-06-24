@@ -312,7 +312,7 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] top-20 translate-y-0">
         <DialogTitle className="sr-only">Edit Task</DialogTitle>
         <div className="flex items-center justify-between">
           <div className="flex-1">
