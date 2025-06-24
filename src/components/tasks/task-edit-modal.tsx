@@ -249,6 +249,7 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
       }),
     ],
     content: card.description || '',
+    immediatelyRender: false,
     editorProps: {
       attributes: {
         spellcheck: 'false',
