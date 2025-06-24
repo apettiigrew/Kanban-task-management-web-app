@@ -65,10 +65,17 @@ export async function POST(request: NextRequest) {
             id: true,
             title: true,
           }
+        },
+        cards: {
+          select: {
+            id: true,
+            title: true,
+          }
         }
       }
     })
 
+    console.log(column)
     return createSuccessResponse(column, 'Column created successfully', 201)
   } catch (error) {
     return handleAPIError(error, '/api/columns')
