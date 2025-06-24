@@ -312,13 +312,13 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] top-20 translate-y-0">
+      <DialogContent className="sm:max-w-[600px] top-20 translate-y-0 overflow-hidden">
         <DialogTitle className="sr-only">Edit Task</DialogTitle>
         <div className="flex items-center justify-between">
           <div className="flex-1">
             {isEditingTitle ? (
               <Input
-                className="w-[90%]"
+                className="w-[90%] break-all overflow-wrap-anywhere"
                 {...form.register('title')}
                 autoFocus
                 onBlur={handleTitleBlur}
@@ -330,7 +330,7 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
               />
             ) : (
               <div
-                className="cursor-pointer p-2"
+                className="cursor-pointer p-2 break-all overflow-wrap-anywhere"
                 onClick={() => setIsEditingTitle(true)}
               >
                 {title}
@@ -358,7 +358,7 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
                   <div className="min-h-[200px] p-4">
                     <EditorContent 
                       editor={editor} 
-                      className="prose prose-sm max-w-none dark:prose-invert focus:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:border-none bg-background" 
+                      className="prose prose-sm max-w-none dark:prose-invert focus:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:border-none [&_.ProseMirror]:break-all [&_.ProseMirror]:overflow-wrap-anywhere bg-background" 
                     />
                   </div>
                 </div>
@@ -388,7 +388,7 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
               >
                 {card.description ? (
                   <div
-                    className="prose prose-sm max-w-none ProseMirror"
+                    className="prose prose-sm max-w-none ProseMirror break-all overflow-wrap-anywhere"
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(card.description) }}
                   />
                 ) : (
