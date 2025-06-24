@@ -41,6 +41,7 @@ import {
     AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
 import { useCreateTask } from '@/hooks/mutations/use-task-mutations';
+import { useOutsideClick } from '@/hooks/use-outside-click';
 
 type TColumnState =
     | { type: 'is-card-over'; isOverChildCard: boolean; dragging: DOMRect }
@@ -76,6 +77,16 @@ export function Column({ column, onDelete }: ColumnProps) {
 
     const [state, setState] = useState<TColumnState>(idle);
     const { settings } = useContext(SettingsContext);
+
+    // Handle outside click for card creation cancellation
+    const handleOutsideClick = () => {
+        if (isAddingCard && !newCardTitle.trim()) {
+            setIsAddingCard(false);
+            setNewCardTitle('');
+        }
+    };
+
+    const addCardRef = useOutsideClick(handleOutsideClick);
 
     const { invalidateByProject } = useInvalidateProject();
 
@@ -326,7 +337,7 @@ export function Column({ column, onDelete }: ColumnProps) {
             </div>
             <div>
                 {isAddingCard ? (
-                    <div className="flex flex-col gap-2">
+                    <div ref={addCardRef} className="flex flex-col gap-2">
                         <Input
                             ref={newCardInputRef}
                             className="text-sm font-medium"
@@ -334,7 +345,10 @@ export function Column({ column, onDelete }: ColumnProps) {
                             onChange={(e) => setNewCardTitle(e.target.value)}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') addCard(column.id, newCardTitle.trim());
-                                if (e.key === 'Escape') setIsAddingCard(false);
+                                if (e.key === 'Escape') {
+                                    setIsAddingCard(false);
+                                    setNewCardTitle('');
+                                }
                             }}
                             placeholder="Enter a title or paste a link"
                         />
@@ -345,7 +359,10 @@ export function Column({ column, onDelete }: ColumnProps) {
                                 Add a card
                             </Button>
                             <Button
-                                onClick={() => setIsAddingCard(false)}
+                                onClick={() => {
+                                    setIsAddingCard(false);
+                                    setNewCardTitle('');
+                                }}
                                 variant="ghost"
                                 size="sm"
                                 aria-label="Cancel adding card"
