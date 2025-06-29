@@ -22,6 +22,7 @@ import DOMPurify from 'dompurify'
 import { TextIcon, Trash2, X } from 'lucide-react'
 import { TaskDeleteDialog } from './task-delete-dialog'
 import { Textarea } from '../ui/textarea'
+import { DeleteActionButton } from '../delete-action-button'
 
 interface TaskEditModalProps {
   card: TCard
@@ -318,22 +319,22 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
     if (textareaRef.current) {
       // Reset height to get minimal height
       textareaRef.current.style.height = '0px'
-      
+
       // Get the actual content height needed
       const scrollHeight = textareaRef.current.scrollHeight
-      
+
       // Get padding values
       const computedStyle = getComputedStyle(textareaRef.current)
       const paddingTop = parseInt(computedStyle.paddingTop)
       const paddingBottom = parseInt(computedStyle.paddingBottom)
-      
+
       // Calculate minimum height for single line
       const lineHeight = parseInt(computedStyle.lineHeight) || parseInt(computedStyle.fontSize) * 1.2
       const minHeight = lineHeight + paddingTop + paddingBottom
-      
+
       // Use the smaller of scrollHeight or calculated minimum for tight fit
       const finalHeight = Math.max(minHeight, scrollHeight)
-      
+
       textareaRef.current.style.height = `${finalHeight}px`
     }
   }
@@ -346,12 +347,12 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContentWithoutClose className="sm:max-w-[600px] top-20 translate-y-0 overflow-hidden">
+      <DialogContentWithoutClose className="sm:max-w-[800px] top-20 translate-y-0 overflow-hidden">
         <DialogTitle className="sr-only">Edit Task</DialogTitle>
         <div className="flex flex-col gap-4 w-full max-w-full overflow-hidden">
           <div className="flex w-full max-w-full gap-4">
             <div className="flex-[1_1_auto] w-full max-w-full overflow-hidden">
-              {true ? (
+              {isEditingTitle ? (
                 <Textarea
                   className="w-full max-w-full break-all whitespace-break-spaces resize-none p-2 overflow-hidden"
                   {...form.register('title')}
@@ -390,6 +391,72 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
               aria-label="Close dialog">
               <X className="h-4 w-4" />
             </button>
+          </div>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-1 gap-4">
+              <div className="flex-[2_0_80%]">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className='flex items-center gap-2'>
+                      <TextIcon className="h-4 w-4 text-gray-500" />
+                      <label className="text-sm font-medium">Description</label>
+                    </div>
+
+                    {isEditingDescription ? (
+                      <div className="space-y-2">
+                        <div className="bg-background rounded-md">
+                          <MenuBar editor={editor} />
+                          <div className="min-h-[200px] p-4">
+                            <EditorContent
+                              editor={editor}
+                              className="prose prose-sm max-w-none dark:prose-invert focus:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:border-none [&_.ProseMirror]:break-all [&_.ProseMirror]:overflow-wrap-anywhere bg-background"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                          <Button
+                            variant="outline"
+                            onClick={handleDescriptionCancel}
+                            disabled={updateTaskMutation.isPending}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={handleDescriptionSave}
+                            disabled={updateTaskMutation.isPending}
+                          >
+                            Save
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        className="cursor-pointer rounded-md border border-transparent p-2 hover:border-border transition-opacity duration-200 hover:opacity-70 focus-within:opacity-70"
+                        onClick={() => setIsEditingDescription(true)}
+                        tabIndex={0}
+                        aria-label="Edit description"
+                        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setIsEditingDescription(true) }}
+                      >
+                        {card.description ? (
+                          <div
+                            className="prose prose-sm max-w-none ProseMirror break-all overflow-wrap-anywhere"
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(card.description) }}
+                          />
+                        ) : (
+                          <p className="text-muted-foreground">Add a description...</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+                             <div className="flex-[1_1_auto]">
+                 <p className="text-sm font-medium mb-2">Actions</p>
+                 <DeleteActionButton onClick={() => setIsDeleteDialogOpen(true)}>
+                   Delete Card
+                 </DeleteActionButton>
+               </div>
+            </div>
           </div>
         </div>
       </DialogContentWithoutClose>
