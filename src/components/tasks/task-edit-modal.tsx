@@ -6,7 +6,14 @@ import {
   DialogContentWithoutClose,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
+import { Separator } from '@/components/ui/separator'
 import { useUpdateTask } from '@/hooks/mutations/use-task-mutations'
 import { FormError } from '@/lib/form-error-handler'
 import { updateTaskSchema } from '@/lib/validations/task'
@@ -19,7 +26,29 @@ import { useState, useRef, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import DOMPurify from 'dompurify'
-import { TextIcon, Trash2, X } from 'lucide-react'
+import { 
+  TextIcon, 
+  Trash2, 
+  X, 
+  Bold, 
+  Italic, 
+  Strikethrough, 
+  Code, 
+  List, 
+  ListOrdered, 
+  Quote, 
+  Minus, 
+  Undo2, 
+  Redo2, 
+  ChevronDown,
+  Heading1,
+  Heading2,
+  Heading3,
+  Heading4,
+  Heading5,
+  Heading6,
+  Type
+} from 'lucide-react'
 import { TaskDeleteDialog } from './task-delete-dialog'
 import { Textarea } from '../ui/textarea'
 import { DeleteActionButton } from '../delete-action-button'
@@ -34,181 +63,216 @@ interface EditorToolbarProps {
   editor: any
 }
 
-
-
-// MenuBar for Tiptap formatting
+// MenuBar for Tiptap formatting - redesigned to match Simple Editor template
 const MenuBar = ({ editor }: EditorToolbarProps) => {
   if (!editor) return null
+
+  const getHeadingIcon = () => {
+    if (editor.isActive('heading', { level: 1 })) return <Heading1 className="h-4 w-4" />
+    if (editor.isActive('heading', { level: 2 })) return <Heading2 className="h-4 w-4" />
+    if (editor.isActive('heading', { level: 3 })) return <Heading3 className="h-4 w-4" />
+    if (editor.isActive('heading', { level: 4 })) return <Heading4 className="h-4 w-4" />
+    if (editor.isActive('heading', { level: 5 })) return <Heading5 className="h-4 w-4" />
+    if (editor.isActive('heading', { level: 6 })) return <Heading6 className="h-4 w-4" />
+    return <Type className="h-4 w-4" />
+  }
+
   return (
-    <div className="flex flex-wrap gap-2 p-2 pb-0">
-      <button
+    <div className="flex items-center gap-1 p-2 border-b bg-background">
+      {/* Undo/Redo Group */}
+      <Button
         type="button"
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('bold') ? 'bg-primary text-primary-foreground' : ''}`}
-        aria-label="Bold"
-      >
-        Bold
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('italic') ? 'bg-primary text-primary-foreground' : ''}`}
-        aria-label="Italic"
-      >
-        Italic
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleStrike().run()}
-        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('strike') ? 'bg-primary text-primary-foreground' : ''}`}
-        aria-label="Strike"
-      >
-        Strike
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleCode().run()}
-        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('code') ? 'bg-primary text-primary-foreground' : ''}`}
-        aria-label="Code"
-      >
-        Code
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().unsetAllMarks().run()}
-        className="rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors"
-        aria-label="Clear marks"
-      >
-        Clear marks
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().clearNodes().run()}
-        className="rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors"
-        aria-label="Clear nodes"
-      >
-        Clear nodes
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().setParagraph().run()}
-        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('paragraph') ? 'bg-primary text-primary-foreground' : ''}`}
-        aria-label="Paragraph"
-      >
-        Paragraph
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('heading', { level: 1 }) ? 'bg-primary text-primary-foreground' : ''}`}
-        aria-label="H1"
-      >
-        H1
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('heading', { level: 2 }) ? 'bg-primary text-primary-foreground' : ''}`}
-        aria-label="H2"
-      >
-        H2
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('heading', { level: 3 }) ? 'bg-primary text-primary-foreground' : ''}`}
-        aria-label="H3"
-      >
-        H3
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
-        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('heading', { level: 4 }) ? 'bg-primary text-primary-foreground' : ''}`}
-        aria-label="H4"
-      >
-        H4
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()}
-        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('heading', { level: 5 }) ? 'bg-primary text-primary-foreground' : ''}`}
-        aria-label="H5"
-      >
-        H5
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 6 }).run()}
-        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('heading', { level: 6 }) ? 'bg-primary text-primary-foreground' : ''}`}
-        aria-label="H6"
-      >
-        H6
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('bulletList') ? 'bg-primary text-primary-foreground' : ''}`}
-        aria-label="Bullet list"
-      >
-        Bullet list
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('orderedList') ? 'bg-primary text-primary-foreground' : ''}`}
-        aria-label="Ordered list"
-      >
-        Ordered list
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('codeBlock') ? 'bg-primary text-primary-foreground' : ''}`}
-        aria-label="Code block"
-      >
-        Code block
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        className={`rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors ${editor.isActive('blockquote') ? 'bg-primary text-primary-foreground' : ''}`}
-        aria-label="Blockquote"
-      >
-        Blockquote
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().setHorizontalRule().run()}
-        className="rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors"
-        aria-label="Horizontal rule"
-      >
-        Horizontal rule
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().setHardBreak().run()}
-        className="rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors"
-        aria-label="Hard break"
-      >
-        Hard break
-      </button>
-      <button
-        type="button"
+        variant="ghost"
+        size="sm"
         onClick={() => editor.chain().focus().undo().run()}
-        className="rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors"
+        disabled={!editor.can().undo()}
+        className="h-8 w-8 p-0"
         aria-label="Undo"
       >
-        Undo
-      </button>
-      <button
+        <Undo2 className="h-4 w-4" />
+      </Button>
+      <Button
         type="button"
+        variant="ghost"
+        size="sm"
         onClick={() => editor.chain().focus().redo().run()}
-        className="rounded-lg px-4 py-2 text-sm font-medium bg-muted hover:bg-accent transition-colors"
+        disabled={!editor.can().redo()}
+        className="h-8 w-8 p-0"
         aria-label="Redo"
       >
-        Redo
-      </button>
+        <Redo2 className="h-4 w-4" />
+      </Button>
+
+      <Separator orientation="vertical" className="mx-1 h-6" />
+
+      {/* Headings Dropdown */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2 gap-1"
+            aria-label="Text formatting"
+          >
+            {getHeadingIcon()}
+            <ChevronDown className="h-3 w-3" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-48">
+          <DropdownMenuItem
+            onClick={() => editor.chain().focus().setParagraph().run()}
+            className={editor.isActive('paragraph') ? 'bg-accent' : ''}
+          >
+            <Type className="h-4 w-4 mr-2" />
+            Paragraph
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            className={editor.isActive('heading', { level: 1 }) ? 'bg-accent' : ''}
+          >
+            <Heading1 className="h-4 w-4 mr-2" />
+            Heading 1
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            className={editor.isActive('heading', { level: 2 }) ? 'bg-accent' : ''}
+          >
+            <Heading2 className="h-4 w-4 mr-2" />
+            Heading 2
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            className={editor.isActive('heading', { level: 3 }) ? 'bg-accent' : ''}
+          >
+            <Heading3 className="h-4 w-4 mr-2" />
+            Heading 3
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
+            className={editor.isActive('heading', { level: 4 }) ? 'bg-accent' : ''}
+          >
+            <Heading4 className="h-4 w-4 mr-2" />
+            Heading 4
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()}
+            className={editor.isActive('heading', { level: 5 }) ? 'bg-accent' : ''}
+          >
+            <Heading5 className="h-4 w-4 mr-2" />
+            Heading 5
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => editor.chain().focus().toggleHeading({ level: 6 }).run()}
+            className={editor.isActive('heading', { level: 6 }) ? 'bg-accent' : ''}
+          >
+            <Heading6 className="h-4 w-4 mr-2" />
+            Heading 6
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Separator orientation="vertical" className="mx-1 h-6" />
+
+      {/* Text Formatting Group */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleBold().run()}
+        className={`h-8 w-8 p-0 ${editor.isActive('bold') ? 'bg-accent' : ''}`}
+        aria-label="Bold"
+      >
+        <Bold className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        className={`h-8 w-8 p-0 ${editor.isActive('italic') ? 'bg-accent' : ''}`}
+        aria-label="Italic"
+      >
+        <Italic className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleStrike().run()}
+        className={`h-8 w-8 p-0 ${editor.isActive('strike') ? 'bg-accent' : ''}`}
+        aria-label="Strikethrough"
+      >
+        <Strikethrough className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleCode().run()}
+        className={`h-8 w-8 p-0 ${editor.isActive('code') ? 'bg-accent' : ''}`}
+        aria-label="Code"
+      >
+        <Code className="h-4 w-4" />
+      </Button>
+
+      <Separator orientation="vertical" className="mx-1 h-6" />
+
+      {/* Lists Group */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        className={`h-8 w-8 p-0 ${editor.isActive('bulletList') ? 'bg-accent' : ''}`}
+        aria-label="Bullet list"
+      >
+        <List className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        className={`h-8 w-8 p-0 ${editor.isActive('orderedList') ? 'bg-accent' : ''}`}
+        aria-label="Ordered list"
+      >
+        <ListOrdered className="h-4 w-4" />
+      </Button>
+
+      <Separator orientation="vertical" className="mx-1 h-6" />
+
+      {/* Block Elements Group */}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+        className={`h-8 w-8 p-0 ${editor.isActive('codeBlock') ? 'bg-accent' : ''}`}
+        aria-label="Code block"
+      >
+        <Code className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().toggleBlockquote().run()}
+        className={`h-8 w-8 p-0 ${editor.isActive('blockquote') ? 'bg-accent' : ''}`}
+        aria-label="Blockquote"
+      >
+        <Quote className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => editor.chain().focus().setHorizontalRule().run()}
+        className="h-8 w-8 p-0"
+        aria-label="Horizontal rule"
+      >
+        <Minus className="h-4 w-4" />
+      </Button>
     </div>
   )
 }
@@ -347,9 +411,9 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContentWithoutClose className="sm:max-w-[800px] top-20 translate-y-0 overflow-hidden">
+      <DialogContentWithoutClose className="sm:max-w-[800px]">
         <DialogTitle className="sr-only">Edit Task</DialogTitle>
-        <div className="flex flex-col gap-4 w-full max-w-full overflow-hidden">
+        <div className="flex flex-col gap-4 w-full max-w-full">
           <div className="flex w-full max-w-full gap-4">
             <div className="flex-[1_1_auto] w-full max-w-full overflow-hidden">
               {isEditingTitle ? (
