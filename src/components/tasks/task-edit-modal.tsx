@@ -468,7 +468,7 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
 
                     {isEditingDescription ? (
                       <div className="space-y-2">
-                        <div className="bg-background rounded-md">
+                        <div className="bg-background border border-gray-500">
                           <MenuBar editor={editor} />
                           <div className="min-h-[200px] p-4">
                             <EditorContent
