@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
-  DialogContent,
+  DialogContentWithoutClose,
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -15,12 +15,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import DOMPurify from 'dompurify'
-import { TextIcon, Trash2 } from 'lucide-react'
+import { TextIcon, Trash2, X } from 'lucide-react'
 import { TaskDeleteDialog } from './task-delete-dialog'
+import { Textarea } from '../ui/textarea'
 
 interface TaskEditModalProps {
   card: TCard
@@ -218,6 +219,7 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
   const [isEditingDescription, setIsEditingDescription] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const queryClient = useQueryClient()
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const form = useForm({
     resolver: zodResolver(updateTaskSchema),
@@ -311,98 +313,86 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
     setIsEditingDescription(false)
   }
 
+  // Sync textarea height with content
+  const syncTextareaHeight = () => {
+    if (textareaRef.current) {
+      // Reset height to get minimal height
+      textareaRef.current.style.height = '0px'
+      
+      // Get the actual content height needed
+      const scrollHeight = textareaRef.current.scrollHeight
+      
+      // Get padding values
+      const computedStyle = getComputedStyle(textareaRef.current)
+      const paddingTop = parseInt(computedStyle.paddingTop)
+      const paddingBottom = parseInt(computedStyle.paddingBottom)
+      
+      // Calculate minimum height for single line
+      const lineHeight = parseInt(computedStyle.lineHeight) || parseInt(computedStyle.fontSize) * 1.2
+      const minHeight = lineHeight + paddingTop + paddingBottom
+      
+      // Use the smaller of scrollHeight or calculated minimum for tight fit
+      const finalHeight = Math.max(minHeight, scrollHeight)
+      
+      textareaRef.current.style.height = `${finalHeight}px`
+    }
+  }
+
+  useEffect(() => {
+    if (isEditingTitle && textareaRef.current) {
+      syncTextareaHeight()
+    }
+  }, [isEditingTitle, title])
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] top-20 translate-y-0 overflow-hidden">
+      <DialogContentWithoutClose className="sm:max-w-[600px] top-20 translate-y-0 overflow-hidden">
         <DialogTitle className="sr-only">Edit Task</DialogTitle>
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
-            {isEditingTitle ? (
-              <Input
-                className="w-[90%] break-all overflow-wrap-anywhere"
-                {...form.register('title')}
-                autoFocus
-                onBlur={handleTitleBlur}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.currentTarget.blur()
-                  }
-                }}
-              />
-            ) : (
-              <div
-                className="cursor-pointer p-2 break-all overflow-wrap-anywhere"
-                onClick={() => setIsEditingTitle(true)}
-              >
-                {title}
-              </div>
-            )}
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsDeleteDialogOpen(true)}
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-            aria-label="Delete card"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <div className='flex items-center gap-2'>
-              <TextIcon className="h-4 w-4 text-gray-500" />
-              <label className="text-sm font-medium">Description</label>
+        <div className="flex flex-col gap-4 w-full max-w-full overflow-hidden">
+          <div className="flex w-full max-w-full gap-4">
+            <div className="flex-[1_1_auto] w-full max-w-full overflow-hidden">
+              {true ? (
+                <Textarea
+                  className="w-full max-w-full break-all whitespace-break-spaces resize-none p-2 overflow-hidden"
+                  {...form.register('title')}
+                  ref={(el) => {
+                    const { ref } = form.register('title');
+                    if (typeof ref === 'function') ref(el);
+                    textareaRef.current = el;
+                    // Sync height when element is first set
+                    if (el) {
+                      setTimeout(() => syncTextareaHeight(), 0);
+                    }
+                  }}
+                  autoFocus
+                  onBlur={handleTitleBlur}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.currentTarget.blur();
+                    }
+                  }}
+                  onInput={syncTextareaHeight}
+                />
+              ) : (
+                <div
+                  className="cursor-pointer p-2 w-full max-w-full break-words whitespace-pre-line overflow-hidden"
+                  onClick={() => setIsEditingTitle(true)}>
+                  <p className="w-full max-w-full break-words overflow-hidden">
+                    {title}
+                  </p>
+                </div>
+              )}
             </div>
-
-            {isEditingDescription ? (
-              <div className="space-y-2">
-                <div className="bg-background rounded-md">
-                  <MenuBar editor={editor} />
-                  <div className="min-h-[200px] p-4">
-                    <EditorContent
-                      editor={editor}
-                      className="prose prose-sm max-w-none dark:prose-invert focus:outline-none [&_.ProseMirror]:outline-none [&_.ProseMirror]:border-none [&_.ProseMirror]:break-all [&_.ProseMirror]:overflow-wrap-anywhere bg-background"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    variant="outline"
-                    onClick={handleDescriptionCancel}
-                    disabled={updateTaskMutation.isPending}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleDescriptionSave}
-                    disabled={updateTaskMutation.isPending}
-                  >
-                    Save
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div
-                className="cursor-pointer rounded-md border border-transparent p-2 hover:border-border transition-opacity duration-200 hover:opacity-70 focus-within:opacity-70"
-                onClick={() => setIsEditingDescription(true)}
-                tabIndex={0}
-                aria-label="Edit description"
-                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setIsEditingDescription(true) }}
-              >
-                {card.description ? (
-                  <div
-                    className="prose prose-sm max-w-none ProseMirror break-all overflow-wrap-anywhere"
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(card.description) }}
-                  />
-                ) : (
-                  <p className="text-muted-foreground">Add a description...</p>
-                )}
-              </div>
-            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-[1_1_auto] p-2 hover:bg-accent rounded-sm transition-colors max-h-[min-content]"
+              aria-label="Close dialog">
+              <X className="h-4 w-4" />
+            </button>
           </div>
         </div>
-      </DialogContent>
+      </DialogContentWithoutClose>
 
       <TaskDeleteDialog
         card={card}
