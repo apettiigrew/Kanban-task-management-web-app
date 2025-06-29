@@ -333,7 +333,7 @@ export function Column({ column, onDelete }: ColumnProps) {
             </div>
 
             <div className="flex flex-col gap-3 overflow-y-auto scrollbar-thin [&:not(:hover)]:scrollbar-transparent hover:scrollbar-gray-300 flex-grow max-h-screen min-h-0" ref={scrollableRef}>
-                <DisplayCard columnId={column.id} cards={column.cards} state={state} />
+                <DisplayCard columnId={column.id} cards={column.cards} state={state} columnTitle={columnTitle} />
             </div>
             <div>
                 {isAddingCard ? (
@@ -388,8 +388,9 @@ interface DisplayCardProps {
     cards: TCard[];
     columnId: string;
     state: TColumnState;
+    columnTitle: string;
 }
-function DisplayCard({ cards, columnId, state }: DisplayCardProps) {
+function DisplayCard({ cards, columnId, state, columnTitle }: DisplayCardProps) {
     if (!cards || cards.length === 0) {
         return state.type === 'is-card-over' ? <CardShadow dragging={state.dragging} /> : null;
     }
@@ -397,7 +398,7 @@ function DisplayCard({ cards, columnId, state }: DisplayCardProps) {
     return (
         <>
             {cards.map((card) => (
-                <CardTask card={card} key={card.id} columnId={columnId} />
+                <CardTask card={card} key={card.id} columnId={columnId} columnTitle={columnTitle} />
             ))}
         </>
     );

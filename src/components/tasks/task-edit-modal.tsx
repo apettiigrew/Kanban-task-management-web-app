@@ -15,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { useUpdateTask } from '@/hooks/mutations/use-task-mutations'
+import { useColumn } from '@/hooks/queries/use-columns'
 import { FormError } from '@/lib/form-error-handler'
 import { updateTaskSchema } from '@/lib/validations/task'
 import { TCard } from '@/utils/data'
@@ -26,20 +27,20 @@ import { useState, useRef, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import DOMPurify from 'dompurify'
-import { 
-  TextIcon, 
-  Trash2, 
-  X, 
-  Bold, 
-  Italic, 
-  Strikethrough, 
-  Code, 
-  List, 
-  ListOrdered, 
-  Quote, 
-  Minus, 
-  Undo2, 
-  Redo2, 
+import {
+  TextIcon,
+  Trash2,
+  X,
+  Bold,
+  Italic,
+  Strikethrough,
+  Code,
+  List,
+  ListOrdered,
+  Quote,
+  Minus,
+  Undo2,
+  Redo2,
   ChevronDown,
   Heading1,
   Heading2,
@@ -55,6 +56,7 @@ import { DeleteActionButton } from '../delete-action-button'
 
 interface TaskEditModalProps {
   card: TCard
+  columnTitle: string
   isOpen: boolean
   onClose: () => void
 }
@@ -277,7 +279,7 @@ const MenuBar = ({ editor }: EditorToolbarProps) => {
   )
 }
 
-export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
+export function TaskEditModal({ card, isOpen, onClose, columnTitle }: TaskEditModalProps) {
   const [title, setTitle] = useState(card.title)
   const [description, setDescription] = useState(card.description)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
@@ -415,7 +417,7 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
         <DialogTitle className="sr-only">Edit Task</DialogTitle>
         <div className="flex flex-col gap-4 w-full max-w-full">
           <div className="flex w-full max-w-full gap-4">
-            <div className="flex-[1_1_auto] w-full max-w-full overflow-hidden">
+            <div className="flex flex-col gap-1 flex-[1_1_auto] w-full max-w-full overflow-hidden">
               {isEditingTitle ? (
                 <Textarea
                   className="w-full max-w-full break-all whitespace-break-spaces resize-none p-2 overflow-hidden"
@@ -447,6 +449,15 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
                   </p>
                 </div>
               )}
+            
+              {columnTitle !== '' && columnTitle !== null && columnTitle !== undefined && (
+                <div className="flex items-center gap-2 text-sm p-2">
+                  <span>in list</span>
+                  <span className="bg-muted px-2 py-1 rounded text-foreground font-medium">
+                    {columnTitle}
+                  </span>
+                </div>
+              )}
             </div>
             <button
               type="button"
@@ -456,6 +467,9 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
               <X className="h-4 w-4" />
             </button>
           </div>
+
+
+
           <div className="flex flex-col gap-4">
             <div className="flex flex-1 gap-4">
               <div className="flex-[2_0_80%]">
@@ -514,12 +528,12 @@ export function TaskEditModal({ card, isOpen, onClose }: TaskEditModalProps) {
                   </div>
                 </div>
               </div>
-                             <div className="flex-[1_1_auto]">
-                 <p className="text-sm font-medium mb-2">Actions</p>
-                 <DeleteActionButton onClick={() => setIsDeleteDialogOpen(true)}>
-                   Delete Card
-                 </DeleteActionButton>
-               </div>
+              <div className="flex-[1_1_auto]">
+                <p className="text-sm font-medium mb-2">Actions</p>
+                <DeleteActionButton onClick={() => setIsDeleteDialogOpen(true)}>
+                  Delete Card
+                </DeleteActionButton>
+              </div>
             </div>
           </div>
         </div>

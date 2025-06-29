@@ -37,6 +37,7 @@ import { TextIcon } from './icons/icons';
 interface CardProps {
   card: TCard;
   columnId: string;
+  columnTitle: string;
 }
 
 type CardState =
@@ -53,7 +54,7 @@ export function CardTask(props: CardProps) {
   const [cardState, setCardState] = useState<CardState>(draggingState);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const { card, columnId } = props;
+  const { card, columnId, columnTitle } = props;
   const outerRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
 
@@ -132,6 +133,7 @@ export function CardTask(props: CardProps) {
       )}
 
       <TaskEditModal
+        columnTitle={columnTitle}
         card={card}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
